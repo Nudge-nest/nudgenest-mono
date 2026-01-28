@@ -226,40 +226,336 @@ export class ReviewTestHelper {
 // e2e/helpers/mock-data.ts
 export const mockOrderData = {
     single: (orderId: string = 'test-order-123') => ({
-        id: orderId,
-        email: 'test@example.com',
-        contact_email: 'test@example.com',
-        currency: 'EUR',
-        total_price: '29.99',
-        financial_status: 'paid',
-        order_number: 1001,
-        created_at: new Date().toISOString(),
-        customer: {
-            id: 12345,
-            email: 'test@example.com',
-            first_name: 'John',
-            last_name: 'Doe',
-            verified_email: true
+        "id": orderId,
+        "admin_graphql_api_id": "gid://shopify/Order/5866663018634",
+        "app_id": 1354745,
+        "browser_ip": "87.92.3.180",
+        "buyer_accepts_marketing": false,
+        "cancel_reason": null,
+        "cancelled_at": null,
+        "cart_token": null,
+        "checkout_id": 36658923929738,
+        "checkout_token": "517499a2321e4dad24391aedddc2b81e",
+        "client_details": {
+            "accept_language": null,
+            "browser_height": null,
+            "browser_ip": "87.92.3.180",
+            "browser_width": null,
+            "session_hash": null,
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
         },
-        line_items: [
+        "closed_at": null,
+        "company": null,
+        "confirmation_number": "RXYEIQN0Q",
+        "confirmed": true,
+        "contact_email": "vapafot242@badfist.com",
+        "created_at": "2025-02-05T11:10:14-05:00",
+        "currency": "EUR",
+        "current_shipping_price_set": {
+            "shop_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            }
+        },
+        "current_subtotal_price": "10.00",
+        "current_subtotal_price_set": {
+            "shop_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            }
+        },
+        "current_total_additional_fees_set": null,
+        "current_total_discounts": "0.00",
+        "current_total_discounts_set": {
+            "shop_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            }
+        },
+        "current_total_duties_set": null,
+        "current_total_price": "10.00",
+        "current_total_price_set": {
+            "shop_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            }
+        },
+        "current_total_tax": "0.00",
+        "current_total_tax_set": {
+            "shop_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            }
+        },
+        "customer_locale": "en-FI",
+        "device_id": null,
+        "discount_codes": [],
+        "duties_included": false,
+        "email": "vapafot242@badfist.com",
+        "estimated_taxes": false,
+        "financial_status": "paid",
+        "fulfillment_status": null,
+        "landing_site": null,
+        "landing_site_ref": null,
+        "location_id": null,
+        "merchant_business_entity_id": "MTY3NTgwMjk3MzU0",
+        "merchant_of_record_app_id": null,
+        "name": "#1007",
+        "note": null,
+        "note_attributes": [],
+        "number": 7,
+        "order_number": 1007,
+        "order_status_url": "https://nudgenest.myshopify.com/67580297354/orders/3e2d4fbb7be5d4084e4c85213292a975/authenticate?key=10130d6a66ecb9bddec0e8dad429426e",
+        "original_total_additional_fees_set": null,
+        "original_total_duties_set": null,
+        "payment_gateway_names": [
+            "manual"
+        ],
+        "phone": null,
+        "po_number": null,
+        "presentment_currency": "EUR",
+        "processed_at": "2025-02-05T11:10:14-05:00",
+        "reference": null,
+        "referring_site": null,
+        "source_identifier": null,
+        "source_name": "shopify_draft_order",
+        "source_url": null,
+        "subtotal_price": "10.00",
+        "subtotal_price_set": {
+            "shop_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            }
+        },
+        "tags": "nudgenest, testing orders",
+        "tax_exempt": false,
+        "tax_lines": [],
+        "taxes_included": true,
+        "test": false,
+        "token": "3e2d4fbb7be5d4084e4c85213292a975",
+        "total_cash_rounding_payment_adjustment_set": {
+            "shop_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            }
+        },
+        "total_cash_rounding_refund_adjustment_set": {
+            "shop_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            }
+        },
+        "total_discounts": "0.00",
+        "total_discounts_set": {
+            "shop_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            }
+        },
+        "total_line_items_price": "10.00",
+        "total_line_items_price_set": {
+            "shop_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            }
+        },
+        "total_outstanding": "0.00",
+        "total_price": "10.00",
+        "total_price_set": {
+            "shop_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "10.00",
+                "currency_code": "EUR"
+            }
+        },
+        "total_shipping_price_set": {
+            "shop_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            }
+        },
+        "total_tax": "0.00",
+        "total_tax_set": {
+            "shop_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            },
+            "presentment_money": {
+                "amount": "0.00",
+                "currency_code": "EUR"
+            }
+        },
+        "total_tip_received": "0.00",
+        "total_weight": 0,
+        "updated_at": "2025-02-05T11:10:15-05:00",
+        "user_id": 90573439114,
+        "billing_address": {
+            "first_name": "Olujuwon",
+            "address1": "Otonkuja 4D 91",
+            "phone": null,
+            "city": "Helsinki",
+            "zip": "00870",
+            "province": null,
+            "country": "Finland",
+            "last_name": "Alabi",
+            "address2": null,
+            "company": null,
+            "latitude": null,
+            "longitude": null,
+            "name": "Olujuwon Alabi",
+            "country_code": "FI",
+            "province_code": null
+        },
+        "customer": {
+            "id": 7938732589194,
+            "email": "vapafot242@badfist.com",
+            "created_at": "2025-02-02T08:01:05-05:00",
+            "updated_at": "2025-02-05T11:10:15-05:00",
+            "first_name": "Olujuwon",
+            "last_name": "Alabi",
+            "state": "disabled",
+            "note": null,
+            "verified_email": true,
+            "multipass_identifier": null,
+            "tax_exempt": false,
+            "phone": null,
+            "email_marketing_consent": {
+                "state": "not_subscribed",
+                "opt_in_level": "single_opt_in",
+                "consent_updated_at": null
+            },
+            "sms_marketing_consent": null,
+            "tags": "",
+            "currency": "EUR",
+            "tax_exemptions": [],
+            "admin_graphql_api_id": "gid://shopify/Customer/7938732589194",
+            "default_address": {
+                "id": 9078882631818,
+                "customer_id": 7938732589194,
+                "first_name": "Olujuwon",
+                "last_name": "Alabi",
+                "company": null,
+                "address1": "Otonkuja 4D 91",
+                "address2": null,
+                "city": "Helsinki",
+                "province": null,
+                "country": "Finland",
+                "zip": "00870",
+                "phone": null,
+                "name": "Olujuwon Alabi",
+                "province_code": null,
+                "country_code": "FI",
+                "country_name": "Finland",
+                "default": true
+            }
+        },
+        "discount_applications": [],
+        "fulfillments": [],
+        "line_items": [
             {
-                id: 'item-1',
-                name: 'Test Product',
-                price: '29.99',
-                product_id: 1001,
-                quantity: 1,
-                title: 'Test Product',
-                vendor: 'Test Vendor'
+                "id": 14572083282058,
+                "admin_graphql_api_id": "gid://shopify/LineItem/14572083282058",
+                "attributed_staffs": [],
+                "current_quantity": 1,
+                "fulfillable_quantity": 1,
+                "fulfillment_service": "gift_card",
+                "fulfillment_status": null,
+                "gift_card": true,
+                "grams": 0,
+                "name": "Gift Card - $10",
+                "price": "10.00",
+                "price_set": [
+                    "Object"
+                ],
+                "product_exists": true,
+                "product_id": 8365100138634,
+                "properties": [],
+                "quantity": 1,
+                "requires_shipping": false,
+                "sku": null,
+                "taxable": false,
+                "title": "Gift Card",
+                "total_discount": "0.00",
+                "total_discount_set": [
+                    "Object"
+                ],
+                "variant_id": 45728675168394,
+                "variant_inventory_management": null,
+                "variant_title": "$10",
+                "vendor": "Snowboard Vendor",
+                "tax_lines": [],
+                "duties": [],
+                "discount_allocations": []
             }
         ],
-        billing_address: {
-            first_name: 'John',
-            last_name: 'Doe',
-            address1: '123 Test St',
-            city: 'Helsinki',
-            zip: '00100',
-            country: 'Finland'
-        }
+        "payment_terms": null,
+        "refunds": [],
+        "shipping_address": {
+            "first_name": "Olujuwon",
+            "address1": "Otonkuja 4D 91",
+            "phone": null,
+            "city": "Helsinki",
+            "zip": "00870",
+            "province": null,
+            "country": "Finland",
+            "last_name": "Alabi",
+            "address2": null,
+            "company": null,
+            "latitude": 60.1700549,
+            "longitude": 25.0350375,
+            "name": "Olujuwon Alabi",
+            "country_code": "FI",
+            "province_code": null
+        },
+        "shipping_lines": [],
+        "returns": []
     }),
 
     multiple: (orderId: string = 'test-order-multi') => ({

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { IconPlus } from '@tabler/icons-react';
 
@@ -7,7 +7,7 @@ import { IUploadedMediaObject, UploadResult } from '../../types/review.ts';
 import { useUploadReviewMediaMutation } from '../../redux/nudgenest.ts';
 import PreviewComponent from './MediaPreviewComponent.tsx';
 
-const MediaWidget = () => {
+const MediaWidget = memo(() => {
     const { merchantId, reviewFormHook, review, reviewId, reviewStatus } = useReview();
     const [uploadReviewMedia] = useUploadReviewMediaMutation();
 
@@ -107,6 +107,8 @@ const MediaWidget = () => {
             </div>
         </section>
     );
-};
+});
+
+MediaWidget.displayName = 'MediaWidget';
 
 export default MediaWidget;

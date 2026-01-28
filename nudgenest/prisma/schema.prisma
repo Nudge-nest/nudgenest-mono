@@ -22,11 +22,13 @@ model Merchants {
   email          String           @unique
   name           String           @unique
   businessInfo   String           @unique
+  apiKey         String?          @unique
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   address        Address
   Configurations Configurations[]
   Reviews        Reviews[]
+  Subscriptions  Subscriptions[]
 
   @@map("merchants")
 }
@@ -131,4 +133,157 @@ enum REVIEWTIMING {
   PURCHASE
   FULFILMENT
   DELIVERY
+}
+
+// Billing Models
+model Subscriptions {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  merchantId      String             @db.ObjectId
+  planId          String             @db.ObjectId
+  status          SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAt        DateTime?
+  canceledAt      DateTime?
+  trialStart      DateTime?
+  trialEnd        DateTime?
+  shopifyChargeId String?            @unique
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  Merchants       Merchants          @relation(fields: [merchantId], references: [id])
+  Plans           Plans              @relation(fields: [planId], references: [id])
+  UsageRecords    UsageRecords[]
+
+  @@index([merchantId])
+  @@index([planId])
+  @@map("subscriptions")
+}
+
+model Plans {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  name            String          @unique
+  displayName     String
+  description     String
+  tier            PlanTier
+  price           Float
+  billingInterval BillingInterval
+  features        PlanFeatures
+  limits          PlanLimits
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  Subscriptions   Subscriptions[]
+
+  @@map("plans")
+}
+
+model UsageRecords {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  subscriptionId String        @db.ObjectId
+  merchantId     String        @db.ObjectId
+  metricType     UsageMetric
+  quantity       Int
+  timestamp      DateTime      @default(now())
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  Subscriptions  Subscriptions @relation(fields: [subscriptionId], references: [id])
+
+  @@index([subscriptionId])
+  @@index([merchantId, timestamp])
+  @@map("usage_records")
+}
+
+model Invoices {
+  id                 String        @id @default(auto()) @map("_id") @db.ObjectId
+  merchantId         String        @db.ObjectId
+  subscriptionId     String?       @db.ObjectId
+  invoiceNumber      String        @unique
+  status             InvoiceStatus @default(DRAFT)
+  subtotal           Float
+  tax                Float         @default(0)
+  total              Float
+  currency           String        @default("USD")
+  periodStart        DateTime
+  periodEnd          DateTime
+  dueDate            DateTime?
+  paidAt             DateTime?
+  shopifyInvoiceId   String?
+  shopifyInvoiceUrl  String?
+  lineItems          InvoiceLineItem[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([merchantId])
+  @@index([status])
+  @@map("invoices")
+}
+
+// Embedded Types
+type PlanFeatures {
+  emailReviewRequests      Boolean
+  smsReviewRequests        Boolean
+  autoReminders            Boolean
+  customEmailTemplates     Boolean
+  reviewIncentives         Boolean
+  bulkImport               Boolean
+  advancedAnalytics        Boolean
+  apiAccess                Boolean
+  whiteLabel               Boolean
+  prioritySupport          Boolean
+  dedicatedAccountManager  Boolean
+}
+
+type PlanLimits {
+  reviewRequestsPerMonth Int // -1 for unlimited
+  emailsPerMonth         Int // -1 for unlimited
+  smsPerMonth            Int // -1 for unlimited
+  storageGB              Float
+  apiCallsPerDay         Int // -1 for unlimited
+  teamMembers            Int // -1 for unlimited
+}
+
+type InvoiceLineItem {
+  description String
+  quantity    Int
+  unitPrice   Float
+  amount      Float
+  metadata    Json?
+}
+
+// Enums
+enum PlanTier {
+  FREE
+  STARTER
+  GROWTH
+  PRO
+  ENTERPRISE
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  PAUSED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum UsageMetric {
+  REVIEW_REQUEST
+  EMAIL_SENT
+  SMS_SENT
+  API_CALL
+  STORAGE_GB
 }

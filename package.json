@@ -1,0 +1,35 @@
+{
+  "name": "nudgenest-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nudgenest - User Review Platform for Shopify",
+  "scripts": {
+    "dev": "pnpm --parallel --filter '!nudgenest-shpfy-app' run dev",
+    "dev:all": "concurrently --names \"BACKEND,FRONTEND,LANDING,SHARED,SHOPIFY\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold,bgYellow.bold,bgCyan.bold\" \"cd nudgenest && pnpm dev\" \"cd review-ui && pnpm dev\" \"cd nudge-nest-landing && pnpm dev\" \"cd packages/shared && pnpm dev\" \"cd nudgenest-shpfy-app && pnpm dev\"",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format",
+    "backend:dev": "cd nudgenest && pnpm dev",
+    "frontend:dev": "cd review-ui && pnpm dev",
+    "shopify:dev": "cd nudgenest-shpfy-app && pnpm dev",
+    "landing:dev": "cd nudge-nest-landing && pnpm dev",
+    "clean": "pnpm -r run clean"
+  },
+  "keywords": [
+    "shopify",
+    "reviews",
+    "ecommerce",
+    "user-reviews",
+    "customer-reviews"
+  ],
+  "author": "Nudgenest Team",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

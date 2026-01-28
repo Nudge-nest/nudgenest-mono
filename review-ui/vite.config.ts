@@ -9,19 +9,33 @@ export default defineConfig({
   },
   plugins: [react(),tailwindcss()],
   preview: {
-    port: 3000,
+    port: 3001,
     strictPort: true,
   },
   server: {
-    port: 3000,
+    port: 3001,
     strictPort: true,
     host: true,
-    origin: "0.0.0.0:3000",
+    origin: "0.0.0.0:3001",
   },
     test: {
         globals: true,
         environment: 'jsdom',
         setupFiles: ['./src/setupTests.ts'],
         css: true,
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'json', 'html'],
+            exclude: [
+                'node_modules/',
+                'src/setupTests.ts',
+                'tests-examples/',
+                'src/__tests__/',
+                '**/*.d.ts',
+                '**/*.config.*',
+                '**/mockData/*',
+                'src/main.tsx',
+            ],
+        },
     },
 })

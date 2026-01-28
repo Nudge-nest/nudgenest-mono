@@ -56,6 +56,10 @@
 
         gridEl.appendChild(iframe);
 
+        function handleReviewFormMessage() {
+          console.log('Received review form message');
+        }
+
         // Handle iframe communication (optional)
         window.addEventListener('message', handleReviewFormMessage);
 

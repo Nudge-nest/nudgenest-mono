@@ -6,7 +6,6 @@ import { eventType, IRabbitDataObject, IReviewMessagePayloadContent } from '../t
 import { convertObjectToBuffer, createMerchantEmailMessagingTemplate } from './merchant';
 import { isRabbitReviewRequestMessageValid, sampleMessaging } from '../messagesSchema';
 import { getMerchantWithBusinessInfo } from '../utils/reviews';
-import { messagingExchange } from './nudgeEventBus';
 
 dotenv.config();
 
@@ -26,7 +25,7 @@ const reviewsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/reviews/{reviewId}',
                 handler: getReviewById,
                 options: {
-                    auth: false,
+                    auth: 'apikey',
                 },
             },
             {
@@ -34,7 +33,7 @@ const reviewsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/reviews/{reviewId}',
                 handler: updateReviewById,
                 options: {
-                    auth: false,
+                    auth: 'apikey',
                 },
             },
             {
@@ -42,7 +41,7 @@ const reviewsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/reviews/list',
                 handler: listReviewsByMerchantId,
                 options: {
-                    auth: false,
+                    auth: 'apikey',
                 },
             },
         ]);
@@ -111,8 +110,8 @@ export const createReviewEmailMessagingTemplate = (
 const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const { reviewId } = request.params;
     const reviewUpdate = request.payload as any;
-    const { prisma, rabbit } = request.server.app;
-    const { messagingChannel } = rabbit;
+    const { prisma, pubsub } = request.server.app;
+    const { messagingTopic } = pubsub;
     if (reviewUpdate) {
         if (Object.keys(reviewUpdate).length === 0) throw Error('Update data missing');
     }
@@ -140,8 +139,15 @@ const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) 
                 !isRabbitReviewRequestMessageValid(completedReviewMessageToReviewer)
             )
                 throw new Error('Invalid messaging data to publish');
-            messagingChannel.publish(messagingExchange, '', convertObjectToBuffer(completedReviewMessageToReviewer));
-            messagingChannel.publish(messagingExchange, '', convertObjectToBuffer(completedReviewMessageToReviewee));
+
+            // Publish to Pub/Sub
+            const messageBuffer1 = convertObjectToBuffer(completedReviewMessageToReviewer);
+            const messageBuffer2 = convertObjectToBuffer(completedReviewMessageToReviewee);
+
+            await Promise.all([
+                messagingTopic.publishMessage({ data: messageBuffer1 }),
+                messagingTopic.publishMessage({ data: messageBuffer2 })
+            ]);
         } else {
             return;
         }

@@ -25,8 +25,6 @@ export const useReviewData = (reviewId: string, pathname: string) => {
         return merchantConf;
     }, [merchantConf]);
 
-    console.log('Review data', review, merchantConfigs, pathname.split('/')[3]);
-
     return {
         review,
         isLoading,

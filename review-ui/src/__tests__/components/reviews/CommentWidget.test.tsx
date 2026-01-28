@@ -189,12 +189,13 @@ describe('CommentWidget', () => {
             expect(screen.queryByTestId('comment-widget')).not.toBeInTheDocument();
         });
 
-        it('should render ErrorComponent when isSubmitting is false', () => {
+        it('should render ErrorComponent when isError is true', () => {
             (useReview as any).mockReturnValue({
                 ...defaultContextValue,
+                isError: true,
                 reviewFormHook: {
                     ...defaultContextValue.reviewFormHook,
-                    isSubmitting: false
+                    isSubmitting: undefined
                 }
             });
 

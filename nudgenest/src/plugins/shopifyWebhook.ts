@@ -1,8 +1,8 @@
 /*Handles receiving webhooks notification from shopify via api endpoint and publishing to exchange*/
 import Hapi from '@hapi/hapi';
+import crypto from 'crypto';
 
 import * as dotenv from 'dotenv';
-import { messagingExchange } from './nudgeEventBus';
 
 import {
     buildPublishJson,
@@ -24,7 +24,7 @@ declare module '@hapi/hapi' {
 
 const shopifyWebhookPlugin: Hapi.Plugin<null> = {
     name: 'shopifyWebhook',
-    dependencies: ['rabbit'],
+    dependencies: ['pubsub'],
     register: async (server: Hapi.Server) => {
         server.route([
             {
@@ -39,9 +39,36 @@ const shopifyWebhookPlugin: Hapi.Plugin<null> = {
     },
 };
 
+const verifyShopifyHMAC = (rawBody: string, hmacHeader: string, secret: string): boolean => {
+    try {
+        const hash = crypto.createHmac('sha256', secret).update(rawBody, 'utf8').digest('base64');
+        const hashBuffer = Buffer.from(hash);
+        const hmacBuffer = Buffer.from(hmacHeader);
+        if (hashBuffer.length !== hmacBuffer.length) return false;
+        return crypto.timingSafeEqual(hashBuffer, hmacBuffer);
+    } catch {
+        return false;
+    }
+};
+
 const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
-    const { rabbit, prisma } = request.server.app;
-    const { messagingChannel } = rabbit;
+    console.log("Shopify webhook called", request.payload)
+
+    // HMAC verification
+    const hmacHeader = request.headers['x-shopify-hmac-sha256'];
+    const shopifySecret = process.env.SHOPIFY_API_SECRET || '';
+
+    if (!hmacHeader || !shopifySecret) {
+        return h.response({ error: 'Unauthorized' }).code(401);
+    }
+
+    const rawBody = JSON.stringify(request.payload);
+    if (!verifyShopifyHMAC(rawBody, hmacHeader as string, shopifySecret)) {
+        return h.response({ error: 'Invalid HMAC' }).code(403);
+    }
+
+    const { pubsub, prisma } = request.server.app;
+    const { messagingTopic, client } = pubsub;
     const { customer_locale, order_number } = request.payload as any;
     if (!order_number || !customer_locale) return null;
     try {
@@ -66,8 +93,16 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
             !isRabbitReviewRequestMessageValid(reviewMessageToMerchantJSON)
         )
             throw new Error('Invalid messaging data to publish');
-        messagingChannel.publish(messagingExchange, '', convertObjectToBuffer(reviewToMessagingChannelJSON));
-        messagingChannel.publish(messagingExchange, '', convertObjectToBuffer(reviewMessageToMerchantJSON));
+
+        // Publish to Pub/Sub
+        const messageBuffer1 = convertObjectToBuffer(reviewToMessagingChannelJSON);
+        const messageBuffer2 = convertObjectToBuffer(reviewMessageToMerchantJSON);
+
+        await Promise.all([
+            messagingTopic.publishMessage({ data: messageBuffer1 }),
+            messagingTopic.publishMessage({ data: messageBuffer2 })
+        ]);
+
         return h.response({ version: '1.0.0', message: 'New review processed successfully with id ' + createNewReviewToDb.id }).code(200);
     } catch (error: any) {
         return h

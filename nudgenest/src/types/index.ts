@@ -53,6 +53,7 @@ export interface IReviewMessagePayloadContent {
     order_number?: number;
     reviewId?: string;
     currency?: string;
+    merchantId?: string;
 }
 
 export interface IDataFromShopifyPayload {

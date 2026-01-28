@@ -1,10 +1,10 @@
 import { useReview } from '../../contexts/ReviewContext.tsx';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, memo } from 'react';
 import ThankYouComponent from '../ThankYouComponent.tsx';
 import ErrorComponent from '../ErrorComponent.tsx';
 
-const CommentWidget = () => {
-    const { reviewFormHook, review, reviewId } = useReview();
+const CommentWidget = memo(() => {
+    const { reviewFormHook, review, reviewId, isError } = useReview();
 
     const submitReview = () => {
         if (reviewId === 'demo') {
@@ -19,7 +19,7 @@ const CommentWidget = () => {
     const isSubmitDisabled = isCompleted || isCommentEmpty;
 
     if (reviewFormHook.isSubmitting === true) return <ThankYouComponent />;
-    if (reviewFormHook.isSubmitting === false) return <ErrorComponent />;
+    if (isError) return <ErrorComponent />;
 
     if (reviewFormHook.isSubmitting === undefined) {
         return (
@@ -98,6 +98,8 @@ const CommentWidget = () => {
             </section>
         );
     }
-};
+});
+
+CommentWidget.displayName = 'CommentWidget';
 
 export default CommentWidget;

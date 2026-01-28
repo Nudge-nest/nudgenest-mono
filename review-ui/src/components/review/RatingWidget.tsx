@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, memo, useCallback, useEffect, useState } from 'react';
 import RatingStar from './Star.tsx';
 import { useReview } from '../../contexts/ReviewContext.tsx';
 import { IReviewItem, IReviewResult } from '../../types/review.ts';
@@ -10,7 +10,7 @@ interface RatingWidgetProps {
     isCompleted?: boolean;
 }
 
-export const RatingWithProduct: FC<{ itemName: string; image?: string; productId: string }> = ({
+export const RatingWithProduct: FC<{ itemName: string; image?: string; productId: string }> = memo(({
                                                                                             itemName,
                                                                                             image,
                                                                                             productId
@@ -37,9 +37,11 @@ export const RatingWithProduct: FC<{ itemName: string; image?: string; productId
             </p>
         </>
     );
-};
+});
 
-const RatingWidget: FC<RatingWidgetProps> = ({ product, result, isCompleted }) => {
+RatingWithProduct.displayName = 'RatingWithProduct';
+
+const RatingWidget: FC<RatingWidgetProps> = memo(({ product, result, isCompleted }) => {
     const [selectedRating, setSelectedRating] = useState<number>(0);
     const { name, image, id } = product;
     const { reviewFormHook } = useReview();
@@ -80,6 +82,7 @@ const RatingWidget: FC<RatingWidgetProps> = ({ product, result, isCompleted }) =
                 aria-label={`Rate ${name} from 1 to ${MAX_RATING} stars`}
                 aria-required={!isCompleted}
                 aria-disabled={isCompleted}
+                data-testid='star-container'
             >
                 {RATING_ARRAY.map((_, idx) => {
                     const ratingValue: number = idx + 1;
@@ -107,6 +110,8 @@ const RatingWidget: FC<RatingWidgetProps> = ({ product, result, isCompleted }) =
             </div>
         </article>
     );
-};
+});
+
+RatingWidget.displayName = 'RatingWidget';
 
 export default RatingWidget;

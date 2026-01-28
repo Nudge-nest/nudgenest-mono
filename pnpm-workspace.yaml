@@ -1,0 +1,10 @@
+packages:
+  # Main applications (existing directories - no changes)
+  - 'nudgenest'
+  - 'review-ui'
+  - 'nudgenest-shpfy-app'
+  - 'nudge-nest-landing'
+  - 'nudgenest-infra'
+
+  # Shared packages (new)
+  - 'packages/*'

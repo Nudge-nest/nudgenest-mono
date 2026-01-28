@@ -1,10 +1,10 @@
 /*Handles all things related to merchants*/
 import Hapi from '@hapi/hapi';
+import crypto from 'crypto';
 
 import * as dotenv from 'dotenv';
 import { eventType, IMerchant, IRabbitDataObject, IReviewMessagePayloadContent } from '../types';
 import { isRabbitReviewRequestMessageValid, sampleMessaging } from '../messagesSchema';
-import { messagingExchange } from './nudgeEventBus';
 
 dotenv.config();
 
@@ -232,21 +232,49 @@ const createVerificationEmailMessaging = (
 
 const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const merchantData = request.payload;
-    const { prisma, rabbit } = request.server.app;
-    const { messagingChannel } = rabbit;
+    const { prisma, pubsub } = request.server.app;
+    const { messagingTopic } = pubsub;
     try {
+        const apiKey = crypto.randomBytes(32).toString('hex');
         const merchant = await prisma.merchants.create({
-            data: merchantData as any,
+            data: { ...merchantData, apiKey } as any,
         });
         const reviewConfigs = await prisma.configurations.create({
             data: { ...defaultConfigs, merchantId: merchant.id } as any,
         });
+
+        // Auto-assign free plan with 14-day trial
+        const freePlan = await prisma.plans.findUnique({ where: { name: 'free' } });
+        if (freePlan) {
+            const now = new Date();
+            const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+            await prisma.subscriptions.create({
+                data: {
+                    merchantId: merchant.id,
+                    planId: freePlan.id,
+                    status: 'TRIALING',
+                    currentPeriodStart: now,
+                    currentPeriodEnd: trialEnd,
+                    trialStart: now,
+                    trialEnd: trialEnd,
+                },
+            });
+        }
+
         const merchantMessageContent = createRegistrationEmailMessaging(merchant, sampleMessaging);
         const merchantVerificationMessageContent = createVerificationEmailMessaging(merchant, sampleMessaging);
         if (!isRabbitReviewRequestMessageValid(merchantMessageContent))
             throw new Error('Invalid messaging data to publish');
-        messagingChannel.publish(messagingExchange, '', convertObjectToBuffer(merchantMessageContent));
-        messagingChannel.publish(messagingExchange, '', convertObjectToBuffer(merchantVerificationMessageContent));
+
+        // Publish to Pub/Sub
+        const messageBuffer1 = convertObjectToBuffer(merchantMessageContent);
+        const messageBuffer2 = convertObjectToBuffer(merchantVerificationMessageContent);
+
+        await Promise.all([
+            messagingTopic.publishMessage({ data: messageBuffer1 }),
+            messagingTopic.publishMessage({ data: messageBuffer2 })
+        ]);
+
         return h.response({ version: '1.0.0', data: { merchant, reviewConfigs } }).code(200);
     } catch (error: any) {
         return h

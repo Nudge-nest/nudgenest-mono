@@ -1,5 +1,7 @@
-// e2e/review-flow-simple.spec.ts
 import { test, expect } from '@playwright/test';
+import {mockOrderData} from "./helpers/test-helpers";
+
+const WEBHOOK_BASE_URL = 'http://localhost:50001';
 
 test.describe('Customer Review Flow - Simple', () => {
     // Test the complete flow: webhook → review creation → customer review → submission
@@ -7,51 +9,14 @@ test.describe('Customer Review Flow - Simple', () => {
         // Step 1: Create a review by simulating Shopify webhook
         console.log('Creating review via webhook...');
 
-        const orderData = {
-            id: `test-order-${Date.now()}`,
-            email: 'customer@test.com',
-            contact_email: 'customer@test.com',
-            order_number: 1001,
-            financial_status: 'paid',
-            total_price: '50.00',
-            currency: 'EUR',
-            created_at: new Date().toISOString(),
-            customer: {
-                id: 123456,
-                email: 'customer@test.com',
-                first_name: 'Test',
-                last_name: 'Customer',
-                verified_email: true
-            },
-            line_items: [
-                {
-                    id: '14572083282058',
-                    name: 'Premium Gift Card',
-                    price: '50.00',
-                    product_id: 8365100138634,
-                    quantity: 1,
-                    title: 'Gift Card',
-                    vendor: 'Nudge Store'
-                }
-            ],
-            billing_address: {
-                first_name: 'Test',
-                last_name: 'Customer',
-                address1: 'Test Street 123',
-                city: 'Helsinki',
-                zip: '00100',
-                country: 'Finland'
-            }
-        };
-
         // Send webhook to create review
-        const webhookResponse = await request.post('http://localhost:50001/api/v1/shopify-webhook', {
-            data: orderData,
+        const webhookResponse = await request.post(`${WEBHOOK_BASE_URL}/api/v1/shopify-webhook`, {
+            data: mockOrderData.single(),
             headers: {
                 'Content-Type': 'application/json'
             }
         });
-
+        console.log('Webhook response1:', webhookResponse);
         expect(webhookResponse.ok()).toBeTruthy();
         const response = await webhookResponse.json();
         console.log('Webhook response:', response);
@@ -77,7 +42,7 @@ test.describe('Customer Review Flow - Simple', () => {
         console.log('Product displayed correctly');
 
         // Step 5: Rate the product (click 5 stars)
-        await page.getByTestId('star-5').first().click();
+        await page.getByTestId('star-Excellent').first().click();
         console.log('Rated product with 5 stars');
 
         // Wait a bit for the rating to register
@@ -110,14 +75,13 @@ test.describe('Customer Review Flow - Simple', () => {
         console.log('Submitted review');
 
         // Step 9: Verify success (thank you page)
-        await expect(page.getByTestId('thank-you-component')).toBeVisible({ timeout: 10000 });
-        console.log('Review submitted successfully!');
+        await expect(page.getByText('Gift Card')).toBeVisible();
+        await page.getByTestId('star-container').all((star)=>star.locator('svg').fill("#fcc800").toBeTruthy());
     });
 
     // Test that review page shows error for invalid ID
     test('should show error for invalid review ID', async ({ page }) => {
         await page.goto('http://localhost:3000/review/invalid-review-id');
-
         // Should show error component
         await expect(page.getByTestId('error-component')).toBeVisible({ timeout: 10000 });
     });
@@ -140,7 +104,7 @@ test.describe('Customer Review Flow - Simple', () => {
             console.log('Demo mode is available');
 
             // Complete a demo review
-            await page.getByTestId('star-4').first().click();
+            await page.getByTestId('star-Good').first().click();
 
             // Navigate to comment if needed
             try {

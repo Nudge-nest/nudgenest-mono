@@ -1,15 +1,15 @@
+/* Actively consumes messages from Google Cloud Pub/Sub (Pull subscription for all environments) */
 import Hapi from '@hapi/hapi';
 import * as dotenv from 'dotenv';
-import { messagingQueue } from './nudgeEventBus';
 import { eventType, IRabbitDataObject, IReviewMessagePayloadContent } from '../types';
-import sgMail from '@sendgrid/mail';
 import EmailService from '../email-service';
+import { trackEmailUsage, trackReviewRequestUsage } from '../middleware/usage-tracking';
 
 dotenv.config();
 
 declare module '@hapi/hapi' {
     interface ServerApplicationState {
-        messaging: any;
+        pubsubConsumer: any;
     }
 }
 
@@ -18,16 +18,6 @@ const extractParamsFromLineItems = (lineItems: any[]) => {
     return lineItems.map((lineItem) => {
         return { name: lineItem.name, image: lineItem.image ? lineItem.image : '', price: lineItem.price };
     });
-};
-
-const sendEmail = async (email: any) => {
-    const sendGridApiKey = process.env.SENDGRID_API_KEY;
-    if (!sendGridApiKey) {
-        throw Error('No Api key found');
-    }
-    // Initialize SendGrid
-    sgMail.setApiKey(sendGridApiKey);
-    return sgMail.send(email);
 };
 
 const sendEmailMessageToReviewer = async (messageContent: IReviewMessagePayloadContent, templateId: eventType) => {
@@ -52,7 +42,6 @@ const sendEmailMessageToReviewer = async (messageContent: IReviewMessagePayloadC
         });
 };
 
-//TODO: remember to fit template details to match merchant's email
 const sendEmailMessageToMerchant = async (messageContent: any, templateId: eventType) => {
     const { userName, email, reviewId, line_items, order_number, currency } = messageContent;
     if (templateId === 'merchant-welcome')
@@ -113,39 +102,94 @@ const sendEmailMessageToMerchant = async (messageContent: any, templateId: event
 
 const handleSendEmailToReviewer = async (messagingContent: IRabbitDataObject<IReviewMessagePayloadContent>) => {
     const { payload, eventType } = messagingContent;
+    const merchantId = payload.content.merchantId;
+
     await sendEmailMessageToReviewer(payload.content, eventType);
-};
-const handleSendEmailToReviewee = async (messagingContent: IRabbitDataObject<IReviewMessagePayloadContent>) => {
-    const { payload, eventType } = messagingContent;
-    console.log('Payload merchant', payload, eventType);
-    await sendEmailMessageToMerchant(payload.content, eventType);
+
+    // Track usage
+    if (merchantId) {
+        await trackEmailUsage(merchantId, 1);
+        if (eventType === 'new-review') {
+            await trackReviewRequestUsage(merchantId, 1);
+        }
+    }
 };
 
-const sendReviewMessagePlugin: Hapi.Plugin<null> = {
-    name: 'reviewMessage',
+const handleSendEmailToReviewee = async (messagingContent: IRabbitDataObject<IReviewMessagePayloadContent>) => {
+    const { payload, eventType } = messagingContent;
+    const merchantId = payload.content.merchantId;
+    console.log('Payload merchant', payload, eventType);
+
+    await sendEmailMessageToMerchant(payload.content, eventType);
+
+    // Track usage for merchant emails
+    if (merchantId) {
+        await trackEmailUsage(merchantId, 1);
+    }
+};
+
+const pubsubConsumerPlugin: Hapi.Plugin<null> = {
+    name: 'pubsubConsumer',
+    dependencies: ['pubsub'],
     register: async (server: Hapi.Server) => {
-        const { messagingChannel } = server.app.rabbit;
-        await messagingChannel.consume(messagingQueue, async (msg: any) => {
-            if (msg) {
-                const rawContent = JSON.parse(
-                    msg.content.toString()
-                ) as IRabbitDataObject<IReviewMessagePayloadContent>;
+        const { pubsub } = server.app;
+
+        // Use the pull subscription created by Pulumi
+        const subscriptionName = 'nudgenest-messaging-pull';
+
+        let subscription;
+        try {
+            subscription = pubsub.client.subscription(subscriptionName);
+            console.log(`✅ Using pull subscription: ${subscriptionName}`);
+        } catch (err) {
+            console.error('❌ Error getting pull subscription:', err);
+            return;
+        }
+
+        // Listen for messages (pull model)
+        const messageHandler = async (message: any) => {
+            try {
+                console.log('📨 Received message from Pub/Sub');
+
+                // Parse message data
+                const messageData = message.data.toString('utf-8');
+                const rawContent = JSON.parse(messageData) as IRabbitDataObject<IReviewMessagePayloadContent>;
                 const { eventType } = rawContent;
-                try {
-                    if (eventType === 'new-review' || eventType === 'reminder') {
-                        await handleSendEmailToReviewer(rawContent);
-                    } else {
-                        await handleSendEmailToReviewee(rawContent);
-                    }
-                    // Process the valid JSON message
-                } catch (err: any) {
-                    console.error(`Sending messages:`, err);
-                } finally {
-                    messagingChannel.ack(msg); // Always acknowledge the message
+
+                console.log(`Processing message with eventType: ${eventType}`);
+
+                // Process the message
+                if (eventType === 'new-review' || eventType === 'reminder') {
+                    await handleSendEmailToReviewer(rawContent);
+                } else {
+                    await handleSendEmailToReviewee(rawContent);
                 }
+
+                // Acknowledge the message
+                message.ack();
+                console.log('✅ Message processed and acknowledged');
+
+            } catch (err: any) {
+                console.error(`❌ Error processing Pub/Sub message:`, err);
+                // NACK the message so it can be retried
+                message.nack();
             }
+        };
+
+        // Start listening for messages
+        subscription.on('message', messageHandler);
+        subscription.on('error', (error: any) => {
+            console.error('❌ Pub/Sub subscription error:', error);
+        });
+
+        console.log('✅ Pub/Sub consumer started - actively listening for messages');
+
+        // Cleanup on server shutdown
+        server.ext('onPostStop', async () => {
+            console.log('🔌 Stopping Pub/Sub message listener...');
+            subscription.removeAllListeners();
         });
     },
 };
 
-export default sendReviewMessagePlugin;
+export default pubsubConsumerPlugin;

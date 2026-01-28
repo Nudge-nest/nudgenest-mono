@@ -1,10 +1,10 @@
-import { FC } from 'react';
+import { FC, memo } from 'react';
 import { ReviewItemProps } from '../../types/review.ts';
 import { calculateReviewRating, sanitizeReviewText } from '../../utils/reviewsListing.ts';
 import { IconPhoto, IconShieldCheckFilled } from '@tabler/icons-react';
 import StarRating from './StarRating.tsx';
 
-const ReviewItem: FC<ReviewItemProps> = ({ review, onMediaClick }) => {
+const ReviewItem: FC<ReviewItemProps> = memo(({ review, onMediaClick }) => {
     const result = review.result || [];
     const nonNumericalResults = result.filter((res) => !res.value);
     const rating = calculateReviewRating(review);
@@ -111,6 +111,8 @@ const ReviewItem: FC<ReviewItemProps> = ({ review, onMediaClick }) => {
             </div>
         </article>
     );
-};
+});
+
+ReviewItem.displayName = 'ReviewItem';
 
 export default ReviewItem;

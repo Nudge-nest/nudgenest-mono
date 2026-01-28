@@ -4,7 +4,7 @@ import * as gcp from "@pulumi/gcp";
 const config = new pulumi.Config();
 
 const secrets = {
-    RABBITMQ_URL_AWS: config.get("BACKEND_RABBITMQ_URL_AWS"),
+    // RABBITMQ_URL_AWS: config.get("BACKEND_RABBITMQ_URL_AWS"), // Deprecated - migrated to Pub/Sub
     SENDGRID_API_KEY: config.get("BACKEND_SENDGRID_API_KEY"),
     DATABASE_URL: config.get("BACKEND_DATABASE_URL"),
     GOOGLE_APP_PASSWORD: config.get("BACKEND_GOOGLE_APP_PASSWORD"),
@@ -45,7 +45,75 @@ export const nudgenestSecrets = nudgenestSecretsArray.map((secret_)=>{
     return pulumi.interpolate`secret: ${secret_.name}`;
 });
 
-//Backend pipelines
+// ============================================
+// Google Cloud Pub/Sub Resources
+// ============================================
+
+// Use existing service account (pulumi-deploys)
+const existingServiceAccountEmail = "pulumi-deploys@nudgenest.iam.gserviceaccount.com";
+
+// Create Pub/Sub topic for messaging
+const messagingTopic = new gcp.pubsub.Topic("nudgenest-messaging", {
+    name: "nudgenest-messaging",
+    messageStoragePolicy: {
+        allowedPersistenceRegions: [config.get("region") || "europe-west1"],
+    },
+    labels: {
+        environment: "production",
+        service: "nudgenest-backend",
+        purpose: "email-notifications"
+    },
+});
+
+// Grant Pub/Sub Publisher role to existing service account
+const pubsubPublisherBinding = new gcp.projects.IAMMember("pubsub-publisher-role", {
+    project: "nudgenest",
+    role: "roles/pubsub.publisher",
+    member: `serviceAccount:${existingServiceAccountEmail}`,
+});
+
+// Grant Pub/Sub Subscriber role to existing service account
+const pubsubSubscriberBinding = new gcp.projects.IAMMember("pubsub-subscriber-role", {
+    project: "nudgenest",
+    role: "roles/pubsub.subscriber",
+    member: `serviceAccount:${existingServiceAccountEmail}`,
+});
+
+// Grant Pub/Sub Viewer role to existing service account (for monitoring)
+const pubsubViewerBinding = new gcp.projects.IAMMember("pubsub-viewer-role", {
+    project: "nudgenest",
+    role: "roles/pubsub.viewer",
+    member: `serviceAccount:${existingServiceAccountEmail}`,
+});
+
+// Create PULL subscription (used for both dev and production)
+const messagingSubscription = new gcp.pubsub.Subscription("nudgenest-messaging-pull", {
+    name: "nudgenest-messaging-pull",
+    topic: messagingTopic.name,
+    ackDeadlineSeconds: 60,
+    messageRetentionDuration: "604800s", // 7 days
+    retryPolicy: {
+        minimumBackoff: "10s",
+        maximumBackoff: "600s",
+    },
+    expirationPolicy: {
+        ttl: "", // Never expire
+    },
+    labels: {
+        environment: "all",
+        service: "nudgenest-backend",
+        type: "pull"
+    },
+}, { dependsOn: [messagingTopic] });
+
+// Export Pub/Sub resources
+export const pubsubTopicName = messagingTopic.name;
+export const pubsubTopicId = messagingTopic.id;
+export const pubsubSubscriptionName = messagingSubscription.name;
+export const pubsubServiceAccountEmail = existingServiceAccountEmail;
+
+// ============================================
+// Backend pipelines
 
 const repo = new gcp.artifactregistry.Repository('nudgenest-service', {
     location: config.get("region"),

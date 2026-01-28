@@ -59,8 +59,8 @@ class EmailService {
             port: 465,
             secure: true,
             auth: {
-                user: 'no-reply@nudge-nest.app',
-                pass: 'Nudgenest2025',
+                user: process.env.EMAIL_USER || 'no-reply@nudge-nest.app',
+                pass: process.env.EMAIL_PASSWORD!,
             },
             // Connection pool for better performance
             pool: true,
@@ -68,7 +68,7 @@ class EmailService {
             maxMessages: 100,
             // Retry logic
             tls: {
-                rejectUnauthorized: false, // Only for development
+                rejectUnauthorized: process.env.NODE_ENV === 'production',
                 /* ciphers: 'SSLv3'*/
             },
         });

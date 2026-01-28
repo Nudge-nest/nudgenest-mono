@@ -107,8 +107,6 @@ export const useReviewForm = (initialData: IReview): UseReviewFormReturn => {
         return hasValidRatings && hasValidComment && hasRatings;
     }, [ratings, comment]);
 
-    console.log('Extracted data', ratings, media, comment);
-
     // Reset form when initial review changes
     useEffect(() => {
         const newRatings = Object.entries(extractedData.ratings).map(([id, value]) => ({ id, value }));
@@ -221,8 +219,6 @@ export const useReviewForm = (initialData: IReview): UseReviewFormReturn => {
         } catch (error: any) {
             setError(error.message || 'Failed to submit review');
             console.error('Submit review error:', error);
-        } finally {
-            setIsSubmitting(false);
         }
     }, [isValid, initialData, ratings, media, comment, updateReview]);
 

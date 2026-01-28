@@ -6,7 +6,7 @@ const ErrorComponent: React.FC<{ message?: string; statusCode?: string; Icon?: a
     Icon,
 }) => {
     return (
-        <div className="flex flex-col gap-2 items-center">
+        <div className="flex flex-col gap-2 items-center" data-testid="error-component">
             {Icon ? <Icon /> : <IconBugFilled size={70} fill="#ef4444" />}
             <p className={`text-[color:var(--color-text)]`}>{statusCode ? statusCode : null}</p>
             <p className={`text-[color:var(--color-text)]`}>{message ? message : 'Unknown error occured'}</p>

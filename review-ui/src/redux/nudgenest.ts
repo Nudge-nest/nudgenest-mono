@@ -4,9 +4,16 @@ import { IReviewConfiguration } from '../types/reviewConfigs.ts';
 
 export const nudgeNestApi = createApi({
     reducerPath: 'nudgeNestApi',
-    tagTypes: ['review', 'media', 'config'],
+    tagTypes: ['review', 'media', 'config', 'billing'],
     baseQuery: fetchBaseQuery({
         baseUrl: import.meta.env.VITE_APP_BACKEND_HOST_LOCAL,
+        prepareHeaders: (headers) => {
+            const apiKey = localStorage.getItem('apiKey');
+            if (apiKey) {
+                headers.set('x-api-key', apiKey);
+            }
+            return headers;
+        },
     }),
     endpoints: (builder) => {
         return {
@@ -69,6 +76,58 @@ export const nudgeNestApi = createApi({
                 transformResponse: (response: { data: any }) => response.data,
                 invalidatesTags: ['config'],
             }),
+            // Billing endpoints
+            getPlans: builder.query({
+                query: () => ({
+                    url: 'api/v1/plans',
+                    method: 'GET',
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                providesTags: ['billing'],
+            }),
+            getSubscription: builder.query({
+                query: () => ({
+                    url: 'api/v1/billing/subscription',
+                    method: 'GET',
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                providesTags: ['billing'],
+            }),
+            createSubscription: builder.mutation({
+                query: (data: { planId: string; trialDays?: number }) => ({
+                    url: 'api/v1/billing/subscription',
+                    method: 'POST',
+                    body: data,
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                invalidatesTags: ['billing'],
+            }),
+            changeSubscription: builder.mutation({
+                query: (data: { planId: string }) => ({
+                    url: 'api/v1/billing/subscription',
+                    method: 'PUT',
+                    body: data,
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                invalidatesTags: ['billing'],
+            }),
+            cancelSubscription: builder.mutation({
+                query: (immediate: boolean = false) => ({
+                    url: `api/v1/billing/subscription?immediate=${immediate}`,
+                    method: 'DELETE',
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                invalidatesTags: ['billing'],
+            }),
+            getUsageStats: builder.query({
+                query: (params?: { periodStart?: string; periodEnd?: string }) => ({
+                    url: 'api/v1/billing/usage',
+                    method: 'GET',
+                    params,
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                providesTags: ['billing'],
+            }),
         };
     },
 });
@@ -81,6 +140,12 @@ export const {
     useDeleteReviewMediaMutation,
     useGetReviewConfigsQuery,
     useUpdateReviewConfigsMutation,
+    useGetPlansQuery,
+    useGetSubscriptionQuery,
+    useCreateSubscriptionMutation,
+    useChangeSubscriptionMutation,
+    useCancelSubscriptionMutation,
+    useGetUsageStatsQuery,
 } = nudgeNestApi;
 
 export const { endpoints, reducerPath, reducer, middleware } = nudgeNestApi;

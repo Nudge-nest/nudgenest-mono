@@ -12,4 +12,12 @@ export default defineConfig({
             include: '**/*.svg',
         }),
     ],
+    server: {
+        port: 3002,
+        strictPort: true,
+    },
+    preview: {
+        port: 3002,
+        strictPort: true,
+    },
 });

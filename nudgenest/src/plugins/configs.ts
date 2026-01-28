@@ -22,7 +22,7 @@ const reviewConfigsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/config',
                 handler: createReviewConfigsHandler,
                 options: {
-                    auth: false,
+                    auth: 'apikey',
                 },
             },
             {
@@ -30,7 +30,7 @@ const reviewConfigsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/config/{merchantId}',
                 handler: getReviewConfigsHandler,
                 options: {
-                    auth: false,
+                    auth: 'apikey',
                 },
             },
             {
@@ -38,7 +38,7 @@ const reviewConfigsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/config/{merchantId}',
                 handler: updateReviewConfigsHandler,
                 options: {
-                    auth: false,
+                    auth: 'apikey',
                 },
             },
         ]);

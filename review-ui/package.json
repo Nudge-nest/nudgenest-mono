@@ -15,7 +15,6 @@
     "test:integration": "npx playwright test"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.940.0",
     "@reduxjs/toolkit": "^2.11.0",
     "@tabler/icons-react": "^3.35.0",
     "@tailwindcss/vite": "^4.1.17",

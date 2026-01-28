@@ -57,7 +57,7 @@ const ReviewConfigsPage = () => {
                 tabs={_Tabs}
                 variant="minimal"
                 size="sm"
-                onTabChange={(id) => console.log('Tab changed:', id)}
+                onTabChange={() => {}}
                 defaultTab="review"
             />
         </div>

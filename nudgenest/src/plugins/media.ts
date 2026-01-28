@@ -37,7 +37,7 @@ const reviewMediaPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/media',
                 handler: uploadMediaToS3Handler,
                 options: {
-                    auth: false,
+                    auth: 'apikey',
                     payload: {
                         output: 'stream', // Important: This gives us parsed file objects
                         parse: false,
@@ -54,7 +54,7 @@ const reviewMediaPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/media/{mediaUrl}',
                 handler: deleteMediaFromS3Handler,
                 options: {
-                    auth: false,
+                    auth: 'apikey',
                 },
             },
         ]);

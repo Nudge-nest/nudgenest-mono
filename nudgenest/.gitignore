@@ -37,3 +37,14 @@ generated/
 pnpm-lock.yaml
 pnpm-workspace.yaml
 
+# Google Cloud service account keys (NEVER COMMIT THESE!)
+*-key.json
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!sampleJson/*.json
+
+# Old RabbitMQ backup files
+*.old
+

@@ -1,0 +1,64 @@
+# Root level monorepo ignores
+
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Secrets and keys - CRITICAL
+*.key
+*.pem
+*.csr
+*service-account*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Shopify app configuration (contains client_id secret)
+nudgenest-shpfy-app/shopify.app.toml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Pulumi
+**/Pulumi.*.yaml
+!**/Pulumi.dev.yaml.example
+
+# Claude
+.claude/

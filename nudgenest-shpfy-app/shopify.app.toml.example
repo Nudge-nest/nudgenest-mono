@@ -1,0 +1,40 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "YOUR_SHOPIFY_API_KEY_HERE"
+application_url = "https://your-cloudflare-tunnel.trycloudflare.com"
+embedded = true
+name = "nudgenest-shpfy-app"
+handle = "nudgenest-shpfy-app"
+
+[webhooks]
+api_version = "2024-10"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/create" ]
+  uri = "https://nudgenest-backend-1094805904049.europe-west1.run.app/api/v1/shopify-webhook"
+
+  [[webhooks.subscriptions]]
+  topics = [ "draft_orders/create" ]
+  uri = "https://nudgenest-backend-1094805904049.europe-west1.run.app/api/v1/shopify-webhook"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products, read_orders, read_draft_orders"
+
+[auth]
+redirect_urls = [
+  "https://your-cloudflare-tunnel.trycloudflare.com/auth/callback",
+  "https://your-cloudflare-tunnel.trycloudflare.com/auth/shopify/callback",
+  "https://your-cloudflare-tunnel.trycloudflare.com/api/auth/callback"
+]
+
+[pos]
+embedded = false
+
+[build]
+dev_store_url = "your-store.myshopify.com"
+automatically_update_urls_on_dev = true
