@@ -1,0 +1,109 @@
+<!-- blocks/business_reviews.liquid -->
+{%- liquid
+  assign heading = block.settings.heading | default: 'What Our Customers are saying'
+  assign reviews_limit = block.settings.reviews_limit | default: 10
+  assign show_loading = true
+-%}
+
+<div class="business-reviews-container"
+     data-reviews-limit="{{ reviews_limit }}"
+     data-merchant-id="{{ shop.id }}">
+  <!-- Reviews Container -->
+  <div class="business-reviews__grid" id="reviewsGrid" >
+    <!-- Reviews will be populated here via JavaScript -->
+  </div>
+</div>
+
+<script>
+  {
+    (function() {
+      'use strict';
+      const container = document.querySelector('.business-reviews-container');
+      if (!container) return;
+
+      const gridEl = document.getElementById('reviewsGrid');
+
+      // Get configuration from data attributes
+      const reviewsLimit = container.dataset.reviewsLimit || 10;
+      const merchantId = container.dataset.merchantId;
+
+      // API Configuration - Update with your actual endpoint
+      const API_BASE_URL = 'https://nudgenest-backend-1094805904049.europe-west1.run.app/api/v1/';
+
+
+      async function loadReviews() {
+        console.log('Container dataset',container.dataset, merchantId);
+        if (!gridEl) {
+          console.error('Media container not found for review form');
+          return;
+        }
+
+        // Clear any existing content
+        gridEl.innerHTML = '';
+
+        // Create iframe for the review form
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/reviews/${merchantId}`;
+        iframe.style.cssText = `
+          width: 1200px;
+          height: 600px;
+          border: none;
+          border-radius: 8px;
+          background: white;
+        `;
+        iframe.title = 'List Reviews';
+        iframe.allow = 'camera; microphone'; // Allow camera/mic for media uploads
+
+        gridEl.appendChild(iframe);
+
+        // Handle iframe communication (optional)
+        window.addEventListener('message', handleReviewFormMessage);
+
+      }
+      // Initialize on page load
+      loadReviews();
+    })()
+  }
+</script>
+
+<style>
+  :root {
+    --card-count: {{ reviews_limit }};
+  }
+  .business-reviews-container {
+    max-width: 1200px;
+    height: fit-content;
+    margin: 0 auto;
+    max-height: 1000px;
+  }
+
+  .business-reviews__grid {
+    padding: 0 1rem;
+    height: fit-content;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Business Reviews",
+  "target": "section",
+  "class": "business-reviews-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section Heading",
+      "default": "Customer Reviews"
+    },
+    {
+      "type": "range",
+      "id": "reviews_limit",
+      "label": "Number of reviews to display",
+      "min": 5,
+      "max": 50,
+      "step": 5,
+      "default": 10
+    }
+  ]
+}
+{% endschema %}

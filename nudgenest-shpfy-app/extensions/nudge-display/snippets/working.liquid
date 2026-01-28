@@ -1,0 +1,67 @@
+{% comment %}<div class="business-reviews__header" id="businessReviewsHeader" style="display: none;">
+  <div className="reviews-summary__wrapper" id="reviewsSummaryWrapper">
+  </div>
+  <div className="reviews-summary__wrapper" id="reviewsSummarySort">
+    <button class="new-review-button" id="reviewsSummaryButton">Add Review</button>
+    <span class="">
+        <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-arrows-up-down"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 3l0 18" /><path d="M10 6l-3 -3l-3 3" /><path d="M20 18l-3 3l-3 -3" /><path d="M17 21l0 -18" /></svg>
+      </span>
+  </div>
+</div>{% endcomment %}
+
+.bar__container{
+  width: 100%;
+  height: 20px; /* Adjust height as needed */
+  background-color: #e0e0e0; /* Grey background */
+  margin: 8px 0;
+  overflow: hidden; /* Ensures rectangular edges stay sharp */
+}
+
+.rating-summary__bar{
+  height: 100%;
+  background-color: #ff8c00; /* Orange fill */
+  width: 0%; /* Will be set dynamically */
+  transition: width 0.3s ease; /* Smooth animation */
+  box-shadow: none;
+  border-radius: 0;
+}
+rating__distribution
+ratings__count
+
+
+// Generic media modal handler
+window.openMediaModal = function(mediaSrc, type = 'image') {
+let modal = document.getElementById('mediaModal');
+
+if (!modal) {
+modal = document.createElement('div');
+modal.id = 'mediaModal';
+modal.className = 'media-modal';
+modal.innerHTML = `
+<div class="media-modal__content">
+  <button class="media-modal__close" onclick="closeMediaModal()">&times;</button>
+  <div class="media-container" id="mediaContainer"></div>
+</div>
+`;
+document.body.appendChild(modal);
+
+modal.onclick = (e) => e.target === modal && closeMediaModal();
+document.addEventListener('keydown', (e) => e.key === 'Escape' && closeMediaModal());
+}
+
+const container = document.getElementById('mediaContainer');
+container.innerHTML = type === 'image'
+? `<img src="${mediaSrc}" alt="Enlarged media">`
+: `<iframe src="${mediaSrc}" frameborder="0" allowfullscreen></iframe>`;
+
+modal.style.display = 'flex';
+document.body.style.overflow = 'hidden';
+};
+
+window.closeMediaModal = function() {
+const modal = document.getElementById('mediaModal');
+if (modal) {
+modal.style.display = 'none';
+document.body.style.overflow = 'auto';
+}
+};
