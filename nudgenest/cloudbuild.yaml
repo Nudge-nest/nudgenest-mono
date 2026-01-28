@@ -1,0 +1,103 @@
+# [START cloudbuild_quickstart_build]
+steps:
+    # -------------------- Build docker image from dockerfile in the root of the repo ---------------------------------
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+          - build
+          - '--no-cache'
+          - '-t'
+          - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-backend-service/nudgenest-backend-service:$COMMIT_SHA'
+          - .
+          - '-f'
+          - Dockerfile
+      id: 'build'
+      secretEnv:
+          - 'RABBITMQ_URL_AWS'
+          - 'SENDGRID_API_KEY'
+          - 'DATABASE_URL'
+          - 'GOOGLE_APP_PASSWORD'
+          - 'APP_AWS_ACCESS_KEY'
+          - 'APP_AWS_SECRET_KEY'
+          - 'APP_AWS_REGION'
+          - 'APP_AWS_BUCKET_NAME'
+
+    # -------------------- Push to google repo ---------------------------------
+    - name: gcr.io/cloud-builders/docker
+      args:
+          - push
+          - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-backend-service/nudgenest-backend-service:$COMMIT_SHA'
+      id: 'push'
+
+    # -------------------- Deploy ---------------------------------
+    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+      args:
+          - run
+          - services
+          - update
+          - nudgenest-backend
+          - '--platform=managed'
+          - '--image=$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-backend-service/nudgenest-backend-service:$COMMIT_SHA'
+          - '--labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID,$_LABELS'
+          - '--region=$_DEPLOY_REGION'
+          - '--quiet'
+          - '--update-secrets'
+          - 'RABBITMQ_URL_AWS=projects/1094805904049/secrets/RABBITMQ_URL_AWS:latest'
+          - '--update-secrets'
+          - 'SENDGRID_API_KEY=projects/1094805904049/secrets/SENDGRID_API_KEY:latest'
+          - '--update-secrets'
+          - 'DATABASE_URL=projects/1094805904049/secrets/DATABASE_URL:latest'
+          - '--update-secrets'
+          - 'GOOGLE_APP_PASSWORD=projects/1094805904049/secrets/GOOGLE_APP_PASSWORD:latest'
+          - '--update-secrets'
+          - 'APP_AWS_ACCESS_KEY=projects/1094805904049/secrets/APP_AWS_ACCESS_KEY:latest'
+          - '--update-secrets'
+          - 'APP_AWS_SECRET_KEY=projects/1094805904049/secrets/APP_AWS_SECRET_KEY:latest'
+          - '--update-secrets'
+          - 'APP_AWS_REGION=projects/1094805904049/secrets/APP_AWS_REGION:latest'
+          - '--update-secrets'
+          - 'APP_AWS_BUCKET_NAME=projects/1094805904049/secrets/APP_AWS_BUCKET_NAME:latest'
+      id: Deploy
+      secretEnv:
+          - 'RABBITMQ_URL_AWS'
+          - 'SENDGRID_API_KEY'
+          - 'DATABASE_URL'
+          - 'GOOGLE_APP_PASSWORD'
+          - 'APP_AWS_ACCESS_KEY'
+          - 'APP_AWS_SECRET_KEY'
+          - 'APP_AWS_REGION'
+          - 'APP_AWS_BUCKET_NAME'
+      entrypoint: gcloud
+      waitFor: ['push']
+images:
+    - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-backend-service/nudgenest-backend-service:$COMMIT_SHA'
+options:
+    logging: CLOUD_LOGGING_ONLY
+    substitutionOption: ALLOW_LOOSE
+substitutions:
+    _DEPLOY_REGION: europe-west1
+    _GCR_HOSTNAME: eu.gcr.io
+    _PLATFORM: managed
+tags:
+    - gcp-cloud-build-deploy-cloud-run
+    - gcp-cloud-build-deploy-cloud-run-managed
+    - nudgenest-backend-service
+
+availableSecrets:
+    secretManager:
+        - versionName: 'projects/$PROJECT_ID/secrets/RABBITMQ_URL_AWS/versions/1'
+          env: 'RABBITMQ_URL_AWS'
+        - versionName: 'projects/$PROJECT_ID/secrets/SENDGRID_API_KEY/versions/1'
+          env: 'SENDGRID_API_KEY'
+        - versionName: 'projects/$PROJECT_ID/secrets/DATABASE_URL/versions/1'
+          env: 'DATABASE_URL'
+        - versionName: 'projects/$PROJECT_ID/secrets/GOOGLE_APP_PASSWORD/versions/1'
+          env: 'GOOGLE_APP_PASSWORD'
+        - versionName: 'projects/$PROJECT_ID/secrets/APP_AWS_ACCESS_KEY/versions/1'
+          env: 'APP_AWS_ACCESS_KEY'
+        - versionName: 'projects/$PROJECT_ID/secrets/APP_AWS_SECRET_KEY/versions/1'
+          env: 'APP_AWS_SECRET_KEY'
+        - versionName: 'projects/$PROJECT_ID/secrets/APP_AWS_REGION/versions/1'
+          env: 'APP_AWS_REGION'
+        - versionName: 'projects/$PROJECT_ID/secrets/APP_AWS_BUCKET_NAME/versions/1'
+          env: 'APP_AWS_BUCKET_NAME'
+# [END cloudbuild_quickstart_build]

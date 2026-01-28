@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma/prisma/client"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Merchants {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  shopId         String           @unique
+  domains        String
+  currencyCode   String
+  email          String           @unique
+  name           String           @unique
+  businessInfo   String           @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  address        Address
+  Configurations Configurations[]
+  Reviews        Reviews[]
+
+  @@map("merchants")
+}
+
+model Reviews {
+  id                 String     @id @default(auto()) @map("_id") @db.ObjectId
+  merchantId         String     @db.ObjectId
+  merchantBusinessId String
+  shopId             String
+  customerEmail      String
+  customerPhone      String
+  customerName       String     @default("Verified Customer")
+  items              Json
+  result             Json?
+  verified           Boolean    @default(true)
+  replies            Json?
+  status             String     @default("Pending")
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  Merchants          Merchants? @relation(fields: [merchantId], references: [id])
+
+  @@map("reviews")
+}
+
+model Configurations {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  merchantId String @db.ObjectId
+
+  emailContent         ConfigField[]
+  reminderEmailContent ConfigField[]
+  remindersFrequency   ConfigField[]
+  publish              ConfigField[]
+  qrCode               ConfigField[]
+  general              GeneralConfigs
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Merchants Merchants? @relation(fields: [merchantId], references: [id])
+
+  @@index([merchantId])
+  @@map("configs")
+}
+
+type GeneralConfigs {
+  shopReviewQuestions ConfigField[]
+}
+
+type ConfigField {
+  key         String
+  value       String
+  description String
+  type        FieldType
+}
+
+enum FieldType {
+  text
+  number
+  select
+  url
+  image
+  boolean
+  json
+}
+
+type Address {
+  address1  String
+  address2  String
+  city      String
+  country   String
+  formatted Json
+  zip       String
+}
+
+type Business {
+  businessId       String
+  address          Address[]
+  billingAddress   Address[]
+  plan             String
+  shopDescription  String
+  addressIsBilling Boolean
+  contactEmail     String
+}
+
+enum REMINDERPERIOD {
+  BIWEEKLY
+  WEEKLY
+  BIMONTHLY
+  MONTHLY
+}
+
+type PublishSettings {
+  autoPublish AUTOPUBLISH
+}
+
+enum AUTOPUBLISH {
+  THREESTARS
+  FOURSTARS
+  FIVESTARS
+}
+
+enum REVIEWTIMING {
+  PURCHASE
+  FULFILMENT
+  DELIVERY
+}
