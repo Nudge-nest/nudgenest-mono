@@ -231,13 +231,13 @@ const createVerificationEmailMessaging = (
 };
 
 const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
-    const merchantData = request.payload;
+    const merchantData = request.payload as any;
     const { prisma, pubsub } = request.server.app;
     const { messagingTopic } = pubsub;
     try {
         const apiKey = crypto.randomBytes(32).toString('hex');
         const merchant = await prisma.merchants.create({
-            data: { ...merchantData, apiKey } as any,
+            data: { ...(merchantData || {}), apiKey } as any,
         });
         const reviewConfigs = await prisma.configurations.create({
             data: { ...defaultConfigs, merchantId: merchant.id } as any,

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import { init } from '../../server.js';
+import { createServer } from '../../server-factory';
 import type { Server } from '@hapi/hapi';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../../generated/prisma/prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -10,23 +10,34 @@ describe('Auth Plugin', () => {
     let testApiKey: string;
 
     beforeAll(async () => {
-        server = await init();
+        server = await createServer();
+        await server.initialize();
 
-        const merchant = await prisma.merchant.create({
+        const merchant = await prisma.merchants.create({
             data: {
                 shopId: `test-auth-${Date.now()}`,
-                shopName: 'Test Auth Shop',
+                domains: 'test-auth-shop.example.com',
+                currencyCode: 'USD',
+                name: 'Test Auth Shop',
+                businessInfo: 'Test Auth Business',
                 email: `test-auth-${Date.now()}@example.com`,
-                accessToken: 'test-token',
+                address: {
+                    address1: '123 Test St',
+                    address2: '',
+                    city: 'Test City',
+                    country: 'US',
+                    zip: '12345',
+                    formatted: [],
+                },
                 apiKey: `test-auth-key-${Date.now()}`,
             },
         });
-        testApiKey = merchant.apiKey;
+        testApiKey = merchant.apiKey!;
     });
 
     afterAll(async () => {
-        await prisma.merchant.deleteMany({
-            where: { shopName: { contains: 'Test Auth Shop' } },
+        await prisma.merchants.deleteMany({
+            where: { name: { contains: 'Test Auth Shop' } },
         });
         await server.stop();
     });

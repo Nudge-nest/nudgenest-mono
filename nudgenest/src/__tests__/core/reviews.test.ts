@@ -3,7 +3,7 @@ import { IReview } from '../../types';
 
 export async function createReview(review: IReview, ctx: Context) {
     return ctx.prisma.reviews.create({
-        data: review,
+        data: review as any,
     });
 }
 
@@ -21,13 +21,15 @@ export async function getReviewByReviewId(reviewId: string, ctx: Context): Promi
             verified: true,
             replies: true,
             customerName: true,
+            customerEmail: true,
+            customerPhone: true,
             items: true,
             status: true,
             result: true,
             createdAt: true,
             updatedAt: true,
         },
-    });
+    }) as any;
 }
 
 export async function updateReviewByReviewId(
@@ -39,8 +41,8 @@ export async function updateReviewByReviewId(
         where: {
             id: reviewId as string,
         },
-        data: { ...reviewUpdate },
-    });
+        data: { ...reviewUpdate } as any,
+    }) as any;
 }
 
 export async function listReviewsByMerchantId(query: { shopId: string }, ctx: Context): Promise<IReview> {
@@ -57,13 +59,15 @@ export async function listReviewsByMerchantId(query: { shopId: string }, ctx: Co
             verified: true,
             replies: true,
             customerName: true,
+            customerEmail: true,
+            customerPhone: true,
             items: true,
             status: true,
             result: true,
             createdAt: true,
             updatedAt: true,
         },
-    });
+    }) as any;
 }
 
 const createTestReviewData = (status: 'Pending' | 'Completed' | 'Failed'): IReview => {
@@ -76,6 +80,8 @@ const createTestReviewData = (status: 'Pending' | 'Completed' | 'Failed'): IRevi
         result: [],
         shopId: 'TESTSH0P1D',
         customerName: 'test Customer',
+        customerEmail: 'test@example.com',
+        customerPhone: '+1234567890',
         merchantBusinessId: 'test biz info',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -86,7 +92,7 @@ describe('Reviews Unit Tests', () => {
     let mockCtx: MockContext;
     let ctx: Context;
     let reviewData = createTestReviewData('Pending');
-    let expectedReviewData = { ...reviewData, id: '507f1f77bcf86cd799439011' };
+    let expectedReviewData = { ...reviewData, id: '507f1f77bcf86cd799439011' } as any;
     beforeEach(() => {
         mockCtx = createMockContext();
         ctx = mockCtx as unknown as Context;
@@ -119,6 +125,8 @@ describe('Reviews Unit Tests', () => {
                 verified: true,
                 replies: true,
                 customerName: true,
+                customerEmail: true,
+                customerPhone: true,
                 items: true,
                 status: true,
                 result: true,
@@ -131,14 +139,14 @@ describe('Reviews Unit Tests', () => {
 
     test('should update review given reviewId and correct update data', async () => {
         const reviewId = '507f1f77bcf86cd799439011';
-        mockCtx.prisma.reviews.update.mockResolvedValue([expectedReviewData]);
+        mockCtx.prisma.reviews.update.mockResolvedValue(expectedReviewData as any);
         expectedReviewData.customerName = 'Updated Customer Name';
         const result = await updateReviewByReviewId(
             reviewId,
             { ...reviewData, id: reviewId, customerName: 'Updated Customer Name' },
             ctx
         );
-        expect(result).toEqual([expectedReviewData]);
+        expect(result).toEqual(expectedReviewData);
         expect(mockCtx.prisma.reviews.update).toHaveBeenCalledWith({
             where: {
                 id: reviewId as string,

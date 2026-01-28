@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import { init } from '../../server.js';
+import { createServer } from '../../server-factory';
 import type { Server } from '@hapi/hapi';
 
 describe('Billing Plugin', () => {
     let server: Server;
 
     beforeAll(async () => {
-        server = await init();
+        server = await createServer();
+        await server.initialize();
     });
 
     afterAll(async () => {

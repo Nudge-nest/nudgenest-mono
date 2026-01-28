@@ -9,6 +9,7 @@ export const testMerchant = {
     email: 'tester@test.com',
     name: 'test merchant',
     businessInfo: 'test biz info',
+    apiKey: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     address: {
@@ -23,7 +24,7 @@ export const testMerchant = {
 
 export async function createMerchant(merchant: IMerchant, ctx: Context) {
     return ctx.prisma.merchants.create({
-        data: merchant,
+        data: merchant as any,
     });
 }
 
@@ -42,10 +43,13 @@ export async function verifyMerchant(merchantPlatformId: string, ctx: Context): 
             email: true,
             name: true,
             businessInfo: true,
+            currencyCode: true,
+            address: true,
+            apiKey: true,
             createdAt: true,
             updatedAt: true,
         },
-    });
+    }) as any;
 }
 
 const createTestMerchantData = (): IMerchant => {
@@ -56,7 +60,7 @@ describe('Merchants Unit Tests', () => {
     let mockCtx: MockContext;
     let ctx: Context;
     const merchantData = createTestMerchantData();
-    const expectedMerchantData = { ...merchantData, id: '507f1f77bcf86cd799439011' };
+    const expectedMerchantData = { ...merchantData, id: '507f1f77bcf86cd799439011' } as any;
     beforeEach(() => {
         mockCtx = createMockContext();
         ctx = mockCtx as unknown as Context;
@@ -90,6 +94,9 @@ describe('Merchants Unit Tests', () => {
                 email: true,
                 name: true,
                 businessInfo: true,
+                currencyCode: true,
+                address: true,
+                apiKey: true,
                 createdAt: true,
                 updatedAt: true,
             },
