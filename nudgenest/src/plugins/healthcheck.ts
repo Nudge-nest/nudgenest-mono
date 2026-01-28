@@ -11,8 +11,6 @@ const healthPlugin: Hapi.Plugin<undefined> = {
     name: 'healthcheck',
     dependencies: ['prisma'],
     register: async (server: Hapi.Server) => {
-        const prisma: PrismaClient = server.app.prisma;
-
         // Basic health check
         server.route({
             method: 'GET',
@@ -28,14 +26,22 @@ const healthPlugin: Hapi.Plugin<undefined> = {
                     },
                 };
 
-                // Database check
+                // Database check (MongoDB doesn't support $queryRaw, use findMany)
                 try {
-                    await prisma.$queryRaw`SELECT 1`;
+                    const prisma: PrismaClient = request.server.app.prisma;
+                    if (!prisma) {
+                        throw new Error('Prisma client not initialized');
+                    }
+                    await prisma.merchants.findFirst();
                     checks.checks.database = 'healthy';
                 } catch (error: any) {
                     checks.checks.database = 'unhealthy';
                     checks.status = 'DEGRADED';
-                    request.logger.error({ error }, 'Database health check failed');
+                    request.logger.error({
+                        errorMessage: error?.message || 'Unknown error',
+                        errorName: error?.name,
+                        errorStack: error?.stack
+                    }, 'Database health check failed');
                 }
 
                 checks.responseTime = `${Date.now() - startTime}ms`;
@@ -54,10 +60,14 @@ const healthPlugin: Hapi.Plugin<undefined> = {
             path: '/ready',
             handler: async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
                 try {
-                    await prisma.$queryRaw`SELECT 1`;
+                    const prisma: PrismaClient = request.server.app.prisma;
+                    if (!prisma) {
+                        throw new Error('Prisma client not initialized');
+                    }
+                    await prisma.merchants.findFirst();
                     return h.response({ ready: true }).code(200);
                 } catch (error: any) {
-                    request.logger.error({ error }, 'Readiness check failed');
+                    request.logger.error({ error: error.message }, 'Readiness check failed');
                     return h.response({ ready: false, error: 'Database not accessible' }).code(503);
                 }
             },
