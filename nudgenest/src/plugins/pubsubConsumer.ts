@@ -107,12 +107,12 @@ const handleSendEmailToReviewer = async (messagingContent: IRabbitDataObject<IRe
     await sendEmailMessageToReviewer(payload.content, eventType);
 
     // Track usage
-    if (merchantId) {
+    /*if (merchantId) {
         await trackEmailUsage(merchantId, 1);
         if (eventType === 'new-review') {
             await trackReviewRequestUsage(merchantId, 1);
         }
-    }
+    }*/
 };
 
 const handleSendEmailToReviewee = async (messagingContent: IRabbitDataObject<IReviewMessagePayloadContent>) => {
@@ -123,9 +123,9 @@ const handleSendEmailToReviewee = async (messagingContent: IRabbitDataObject<IRe
     await sendEmailMessageToMerchant(payload.content, eventType);
 
     // Track usage for merchant emails
-    if (merchantId) {
+    /*if (merchantId) {
         await trackEmailUsage(merchantId, 1);
-    }
+    }*/
 };
 
 const pubsubConsumerPlugin: Hapi.Plugin<null> = {

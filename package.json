@@ -11,6 +11,7 @@
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
     "backend:dev": "cd nudgenest && pnpm dev",
+    "backend:dev1": "cd nudgenest && pnpm dev && ngrok http 50001",
     "frontend:dev": "cd review-ui && pnpm dev",
     "shopify:dev": "cd nudgenest-shpfy-app && pnpm dev",
     "landing:dev": "cd nudge-nest-landing && pnpm dev",

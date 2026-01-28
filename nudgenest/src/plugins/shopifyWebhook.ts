@@ -33,6 +33,10 @@ const shopifyWebhookPlugin: Hapi.Plugin<null> = {
                 handler: webhookMessageHandler,
                 options: {
                     auth: false,
+                    payload: {
+                        parse: true,
+                        allow: 'application/json',
+                    },
                 },
             },
         ]);
@@ -44,28 +48,45 @@ const verifyShopifyHMAC = (rawBody: string, hmacHeader: string, secret: string):
         const hash = crypto.createHmac('sha256', secret).update(rawBody, 'utf8').digest('base64');
         const hashBuffer = Buffer.from(hash);
         const hmacBuffer = Buffer.from(hmacHeader);
-        if (hashBuffer.length !== hmacBuffer.length) return false;
-        return crypto.timingSafeEqual(hashBuffer, hmacBuffer);
-    } catch {
+
+        if (hashBuffer.length !== hmacBuffer.length) {
+            console.log('HMAC verification failed: length mismatch');
+            return false;
+        }
+
+        const isValid = crypto.timingSafeEqual(hashBuffer, hmacBuffer);
+        if (!isValid) {
+            console.log('HMAC verification failed: hash mismatch');
+        }
+        return isValid;
+    } catch (error) {
+        console.error('HMAC verification error:', error);
         return false;
     }
 };
 
 const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
-    console.log("Shopify webhook called", request.payload)
+    request.logger.info({ headers: request.headers }, 'Shopify webhook received');
 
     // HMAC verification
     const hmacHeader = request.headers['x-shopify-hmac-sha256'];
     const shopifySecret = process.env.SHOPIFY_API_SECRET || '';
 
     if (!hmacHeader || !shopifySecret) {
+        request.logger.warn('Missing HMAC header or Shopify secret');
         return h.response({ error: 'Unauthorized' }).code(401);
     }
 
+    // Shopify sends the webhook with the raw JSON body, so we need to re-serialize it
+    // in the exact same way to verify the HMAC
     const rawBody = JSON.stringify(request.payload);
+
     if (!verifyShopifyHMAC(rawBody, hmacHeader as string, shopifySecret)) {
+        request.logger.warn('HMAC verification failed');
         return h.response({ error: 'Invalid HMAC' }).code(403);
     }
+
+    request.logger.info('HMAC verification successful');
 
     const { pubsub, prisma } = request.server.app;
     const { messagingTopic, client } = pubsub;
