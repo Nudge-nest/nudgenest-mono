@@ -1,0 +1,108 @@
+import { FC } from 'react';
+import { SortOption, SortOptionsProps } from '../../types/review.ts';
+import Dropdown from './Dropdown.tsx';
+import { IconArrowsUpDown } from '@tabler/icons-react';
+
+const SortOptions: FC<SortOptionsProps> = ({ currentSort, onSortChange, onAddReview }) => {
+    const sortOptions: SortOption[] = [
+        { value: 'newest', label: 'Newest First' },
+        { value: 'oldest', label: 'Oldest First' },
+        { value: 'highest', label: 'Highest Rated' },
+        { value: 'lowest', label: 'Lowest Rated' },
+        { value: 'most_helpful', label: 'Most Helpful' },
+    ];
+
+    const currentSortLabel = sortOptions.find((opt) => opt.value === currentSort)?.label || 'Newest First';
+
+    return (
+        <nav
+            className="flex items-center gap-4 px-4"
+            aria-label="Review controls"
+            data-testid="sort-options"
+        >
+            <button
+                onClick={onAddReview}
+                className="px-4 py-2 border border-[color:var(--color-border)] hover:bg-[color:var(--color-main)]
+                hover:text-[color:var(--color-white)] transition-colors"
+                aria-label="Add a new review"
+                data-testid="add-review-button"
+                type="button"
+            >
+                Add Review
+            </button>
+
+            <Dropdown
+                trigger={
+                    <button
+                        className="px-4 py-2 border border-[color:var(--color-border)] hover:bg-[color:var(--color-main)]
+                         hover:text-[color:var(--color-white)] transition-colors relative group"
+                        aria-label={`Sort reviews. Currently: ${currentSortLabel}`}
+                        data-testid="sort-trigger-button"
+                        type="button"
+                    >
+                        <IconArrowsUpDown size={24} aria-hidden="true" />
+                        <span
+                            className="absolute -top-8 right-0 bg-[color:var(--color-dark)] text-[color:var(--color-white)]
+                             text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                            role="tooltip"
+                            aria-hidden="true"
+                            data-testid="sort-tooltip"
+                        >
+                            Currently sorted by: {currentSortLabel}
+                        </span>
+                    </button>
+                }
+                position="right"
+                width="180px"
+            >
+                <ul
+                    className="py-1"
+                    role="menu"
+                    aria-label="Sort options"
+                    data-testid="sort-menu"
+                >
+                    {sortOptions.map((option) => (
+                        <li key={option.value} role="none">
+                            <button
+                                onClick={() => onSortChange(option.value)}
+                                className={`w-full text-left px-4 py-2 hover:bg-[color:var(--color-light)] 
+                                hover:text-[color:var(--color-text)] transition-colors 
+                                flex items-center justify-between
+                                ${currentSort === option.value ? 'bg-blue-50 font-semibold' : ''}`}
+                                role="menuitem"
+                                aria-current={currentSort === option.value ? 'true' : undefined}
+                                aria-label={`Sort by ${option.label}`}
+                                data-testid={`sort-option-${option.value}`}
+                                type="button"
+                            >
+                                <span>{option.label}</span>
+                                {currentSort === option.value && (
+                                    <span
+                                        className="text-[color:var(--color-main)]"
+                                        aria-label="Selected"
+                                        data-testid={`checkmark-${option.value}`}
+                                    >
+                                        ✓
+                                    </span>
+                                )}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </Dropdown>
+
+            {/* Screen reader announcement for sort changes */}
+            <div
+                className="sr-only"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                data-testid="sort-announcement"
+            >
+                Reviews sorted by {currentSortLabel}
+            </div>
+        </nav>
+    );
+};
+
+export default SortOptions;

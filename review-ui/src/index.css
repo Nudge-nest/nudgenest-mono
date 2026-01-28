@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+@import 'tailwindcss';
+
+@layer base {
+    @font-face {
+        font-family: 'Grotesk';
+        font-style: normal;
+        font-display: swap;
+        src: url(./assets/Host_Grotesk/HostGrotesk-VariableFont_wght.ttf) format('truetype');
+    }
+    @font-face {
+        font-family: 'Grotesk-it';
+        font-style: italic;
+        font-display: swap;
+        src: url(./assets/Host_Grotesk/HostGrotesk-Italic-VariableFont_wght.ttf) format('truetype');
+    }
+}
+
+:root {
+    --color-main: #e24861;
+    --color-main-light: #fff1f2;
+    --color-text: #0e1425;
+    --color-dark: #0e1425;
+    --color-gray: #677;
+    --color-bg: #ffffff;
+    --color-light: #acb4bd;
+    --color-lighter: #fcfcfc;
+    --color-white: #fff;
+    --color-yellow: #fcc800;
+    --color-border: #e0e3e6;
+    --color-disabled: #acb4bd;
+    --color-error: #ef4444;
+    --color-success: #00a63e;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    --font-size: 16px;
+}
+
+.dark {
+    --color-main: #e24861;
+    --color-text: #d6d1d1;
+    --color-dark: #0e1425;
+    --color-gray: #999;
+    --color-bg: #1f2124;
+    --color-lighter: #292a2c;
+    --color-white: #2e3235;
+    --color-border: #252629;
+    --color-disabled: #acb4bd;
+}
+
+body {
+    margin: 0;
+    /*display: flex;
+    place-items: center;*/
+    font-family: 'IBM Plex Sans', sans-serif;
+    /*min-width: 320px;*/
+    /*font-family: 'Grotesk', sans-serif;*/
+    min-height: 100vh;
+}
