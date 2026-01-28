@@ -16,6 +16,7 @@ const authPlugin: Hapi.Plugin<any> = {
                     const apiKey = request.headers['x-api-key'];
 
                     if (!apiKey) {
+                        request.logger.warn({ path: request.path }, 'Auth failed: Missing API key');
                         throw Boom.unauthorized('Missing API key');
                     }
 
@@ -25,9 +26,11 @@ const authPlugin: Hapi.Plugin<any> = {
                         });
 
                         if (!merchant) {
+                            request.logger.warn({ path: request.path }, 'Auth failed: Invalid API key');
                             throw Boom.unauthorized('Invalid API key');
                         }
 
+                        request.logger.debug({ merchantId: merchant.id, shopId: merchant.shopId }, 'Auth successful');
                         return h.authenticated({
                             credentials: {
                                 merchantId: merchant.id,
@@ -39,7 +42,7 @@ const authPlugin: Hapi.Plugin<any> = {
                         if (Boom.isBoom(error)) {
                             throw error;
                         }
-                        server.log(['error', 'auth'], error);
+                        request.logger.error({ error, path: request.path }, 'Auth error');
                         throw Boom.unauthorized('Invalid API key');
                     }
                 },

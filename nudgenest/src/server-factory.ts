@@ -2,6 +2,7 @@
 
 import Hapi from '@hapi/hapi';
 import * as dotenv from 'dotenv';
+import loggerPlugin from './plugins/logger';
 import pubsubPlugin from './plugins/googlePubSub';
 import shopifyWebhookPlugin from './plugins/shopifyWebhook';
 import pubsubConsumerPlugin from './plugins/pubsubConsumer';
@@ -31,6 +32,7 @@ export const createServer = async () => {
     });
     await server.register([
         require('@hapi/inert'),
+        loggerPlugin,
         healthcheck,
         prismaPlugin,
         authPlugin,

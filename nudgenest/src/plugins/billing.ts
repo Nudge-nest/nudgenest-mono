@@ -20,9 +20,11 @@ const billingPlugin: Hapi.Plugin<any> = {
                         metricType: 'API_CALL',
                         quantity: 1,
                     });
+                    request.logger.debug({ merchantId, metricType: 'API_CALL' }, 'API usage tracked');
                 } catch (error: any) {
-                    request.log(['warn', 'usage-tracking'], `API usage tracking failed: ${error.message}`);
+                    request.logger.warn({ merchantId, error: error.message }, 'API usage tracking failed');
                     if (error.message.includes('limit exceeded')) {
+                        request.logger.error({ merchantId }, 'API usage limit exceeded');
                         return h.response({ error: 'API usage limit exceeded' }).code(429).takeover();
                     }
                 }
@@ -38,9 +40,10 @@ const billingPlugin: Hapi.Plugin<any> = {
                 handler: async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
                     try {
                         const plans = await BillingService.getPlans();
+                        request.logger.info('Retrieved billing plans');
                         return h.response({ data: { plans } }).code(200);
                     } catch (error: any) {
-                        server.log(['error', 'billing'], error);
+                        request.logger.error({ error }, 'Failed to retrieve billing plans');
                         return h.response({ error: error.message }).code(500);
                     }
                 },
@@ -59,12 +62,14 @@ const billingPlugin: Hapi.Plugin<any> = {
                         const details = await BillingService.getSubscriptionDetails(merchantId);
 
                         if (!details) {
+                            request.logger.warn({ merchantId }, 'No active subscription found');
                             return h.response({ error: 'No active subscription found' }).code(404);
                         }
 
+                        request.logger.info({ merchantId, planTier: details.subscription.Plans.tier }, 'Retrieved subscription details');
                         return h.response({ data: details }).code(200);
                     } catch (error: any) {
-                        server.log(['error', 'billing'], error);
+                        request.logger.error({ merchantId: (request.auth.credentials as any)?.merchantId, error }, 'Failed to retrieve subscription details');
                         return h.response({ error: error.message }).code(500);
                     }
                 },
