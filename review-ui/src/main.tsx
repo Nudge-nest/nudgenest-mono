@@ -1,12 +1,13 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import './index.css';
 import App from './App.tsx';
 
 import { Provider } from 'react-redux';
 import { store } from './redux/store.ts';
 import { BrowserRouter } from 'react-router';
 import { ErrorBoundary } from 'react-error-boundary';
+
+import './index.css';
 
 function Fallback({ error }: { error: Error }) {
     // Call resetErrorBoundary() to reset the error boundary and retry the render.

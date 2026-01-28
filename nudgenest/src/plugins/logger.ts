@@ -15,8 +15,8 @@ const loggerPlugin: ServerRegisterPluginObject<any> = {
             ],
             remove: true,
         },
-        transport: process.env.NODE_ENV !== 'production' ? {
-            target: 'pino-pretty',
+        transport: process.env.NODE_ENV !== 'production' && process.env.LOG_PRETTY !== 'false' ? {
+            target: require.resolve('pino-pretty'),
             options: {
                 colorize: true,
                 translateTime: 'HH:MM:ss Z',
