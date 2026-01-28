@@ -1,0 +1,8 @@
+/bin/
+/node_modules/
+pnpm-workspace.yaml
+pnpm-lock.yaml
+nudgenest-2b463f80f10b.json
+rabbitmq-env.conf
+rabbitmq.conf
+/.idea

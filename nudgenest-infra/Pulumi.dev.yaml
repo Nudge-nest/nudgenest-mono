@@ -1,0 +1,24 @@
+config:
+  gcp:project: nudgenest
+  nudgenest-infra:region: europe-west1
+  nudgenest-infra:BACKEND_PORT: "50001"
+  nudgenest-infra:BACKEND_SENDGRID_API_KEY:
+    secure: AAABAAKafnYJgGZRLoBSE+jqDAmF0tUizdrIyzKS8n2DK60O3IVZhiJFLM2q7NPjb+yrB7fObeoPIONYYDogiFO25Qj74hQpw4uTE0XYRBmb5iHmQba4hGLR9wNrvmO4EcfN+H4=
+  nudgenest-infra:BACKEND_DATABASE_URL:
+    secure: AAABAHcCIioJ8SfnEyOni4Zxn6LqJe+CgEPGK3nHEqkNADMj9e7pzv6+HWafxpJLUe9EbYuP9SSBMghsc2GllCpV5hnCQtm8Y/uHPmYgZrkuCfsqKQxbG5hidVaUCPyUsw2mGFu/jQZv0jD8h7fi6BdCV3QQx2y7/KGyoJfY3W4uupxBa8N41hDq7l1Dly71mCZpfHWhyD8P4var
+  nudgenest-infra:BACKEND_GOOGLE_APP_PASSWORD:
+    secure: AAABAHc9PCp1iTdj6ISvzGGQboNWMvE2A/clzh28/3PU7xoA1DH5i/Xn2C9uVOjY
+  nudgenest-infra:VITE_APP_BACKEND_HOST: "https://nudgenest-backend-1094805904049.europe-west1.run.app/api/v1/"
+  nudgenest-infra:VITE_APP_AWS_ACCESS_KEY:
+    secure: AAABAGtq60Vlv9aRuncqUWKcTHTPg6Q8tCc0gLThvWqt9D2C+/0Vr9TlkF4XA5YcSjqDgQ==
+  nudgenest-infra:VITE_APP_AWS_SECRET_KEY:
+    secure: AAABAFvovcJh/UL+0EuRNoilfEkdcXzVaZXEjOceXrBxnXBHRLF7fS5ZbiG64LnHWYJwL+5yo3NBoP64SvlFeRZsnS8utuJq
+  nudgenest-infra:VITE_APP_AWS_REGION: eu-north-1
+  nudgenest-infra:VITE_APP_AWS_BUCKET_NAME: nudge-nest-media
+  nudgenest-infra:GITHUB_TOKEN:
+    secure: AAABAE+taWLppPafMW4vTqbC1vI9r+NgHlgKBCO6nTkFIai5tvlmqyYiocQsABCTl9XmZhI0NTNpWCsBqSksNJat00pKvgMe
+  nudgenest-infra:GITHUB_APP_INSTALLER_ID: "64983148"
+  nudgenest-infra:BACKEND_RABBITMQ_URL_AWS:
+    secure: AAABAKL9VxeWs63HkEsO/MR/E9htY3fWt+CInzGRc5Ejj5+NUIDxIL4Lbc69NOW6E6Aue7ScVwVI/asqS/FvgEpzkioq/IGcMKJfslPAtToJoSh+UOvt08HNA30a9gA1zV9D3Dg5/mnAhK56FFbcDfYiOyrfeUPr60hx5ZNXfOEO7yqRcvQizzAgvpPtxbqxhgA=
+  nudgenest-infra:GITHUB_URL: https://github.com/Nudge-nest/nudgenest.git
+  nudgenest-infra:FE_GITHUB_URL: https://github.com/Nudge-nest/review-ui.git

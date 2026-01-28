@@ -1,0 +1,49 @@
+version: '3.9'
+
+networks:
+  app-tier:
+    driver: bridge
+
+volumes:
+  nudgenestvol:
+    name: nudgenestvol
+
+services:
+  event-bus:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nudgenest-event-bus
+    volumes:
+      - nudgenestvol:/etc/rabbitmq-vol
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-tier
+
+  database:
+    image: postgres:15
+    volumes:
+      - nudgenestvol:/etc/postgres-vol
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: review_db
+    ports:
+      - "5432:5432"
+    networks:
+      - app-tier
+
+  object-storage:
+    image: minio/minio
+    volumes:
+      - nudgenestvol:/etc/minio-vol
+    command: server /data
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    networks:
+      - app-tier
