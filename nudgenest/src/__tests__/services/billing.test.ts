@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { BillingService } from '../../services/billing.js';
+import { BillingService } from '../../services/billing';
 import { PrismaClient } from '../../../generated/prisma/prisma/client';
 
 const prisma = new PrismaClient();
