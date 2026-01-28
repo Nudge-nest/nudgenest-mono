@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login/
+Disallow: /signup/
+Disallow: /checkout/
+Disallow: /settings/
+Allow: /
+
+# Sitemap URL
+Sitemap: https://www.nudge-nest.app/sitemap.xml

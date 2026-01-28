@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    @font-face {
+        font-family: 'Grotesk';
+        font-style: normal;
+        font-display: swap;
+        src: url(./assets/Host_Grotesk/HostGrotesk-VariableFont_wght.ttf) format('truetype');
+    }
+    @font-face {
+        font-family: 'Grotesk-it';
+        font-style: italic;
+        font-display: swap;
+        src: url(./assets/Host_Grotesk/HostGrotesk-Italic-VariableFont_wght.ttf) format('truetype');
+    }
+}
+
+:root {
+    --color-main: #e24861;
+    --color-dark: #0e1425;
+    --color-text: #ededed;
+    --color-bg: #e5e7eb;
+    --color-white: #fff;
+    --color-green: #dcfce7;
+    --color-icons: #6c737f;
+    --color-icons-bg: #f3f4f6;
+    --color-icons-border: #e6e7e9;
+    --color-gradient: linear-gradient(90deg, #0e1425, #e24861);
+    font-weight: 400;
+    color-scheme: light dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    --font-size: 12px;
+}
+
+.dark {
+    --color-main: #ff758f;
+    --color-dark: #f3f4f6;
+    --color-text: #1f2124;
+    --color-bg: #1a1e2b;
+    --color-white: #2e3235;
+    --color-green: #3b8a4e;
+    --color-icons: #9aa0af;
+    --color-icons-bg: #1e222e;
+    --color-icons-border: #32373f;
+    --color-question-container: #f9fafb;
+    --color-gradient: linear-gradient(90deg, #965af8, #cc3928);
+}
+
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    height: 100dvh;
+    min-height: 100dvh;
+    font-size: var(--font-size);
+    font-family: 'Grotesk', sans-serif;
+}
