@@ -74,7 +74,7 @@ export const getMerchantWithBusinessInfo = async (prisma: any, businessInfoStrin
     });
 };
 
-export const createNewReview = async (prisma: any, reviewData: IDataFromShopifyPayload, merchantId: string) => {
+export const createNewReview = async (prisma: any, reviewData: IDataFromShopifyPayload, merchantId: string, merchantApiKey?: string | null) => {
     const { merchant_business_entity_id, customer, line_items, order_status_url } = reviewData;
     if (!customer?.email) {
         throw new Error('Missing customer email');
@@ -90,6 +90,7 @@ export const createNewReview = async (prisma: any, reviewData: IDataFromShopifyP
                 customerEmail: customer.email,
                 customerName: `${customer.first_name} ${customer.last_name}`,
                 items: line_items,
+                merchantApiKey: merchantApiKey || undefined,
                 //merchantsId:
             },
         });

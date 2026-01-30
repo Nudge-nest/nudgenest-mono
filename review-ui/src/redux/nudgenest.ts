@@ -8,7 +8,7 @@ export const nudgeNestApi = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: import.meta.env.VITE_APP_BACKEND_HOST_LOCAL,
         prepareHeaders: (headers) => {
-            const apiKey = localStorage.getItem('apiKey');
+            const apiKey = localStorage.getItem('nn-apiKey');
             if (apiKey) {
                 headers.set('x-api-key', apiKey);
             }

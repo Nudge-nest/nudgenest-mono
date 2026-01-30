@@ -46,6 +46,7 @@ model Reviews {
   verified           Boolean    @default(true)
   replies            Json?
   status             String     @default("Pending")
+  merchantApiKey     String?
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   Merchants          Merchants? @relation(fields: [merchantId], references: [id])

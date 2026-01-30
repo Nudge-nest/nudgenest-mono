@@ -43,6 +43,10 @@ const getShopReview = (merchantConfigs: IReviewConfiguration[], merchantId: stri
         merchantId: merchantId,
         items: shopReviewItems,
         status: 'Pending',
+        customerName: '',
+        merchantBusinessId: '',
+        replies: [],
+        verified: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     };
@@ -72,6 +76,18 @@ export const ReviewProvider: FC<{ children: ReactNode }> = ({ children }) => {
         if (isLoading || isLoadingMerchantConfigs) return;
         if (merchantConfigs && !shopReview) setShopReview(getShopReview(merchantConfigs, merchantId) as IReview);
     }, [merchantConfigs, shopReview, merchantId]);
+
+    // Extract and store merchantApiKey from review data
+    useEffect(() => {
+        console.log('Review', review)
+        if (review?.merchantApiKey) {
+            // Only store if it doesn't exist to avoid overwriting
+            const existingKey = localStorage.getItem('nn-apiKey');
+            if (!existingKey) {
+                localStorage.setItem('nn-apiKey', review.merchantApiKey);
+            }
+        }
+    }, [review]);
 
     // Error state
     if (isError) return <ErrorComponent message="Nothing to see here!" />;

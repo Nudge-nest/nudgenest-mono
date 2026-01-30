@@ -25,7 +25,7 @@ const reviewsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/reviews/{reviewId}',
                 handler: getReviewById,
                 options: {
-                    auth: 'apikey',
+                    auth: false, // Allow unauthenticated access so customers can fetch their review
                 },
             },
             {
@@ -60,6 +60,7 @@ const getReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => 
                 // Explicitly select fields (excludes otpSecret)
                 id: true,
                 merchantId: true,
+                merchantApiKey: true,
                 shopId: true,
                 merchantBusinessId: true,
                 verified: true,
@@ -176,6 +177,7 @@ const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseTo
                 // Explicitly select fields (excludes otpSecret)
                 id: true,
                 merchantId: true,
+                merchantApiKey: true,
                 shopId: true,
                 merchantBusinessId: true,
                 verified: true,

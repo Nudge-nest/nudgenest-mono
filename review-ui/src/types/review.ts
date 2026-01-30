@@ -10,6 +10,7 @@ export interface IReview {
     merchantBusinessId: string;
     replies: any;
     verified: boolean;
+    merchantApiKey?: string;
 }
 
 export interface IReviewItem {
