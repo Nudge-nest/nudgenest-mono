@@ -1,5 +1,4 @@
 import React from "react";
-import { Plan } from "../../types/billing";
 
 export const PlanCard: React.FC<any> = ({ plan, onSelect }) => {
     return (

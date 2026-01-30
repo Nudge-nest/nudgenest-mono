@@ -78,7 +78,8 @@ test.describe('Customer Review Flow - Simple', () => {
 
         // Step 9: Verify success (thank you page)
         await expect(page.getByText('Gift Card')).toBeVisible();
-        await page.getByTestId('star-container').all((star)=>star.locator('svg').fill("#fcc800").toBeTruthy());
+        const stars = await page.getByTestId('star-container').all();
+        expect(stars.length).toBeGreaterThan(0);
     });
 
     // Test that review page shows error for invalid ID

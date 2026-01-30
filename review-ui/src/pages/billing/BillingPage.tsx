@@ -2,9 +2,8 @@ import React from "react";
 import { useGetSubscriptionQuery, useGetPlansQuery } from "../../redux/nudgenest";
 import { SubscriptionCard } from "../../components/billing/SubscriptionCard";
 import { PlanCard } from "../../components/billing/PlanCard";
-import { UsageChart } from "../../components/billing/UsageChart";
 
-export const BillingPage: React.FC = () => {
+const BillingPage: React.FC = () => {
     const { data: subscription, isLoading: subLoading } = useGetSubscriptionQuery({});
     const { data: plans, isLoading: plansLoading } = useGetPlansQuery({});
 
@@ -33,3 +32,5 @@ export const BillingPage: React.FC = () => {
         </div>
     );
 };
+
+export default BillingPage;
