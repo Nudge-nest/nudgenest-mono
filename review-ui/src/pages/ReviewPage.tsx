@@ -11,10 +11,10 @@ const ReviewPage = () => {
     const [items, setItems] = useState<IReviewItem[]>([]);
     const [result, setResult] = useState<IReviewResult[] | undefined>(undefined);
 
-    // Memoize slide sections for better performance
+    // Get slide count - recalculate when slider is loaded
     const slideCount = useMemo(() => {
-        return sliderHook.instanceRef.current?.track.details.slides.length || 0;
-    }, [sliderHook.instanceRef]);
+        return sliderHook.instanceRef.current?.track.details.slides.length || 3; // Default to 3 slides
+    }, [sliderHook.loaded]); // Depend on loaded state, not ref
 
     // Update state when review changes
     useEffect(() => {
@@ -30,12 +30,12 @@ const ReviewPage = () => {
             event.preventDefault();
             sliderHook.instanceRef.current?.moveToIdx(targetIndex);
         }
-    }, [sliderHook.instanceRef]);
+    }, []); // Refs don't need to be in dependencies
 
     // Navigate to specific slide
     const navigateToSlide = useCallback((idx: number) => {
         sliderHook.instanceRef.current?.moveToIdx(idx);
-    }, [sliderHook.instanceRef]);
+    }, []); // Refs don't need to be in dependencies
 
     // Get slide label for accessibility
     const getSlideLabel = useCallback((index: number): string => {
