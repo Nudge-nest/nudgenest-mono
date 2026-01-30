@@ -3,9 +3,12 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+# Enable Corepack and prepare pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Copy only the necessary files first (leverage Docker layer caching)
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Then copy the rest
 COPY . .
@@ -14,13 +17,16 @@ COPY . .
 RUN npx prisma generate
 
 # Build the project
-RUN yarn build
+RUN pnpm build
 
 
 # === Stage 2: Production ===
 FROM node:23-alpine
 
 WORKDIR /app
+
+# Enable Corepack and prepare pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Only copy what you need to run the app
 COPY --from=builder /app/build ./build
@@ -40,4 +46,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://0.0.0.0:8080/health || exit 1
 
 # Start the app
-CMD ["yarn", "start"]
+CMD ["pnpm", "start"]
