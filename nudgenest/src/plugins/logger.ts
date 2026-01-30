@@ -46,7 +46,7 @@ const loggerPlugin: ServerRegisterPluginObject<any> = {
             }),
         },
         logEvents: ['response', 'request-error'],
-        logPayload: process.env.NODE_ENV !== 'production',
+        logPayload: false, // Disabled to avoid logging large payloads/buffers
         logQueryParams: process.env.NODE_ENV !== 'production',
         logPathParams: true,
         customLogLevel: (req: any, res: any, err: any) => {
