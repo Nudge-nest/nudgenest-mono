@@ -1,9 +1,9 @@
-/*Handles all things related to AWS media*/
+/*Handles all things related to Google Cloud Storage media*/
 import Hapi from '@hapi/hapi';
 
 import * as dotenv from 'dotenv';
 import Busboy from 'busboy';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { Storage } from '@google-cloud/storage';
 import crypto from 'crypto';
 
 dotenv.config();
@@ -35,11 +35,11 @@ const reviewMediaPlugin: Hapi.Plugin<null> = {
             {
                 method: 'POST',
                 path: '/api/v1/media',
-                handler: uploadMediaToS3Handler,
+                handler: uploadMediaToGCSHandler,
                 options: {
                     auth: 'apikey',
                     payload: {
-                        output: 'stream', // Important: This gives us parsed file objects
+                        output: 'stream',
                         parse: false,
                         multipart: true,
                         allow: 'multipart/form-data',
@@ -52,7 +52,7 @@ const reviewMediaPlugin: Hapi.Plugin<null> = {
             {
                 method: 'DELETE',
                 path: '/api/v1/media/{mediaUrl}',
-                handler: deleteMediaFromS3Handler,
+                handler: deleteMediaFromGCSHandler,
                 options: {
                     auth: 'apikey',
                 },
@@ -61,7 +61,7 @@ const reviewMediaPlugin: Hapi.Plugin<null> = {
     },
 };
 
-const uploadMediaToS3Handler = async (request: Hapi.Request, h: Hapi.ResponseToolkit): Promise<Hapi.ResponseObject> => {
+const uploadMediaToGCSHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit): Promise<Hapi.ResponseObject> => {
     return new Promise((resolve) => {
         const files: Array<{ buffer: Buffer; filename: string; contentType: string }> = [];
         let reviewId = '';
@@ -97,13 +97,14 @@ const uploadMediaToS3Handler = async (request: Hapi.Request, h: Hapi.ResponseToo
         // Upload when done
         busboy.on('finish', async () => {
             try {
-                const s3Client = new S3Client({
-                    region: process.env.APP_AWS_REGION,
-                    credentials: {
-                        accessKeyId: process.env.APP_AWS_ACCESS_KEY!,
-                        secretAccessKey: process.env.APP_AWS_SECRET_KEY!,
-                    },
+                // Initialize GCS client
+                const storage = new Storage({
+                    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+                    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
                 });
+
+                const bucketName = process.env.GCS_BUCKET_NAME || 'nudgenest-media';
+                const bucket = storage.bucket(bucketName);
 
                 const uploadedFiles = [];
 
@@ -113,23 +114,28 @@ const uploadMediaToS3Handler = async (request: Hapi.Request, h: Hapi.ResponseToo
                     const randomId = crypto.randomBytes(4).toString('hex');
                     const fileName = `${merchantId}/${timestamp}_${randomId}_${i}.jpg`;
 
-                    await s3Client.send(
-                        new PutObjectCommand({
-                            Bucket: process.env.APP_AWS_BUCKET_NAME!,
-                            Key: fileName,
-                            Body: file.buffer,
-                            ContentType: file.contentType,
-                        })
-                    );
+                    // Upload to GCS
+                    const gcsFile = bucket.file(fileName);
+                    await gcsFile.save(file.buffer, {
+                        contentType: file.contentType,
+                        metadata: {
+                            cacheControl: 'public, max-age=31536000',
+                        },
+                    });
+
+                    // Generate public URL (bucket is already publicly readable via IAM)
+                    const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
 
                     uploadedFiles.push({
                         id: crypto.randomUUID(),
-                        url: `https://${process.env.APP_AWS_BUCKET_NAME}.s3.${process.env.APP_AWS_REGION}.amazonaws.com/${fileName}`,
+                        url: publicUrl,
                         filename: file.filename,
                         size: file.buffer.length,
                         type: file.contentType,
                     });
                 }
+
+                console.log(`✅ Uploaded ${uploadedFiles.length} files to GCS`);
 
                 resolve(
                     h
@@ -140,11 +146,12 @@ const uploadMediaToS3Handler = async (request: Hapi.Request, h: Hapi.ResponseToo
                         .code(200)
                 );
             } catch (error: any) {
+                console.error('❌ GCS upload failed:', error);
                 resolve(
                     h
                         .response({
                             version: '1.0.0',
-                            error: 'Upload failed',
+                            error: 'Upload failed: ' + error.message,
                         })
                         .code(500)
                 );
@@ -155,16 +162,15 @@ const uploadMediaToS3Handler = async (request: Hapi.Request, h: Hapi.ResponseToo
     });
 };
 
-const deleteMediaFromS3Handler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+const deleteMediaFromGCSHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const { mediaUrl } = request.payload as { mediaUrl: string };
     try {
-        // Extract S3 key from URL
-        // URL format: https://nudge-nest-media.s3.eu-north-1.amazonaws.com/2/1753094603049_33cf89fe_0.jpg
-        // Key should be: 2/1753094603049_33cf89fe_0.jpg
+        // Extract GCS object name from URL
+        // URL format: https://storage.googleapis.com/nudgenest-media/merchantId/timestamp_randomId_index.jpg
+        // Object name should be: merchantId/timestamp_randomId_index.jpg
 
-        const bucketName = process.env.APP_AWS_BUCKET_NAME!;
-        const region = process.env.APP_AWS_REGION!;
-        const expectedPrefix = `https://${bucketName}.s3.${region}.amazonaws.com/`;
+        const bucketName = process.env.GCS_BUCKET_NAME || 'nudgenest-media';
+        const expectedPrefix = `https://storage.googleapis.com/${bucketName}/`;
 
         if (!mediaUrl.startsWith(expectedPrefix)) {
             return h
@@ -175,43 +181,36 @@ const deleteMediaFromS3Handler = async (request: Hapi.Request, h: Hapi.ResponseT
                 .code(400);
         }
 
-        // Extract the S3 key (everything after the bucket URL)
-        const s3Key = mediaUrl.replace(expectedPrefix, '');
+        // Extract the GCS object name (everything after the bucket URL)
+        const objectName = mediaUrl.replace(expectedPrefix, '');
 
-        // Validate the key format (should start with merchantId/)
-        if (!s3Key.includes('/')) {
-            return h
-                .response({
-                    version: '1.0.0',
-                    error: 'Invalid S3 key format',
-                })
-                .code(400);
-        }
+        console.log(`Deleting GCS object: ${objectName}`);
 
-        // Create S3 client
-        const s3Client = new S3Client({
-            region: process.env.APP_AWS_REGION,
-            credentials: {
-                accessKeyId: process.env.APP_AWS_ACCESS_KEY!,
-                secretAccessKey: process.env.APP_AWS_SECRET_KEY!,
-            },
+        // Initialize GCS client
+        const storage = new Storage({
+            projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+            keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
         });
 
-        // Delete from S3
-        await s3Client.send(
-            new DeleteObjectCommand({
-                Bucket: bucketName,
-                Key: s3Key,
-            })
-        );
+        const bucket = storage.bucket(bucketName);
+        const file = bucket.file(objectName);
 
-        console.log('Successfully deleted:', s3Key);
-        return h.response({ version: '1.0.0', data: s3Key }).code(200);
-    } catch (error: any) {
+        await file.delete();
+
+        console.log(`✅ Deleted GCS object: ${objectName}`);
+
         return h
             .response({
                 version: '1.0.0',
-                error: error.message,
+                message: 'Media deleted successfully',
+            })
+            .code(200);
+    } catch (error: any) {
+        console.error('❌ GCS delete failed:', error);
+        return h
+            .response({
+                version: '1.0.0',
+                error: 'Delete failed: ' + error.message,
             })
             .code(500);
     }
