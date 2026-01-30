@@ -26,7 +26,9 @@ export const createServer = async () => {
             log: { collect: true },
             cors: {
                 origin: ['*'],
-                credentials: false,
+                credentials: true,
+                additionalHeaders: ['x-api-key'],
+                additionalExposedHeaders: ['x-api-key'],
             },
         },
     });
