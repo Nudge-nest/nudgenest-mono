@@ -1,29 +1,28 @@
 # [START cloudbuild_quickstart_build]
 steps:
-  # Step 1: Generate .env in /workspace
+  # Step 1: Generate .env in review-ui directory
     - name: 'ubuntu'
       id: 'create-env'
       entrypoint: 'bash'
       args:
         - '-c'
         - |
-          cat <<EOF > /workspace/.env
+          cat <<EOF > /workspace/review-ui/.env
           VITE_APP_BACKEND_HOST=$$VITE_APP_BACKEND_HOST
           EOF
       secretEnv: # Secrets are masked in logs
         - 'VITE_APP_BACKEND_HOST'
 
-    #  step 2: Build docker image from dockerfile in the root of the repo (accesses /workspace/.env)
+    #  step 2: Build docker image from dockerfile in review-ui directory
     - name: 'gcr.io/cloud-builders/docker'
       args:
           - build
           - '--no-cache'
           - '-t'
           - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-fe-service/nudgenest-fe-service:$COMMIT_SHA'
-          - .
+          - review-ui  # Build context is the review-ui directory
           - '-f'
-          - Dockerfile
-      dir: '/workspace'  # Ensure Dockerfile is in /workspace
+          - review-ui/Dockerfile  # Path to Dockerfile from repo root
       secretEnv: # Make secrets available to this step
         - 'VITE_APP_BACKEND_HOST'
       id: 'build'
