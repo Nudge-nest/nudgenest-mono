@@ -34,7 +34,6 @@ sampleJson/
 
 generated/
 
-pnpm-lock.yaml
 pnpm-workspace.yaml
 
 # Google Cloud service account keys (NEVER COMMIT THESE!)
