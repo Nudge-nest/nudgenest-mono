@@ -20,5 +20,11 @@ config:
   nudgenest-infra:GITHUB_APP_INSTALLER_ID: "64983148"
   nudgenest-infra:BACKEND_RABBITMQ_URL_AWS:
     secure: AAABAKL9VxeWs63HkEsO/MR/E9htY3fWt+CInzGRc5Ejj5+NUIDxIL4Lbc69NOW6E6Aue7ScVwVI/asqS/FvgEpzkioq/IGcMKJfslPAtToJoSh+UOvt08HNA30a9gA1zV9D3Dg5/mnAhK56FFbcDfYiOyrfeUPr60hx5ZNXfOEO7yqRcvQizzAgvpPtxbqxhgA=
-  nudgenest-infra:GITHUB_URL: https://github.com/Nudge-nest/nudgenest.git
-  nudgenest-infra:FE_GITHUB_URL: https://github.com/Nudge-nest/review-ui.git
+  nudgenest-infra:GITHUB_URL: https://github.com/Nudge-nest/nudgenest-mono.git
+  nudgenest-infra:BACKEND_RESEND_API_KEY:
+    secure: AAABAD1+tYMj7lGf4r55ryTvQO3kOe0NTdTmawGLeT6Q9O5NyfkHCYR/dYj4egHyIF09k5rmbmD5pvRX+I5IO0vGQNc=
+  nudgenest-infra:BACKEND_SHOPIFY_API_SECRET:
+    secure: AAABAPQi3aD8/quuXJHnqN9IqFhEZHR5gCVhqV7kQ4Uxn9h3jPwkdEcIHYuNO5XWom9X1t4GNpBV4+d7fPZaFA==
+  nudgenest-infra:NODE_ENV: production
+  nudgenest-infra:GOOGLE_CLOUD_PROJECT_ID: nudgenest
+  nudgenest-infra:GCS_BUCKET_NAME: nudgenest-media

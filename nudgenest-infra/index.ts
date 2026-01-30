@@ -4,17 +4,28 @@ import * as gcp from "@pulumi/gcp";
 const config = new pulumi.Config();
 
 const secrets = {
-    // RABBITMQ_URL_AWS: config.get("BACKEND_RABBITMQ_URL_AWS"), // Deprecated - migrated to Pub/Sub
-    SENDGRID_API_KEY: config.get("BACKEND_SENDGRID_API_KEY"),
+    // Core Backend Secrets
     DATABASE_URL: config.get("BACKEND_DATABASE_URL"),
-    GOOGLE_APP_PASSWORD: config.get("BACKEND_GOOGLE_APP_PASSWORD"),
+    RESEND_API_KEY: config.get("BACKEND_RESEND_API_KEY"),
+    SHOPIFY_API_SECRET: config.get("BACKEND_SHOPIFY_API_SECRET"),
+    NODE_ENV: config.get("NODE_ENV") || "production",
+
+    // Google Cloud Configuration
+    GOOGLE_CLOUD_PROJECT_ID: config.get("GOOGLE_CLOUD_PROJECT_ID") || "nudgenest",
+    GCS_BUCKET_NAME: config.get("GCS_BUCKET_NAME") || "nudgenest-media",
+
+    // Frontend Configuration
     VITE_APP_BACKEND_HOST: config.get("VITE_APP_BACKEND_HOST"),
-    APP_AWS_ACCESS_KEY: config.get("VITE_APP_AWS_ACCESS_KEY"),
-    APP_AWS_SECRET_KEY: config.get("VITE_APP_AWS_SECRET_KEY"),
-    APP_AWS_REGION: config.get("VITE_APP_AWS_REGION"),
-    APP_AWS_BUCKET_NAME: config.get("VITE_APP_AWS_BUCKET_NAME"),
+
+    // CI/CD Secrets
     GITHUB_TOKEN: config.get("GITHUB_TOKEN"),
     GITHUB_APP_INSTALLER_ID: config.get("GITHUB_APP_INSTALLER_ID"),
+
+    // Deprecated - kept for backward compatibility during migration
+    // RABBITMQ_URL_AWS: Migrated to Pub/Sub
+    // SENDGRID_API_KEY: Migrated to Resend
+    // GOOGLE_APP_PASSWORD: Not needed with Resend
+    // APP_AWS_*: Migrated to GCS
 }
 
 // Create a GCP resources
@@ -113,72 +124,79 @@ export const pubsubSubscriptionName = messagingSubscription.name;
 export const pubsubServiceAccountEmail = existingServiceAccountEmail;
 
 // ============================================
-// Backend pipelines
+// Google Cloud Storage for Media Uploads
+// ============================================
 
+// Create GCS bucket for media storage
+const mediaBucket = new gcp.storage.Bucket("nudgenest-media", {
+    name: "nudgenest-media",
+    location: config.get("region") || "europe-west1",
+    storageClass: "STANDARD",
+    uniformBucketLevelAccess: true,
+    publicAccessPrevention: "inherited", // Allow public access
+    cors: [{
+        maxAgeSeconds: 3600,
+        methods: ["GET", "HEAD", "PUT", "POST", "DELETE"],
+        origins: ["*"],
+        responseHeaders: ["*"],
+    }],
+    labels: {
+        environment: "production",
+        service: "nudgenest-backend",
+        purpose: "media-storage"
+    },
+});
+
+// Make bucket publicly readable (for uploaded images/videos)
+const bucketIamBinding = new gcp.storage.BucketIAMBinding("media-bucket-public-access", {
+    bucket: mediaBucket.name,
+    role: "roles/storage.objectViewer",
+    members: ["allUsers"],
+}, { dependsOn: [mediaBucket] });
+
+// Grant storage admin role to service account for uploads/deletes
+const storageAdminBinding = new gcp.projects.IAMMember("storage-admin-role", {
+    project: "nudgenest",
+    role: "roles/storage.objectAdmin",
+    member: `serviceAccount:${existingServiceAccountEmail}`,
+});
+
+// Export GCS resources
+export const gcsBucketName = mediaBucket.name;
+export const gcsBucketUrl = pulumi.interpolate`https://storage.googleapis.com/${mediaBucket.name}`;
+
+// ============================================
+// CI/CD Pipelines for Monorepo
+// ============================================
+
+// Backend Artifact Registry
 const repo = new gcp.artifactregistry.Repository('nudgenest-service', {
     location: config.get("region"),
     repositoryId: "nudgenest-backend-service",
     format: "DOCKER",
-    description: "Respository for nudgenest backend service",
+    description: "Repository for nudgenest backend service",
     dockerConfig: {
         immutableTags: false,
     },
     mode: "STANDARD_REPOSITORY",
 })
 
-//Create cloud build connection
-const backend_connection = new gcp.cloudbuildv2.Connection('backend-connection', {
-    location: config.get("region") as string,
-    name: 'nudgenest-backend-conn',
-    githubConfig: {
-        appInstallationId: Number(config.get("GITHUB_APP_INSTALLER_ID")),
-        authorizerCredential: {
-            oauthTokenSecretVersion: "projects/1094805904049/secrets/GITHUB_TOKEN/versions/1"
-        },
-    }
-}, {dependsOn: nudgenestSecretsArray})
-
-//Link cloud build connection to repository
-const backend_connection_repo = new gcp.cloudbuildv2.Repository('backend-connection-repo',{
-    location: config.get("region") ,
-    name: 'backend-connection-repo',
-    parentConnection: pulumi.interpolate`${backend_connection.id}`,
-    remoteUri: config.get("GITHUB_URL") as string,
-}, {dependsOn: [backend_connection]})
-
-//Create a clod build trigger
-const backend_connection_trigger = new gcp.cloudbuild.Trigger("backend_build_trigger", {
-    location: config.get("region"),
-    name: 'nudgenest-trigger',
-    filename: "cloudbuild.yaml",
-    project: "nudgenest",
-    repositoryEventConfig: {
-        repository: backend_connection_repo.id,
-        push: {
-            branch: "^test$",
-        },
-    },
-    serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
-}, {dependsOn: [backend_connection_repo]})
-
-
-//Frontend pipelines
-
+// Frontend Artifact Registry
 const fe_repo = new gcp.artifactregistry.Repository('nudgenest-fe-service', {
     location: config.get("region"),
     repositoryId: "nudgenest-fe-service",
     format: "DOCKER",
-    description: "Respository for nudgenest frontend service",
+    description: "Repository for nudgenest frontend service",
     dockerConfig: {
         immutableTags: false,
     },
     mode: "STANDARD_REPOSITORY",
 })
 
-//Create cloud build connection
-const fe_connection = new gcp.cloudbuildv2.Connection('frontend-connection', {
+// Single Cloud Build connection to monorepo
+const monorepo_connection = new gcp.cloudbuildv2.Connection('monorepo-connection', {
     location: config.get("region") as string,
-    name: 'nudgenest-fe-conn',
+    name: 'nudgenest-monorepo-conn',
     githubConfig: {
         appInstallationId: Number(config.get("GITHUB_APP_INSTALLER_ID")),
         authorizerCredential: {
@@ -187,36 +205,51 @@ const fe_connection = new gcp.cloudbuildv2.Connection('frontend-connection', {
     }
 }, {dependsOn: nudgenestSecretsArray})
 
-//Link cloud build connection to repository
-const fe_connection_repo = new gcp.cloudbuildv2.Repository('frontend-connection-repo',{
-    location: config.get("region") ,
-    name: 'frontend-connection-repo',
-    parentConnection: pulumi.interpolate`${fe_connection.id}`,
-    remoteUri: config.get("FE_GITHUB_URL") as string,
-}, {dependsOn: [fe_connection]})
-
-//Create a clod build trigger
-const fe_connection_trigger = new gcp.cloudbuild.Trigger("frontend_build_trigger", {
+// Link Cloud Build connection to monorepo
+const monorepo_connection_repo = new gcp.cloudbuildv2.Repository('monorepo-connection-repo',{
     location: config.get("region"),
-    name: 'nudgenest-fe-trigger',
-    filename: "cloudbuild.yaml",
+    name: 'nudgenest-monorepo-repo',
+    parentConnection: pulumi.interpolate`${monorepo_connection.id}`,
+    remoteUri: config.get("GITHUB_URL") as string, // This should now point to the monorepo
+}, {dependsOn: [monorepo_connection]})
+
+// Backend Build Trigger (triggers on changes to nudgenest/** directory)
+const backend_connection_trigger = new gcp.cloudbuild.Trigger("backend_build_trigger", {
+    location: config.get("region"),
+    name: 'nudgenest-backend-trigger',
+    filename: "nudgenest/cloudbuild.yaml", // Path in monorepo
     project: "nudgenest",
     repositoryEventConfig: {
-        repository: fe_connection_repo.id,
+        repository: monorepo_connection_repo.id,
         push: {
             branch: "^test$",
         },
     },
+    includedFiles: ["nudgenest/**"], // Only trigger on backend changes
     serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
-}, {dependsOn: [fe_connection_repo]})
+}, {dependsOn: [monorepo_connection_repo]})
 
-// Export the DNS name of the bucket
+// Frontend Build Trigger (triggers on changes to review-ui/** directory)
+const fe_connection_trigger = new gcp.cloudbuild.Trigger("frontend_build_trigger", {
+    location: config.get("region"),
+    name: 'nudgenest-fe-trigger',
+    filename: "review-ui/cloudbuild.yaml", // Path in monorepo
+    project: "nudgenest",
+    repositoryEventConfig: {
+        repository: monorepo_connection_repo.id,
+        push: {
+            branch: "^test$",
+        },
+    },
+    includedFiles: ["review-ui/**"], // Only trigger on frontend changes
+    serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
+}, {dependsOn: [monorepo_connection_repo]})
+
+// Export CI/CD resources
 export const repoName = repo.name;
-export const backendConnection = backend_connection.name;
-export const backendConnectionRepo = backend_connection_repo.name;
-export const backendConnectionTrigger = backend_connection_trigger.name;
 export const feRepoName = fe_repo.name;
-export const feConnection = fe_connection.name;
-export const feConnectionRepo = fe_connection_repo.name;
+export const monorepoConnection = monorepo_connection.name;
+export const monorepoConnectionRepo = monorepo_connection_repo.name;
+export const backendConnectionTrigger = backend_connection_trigger.name;
 export const feConnectionTrigger = fe_connection_trigger.name;
 
