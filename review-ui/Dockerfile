@@ -3,9 +3,12 @@ FROM node:23-alpine AS builder
 
 WORKDIR /app
 
+# Enable Corepack and prepare pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Copy package files first (caching optimization)
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Copy .env.production (optional, but useful for local testing)
 COPY .env ./
@@ -13,7 +16,7 @@ COPY .env ./
 #copy source files
 COPY . .
 
-RUN yarn build
+RUN pnpm build
 
 # === Stage 2: Nginx Static Server ===
 FROM nginx:stable-alpine AS production
