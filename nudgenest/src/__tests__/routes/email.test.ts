@@ -12,17 +12,14 @@ jest.mock('ejs', () => ({
     render: mockRender,
 }));
 
-// Mock nodemailer
-const mockSendMail = jest.fn();
-const mockClose = jest.fn();
-jest.mock('nodemailer', () => ({
-    __esModule: true,
-    default: {
-        createTransport: jest.fn(() => ({
-            sendMail: mockSendMail,
-            close: mockClose,
-        })),
-    },
+// Mock Resend
+const mockResendSend = jest.fn();
+jest.mock('resend', () => ({
+    Resend: jest.fn().mockImplementation(() => ({
+        emails: {
+            send: mockResendSend,
+        },
+    })),
 }));
 
 import EmailService, { EmailData } from '../../email-service';
@@ -37,8 +34,7 @@ describe('EmailService', () => {
         // Set up default mock implementations
         mockReadFile.mockResolvedValue('<html>Test Template {{userName}}</html>');
         mockRender.mockReturnValue('<html>Rendered Email for John Doe</html>');
-        mockSendMail.mockResolvedValue({ messageId: 'test-123' });
-        mockClose.mockResolvedValue(undefined);
+        mockResendSend.mockResolvedValue({ data: { id: 'test-123' }, error: null });
     });
 
     describe('sendEmail', () => {
@@ -63,14 +59,12 @@ describe('EmailService', () => {
                     subject: 'John Doe, how was your recent purchase?',
                 })
             );
-            expect(mockSendMail).toHaveBeenCalledWith({
-                from: '"Nudge Nest" <no-reply@nudge-nest.app>',
+            expect(mockResendSend).toHaveBeenCalledWith({
+                from: 'onboarding@resend.dev',
                 to: 'john@example.com',
                 subject: 'John Doe, how was your recent purchase?',
                 html: '<html>Rendered Email for John Doe</html>',
-                headers: {
-                    'List-Unsubscribe': '<undefined>',
-                },
+                headers: undefined,
             });
         });
 
@@ -209,13 +203,7 @@ describe('EmailService', () => {
         });
     });
 
-    describe('close', () => {
-        test('closes the transporter', async () => {
-            await EmailService.close();
-
-            expect(mockClose).toHaveBeenCalled();
-        });
-    });
+    // Resend doesn't need a close method, so we remove this test
 
     describe('email templates', () => {
         test('caches templates after first load', async () => {
@@ -246,7 +234,7 @@ describe('EmailService', () => {
 
             await EmailService.sendEmail(emailData);
 
-            expect(mockSendMail).toHaveBeenCalledWith(
+            expect(mockResendSend).toHaveBeenCalledWith(
                 expect.objectContaining({
                     subject: 'Test User, how was your recent purchase?',
                 })
@@ -263,7 +251,7 @@ describe('EmailService', () => {
 
             await EmailService.sendEmail(emailData);
 
-            expect(mockSendMail).toHaveBeenCalledWith(
+            expect(mockResendSend).toHaveBeenCalledWith(
                 expect.objectContaining({
                     subject: 'Quick reminder: Share your thoughts on order #12345',
                 })
@@ -279,7 +267,7 @@ describe('EmailService', () => {
 
             await EmailService.sendEmail(emailData);
 
-            expect(mockSendMail).toHaveBeenCalledWith(
+            expect(mockResendSend).toHaveBeenCalledWith(
                 expect.objectContaining({
                     subject: 'Welcome to Nudge Nest, Merchant Name!',
                 })

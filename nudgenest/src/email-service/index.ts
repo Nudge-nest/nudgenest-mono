@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { config } from 'dotenv';
 import path from 'node:path';
 import fs from 'fs/promises';
@@ -50,28 +50,18 @@ enum EmailType {
 }
 
 class EmailService {
-    private transporter: nodemailer.Transporter;
+    private resend: Resend;
     private templateCache = new Map<string, string>();
+    private fromEmail: string;
 
     constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: 'mail.privateemail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.EMAIL_USER || 'no-reply@nudge-nest.app',
-                pass: process.env.EMAIL_PASSWORD!,
-            },
-            // Connection pool for better performance
-            pool: true,
-            maxConnections: 5,
-            maxMessages: 100,
-            // Retry logic
-            tls: {
-                rejectUnauthorized: process.env.NODE_ENV === 'production',
-                /* ciphers: 'SSLv3'*/
-            },
-        });
+        const resendApiKey = process.env.RESEND_API_KEY;
+        if (!resendApiKey) {
+            console.warn('⚠️  RESEND_API_KEY not found. Email sending will fail.');
+        }
+        this.resend = new Resend(resendApiKey);
+        // Resend requires a verified domain or uses their onboarding domain
+        this.fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
     }
 
     // Load and cache template
@@ -85,6 +75,11 @@ class EmailService {
     }
     // Get configuration based on email type
     private getEmailConfig(type: EmailType, data: EmailData): EmailConfig {
+        // Determine review UI base URL based on environment
+        const reviewBaseUrl = process.env.NODE_ENV === 'development'
+            ? 'http://localhost:3001'
+            : 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
+
         switch (type) {
             case EmailType.REVIEW_REQUEST:
                 return {
@@ -94,7 +89,7 @@ class EmailService {
                     showItems: true,
                     ctaButton: {
                         text: 'Write a Review',
-                        link: `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/review/${data.reviewId}`,
+                        link: `${reviewBaseUrl}/review/${data.reviewId}`,
                     },
                 };
 
@@ -107,7 +102,7 @@ class EmailService {
                     additionalMessage: `<strong>⏰ Limited time:</strong> Leave a review in the next 48 hours and receive 10% off your next purchase!`,
                     ctaButton: {
                         text: 'Review Now',
-                        link: `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/review/${data.reviewId}`,
+                        link: `${reviewBaseUrl}/review/${data.reviewId}`,
                     },
                 };
 
@@ -224,32 +219,50 @@ class EmailService {
             const template = await this.loadTemplate('master');
 
             // Prepare template data
+            const reviewBaseUrl = process.env.NODE_ENV === 'development'
+                ? 'http://localhost:3001'
+                : 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
+
             const templateData = {
                 ...data,
                 ...config,
                 formattedItems: this.formatItems(data.items),
                 currentYear: new Date().getFullYear(),
-                reviewBaseUrl:
-                    process.env.REVIEW_BASE_URL || 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app',
+                reviewBaseUrl: reviewBaseUrl,
                 companyName: 'Nudge Nest',
-                supportEmail: process.env.SUPPORT_EMAIL || 'support@nudge-nest.app',
+                supportEmail: process.env.SUPPORT_EMAIL || 'support@nudgenest.app',
             };
 
             // Render HTML
             const html = ejs.render(template, templateData);
 
-            // Send email
-            const info = await this.transporter.sendMail({
-                from: `"Nudge Nest" <no-reply@nudge-nest.app>`,
+            // Send email via Resend
+            const result = await this.resend.emails.send({
+                from: this.fromEmail,
                 to: data.email,
                 subject: config.subject,
                 html: html,
-                headers: {
+                headers: data.unsubscribeUrl ? {
                     'List-Unsubscribe': `<${data.unsubscribeUrl}>`,
-                },
+                } : undefined,
             });
 
-            console.log(`Email sent to ${data.email}: ${info.messageId}`);
+            if (result.error) {
+                console.error(`❌ Failed to send email to ${data.email}:`, result.error);
+
+                // Provide helpful message for validation errors
+                if (result.error.name === 'validation_error' && result.error.message?.includes('verify a domain')) {
+                    console.log('\n⚠️  RESEND DOMAIN VERIFICATION REQUIRED:');
+                    console.log('   1. Go to https://resend.com/domains');
+                    console.log('   2. Add and verify your domain');
+                    console.log('   3. Update RESEND_FROM_EMAIL in .env to use your verified domain');
+                    console.log('   4. For testing, you can only send to your Resend account email\n');
+                }
+
+                return false;
+            }
+
+            console.log(`✅ Email sent to ${data.email}: ${result.data?.id}`);
             return true;
         } catch (error) {
             console.error('Failed to send email:', error);
@@ -285,21 +298,16 @@ class EmailService {
         return this.sendEmail({ ...data, type: EmailType.COMPLETED_REVIEW_MERCHANT });
     }
 
-    // Batch send
+    // Batch send (Resend supports batch API but we'll keep it simple)
     async sendBatch(emails: EmailData[]): Promise<number> {
         let successCount = 0;
         for (const email of emails) {
             const success = await this.sendEmail(email);
             if (success) successCount++;
-            // Small delay to avoid overwhelming SMTP server
+            // Small delay to avoid rate limiting
             await new Promise((resolve) => setTimeout(resolve, 100));
         }
         return successCount;
-    }
-
-    // Close transporter
-    async close(): Promise<void> {
-        this.transporter.close();
     }
 }
 
