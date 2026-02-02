@@ -5,7 +5,6 @@ import { useCallback } from 'react';
 import { calculateReviewRating } from '../utils/reviewsListing.ts';
 import { useEffect } from 'react';
 
-import Loading from '../components/Loading.tsx';
 import ErrorComponent from '../components/ErrorComponent.tsx';
 import ReviewSummary from '../components/reviews-list/ReviewSummary.tsx';
 import SortOptions from '../components/reviews-list/SortOptions.tsx';
@@ -34,7 +33,7 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
     const isConstrained = useConstrainedView(600);
 
     // Slider for carousel mode (constrained view)
-    const { currentSlide, loaded, sliderRef, instanceRef, setCurrentSlide } = useSlider(reviews.length);
+    const { currentSlide, loaded, sliderRef, instanceRef } = useSlider(reviews.length);
 
     const sortReviews = useCallback((reviewsToSort: IReview[], sortType: SortType): IReview[] => {
         const sorted = [...reviewsToSort];

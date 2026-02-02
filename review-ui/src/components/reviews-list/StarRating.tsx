@@ -3,7 +3,7 @@ import { IconStar } from '@tabler/icons-react';
 import { FC } from 'react';
 import { StarRatingProps } from '../../types/review.ts';
 
-const StarRating: FC<StarRatingProps> = ({ rating, size = 16, showEmpty = true }) => {
+const StarRating: FC<StarRatingProps> = ({ rating, size = 16 }) => {
     const MAX_STARS = 5;
     const validRating = Math.min(Math.max(0, rating), MAX_STARS);
 
