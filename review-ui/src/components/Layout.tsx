@@ -9,7 +9,7 @@ export const Layout = () => {
         <ReviewProvider>
             <div
                 className={`${currentTheme} w-full max-w-[480px] mx-auto h-[100vh] relative bg-[color:var(--color-lighter)] 
-                text-[color:var(--color-text)] border-1 border-[color:var(--color-light)] rounded-2xl`}
+                text-[color:var(--color-text)] rounded-2xl`}
             >
                 <Outlet />
             </div>
