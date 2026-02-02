@@ -85,8 +85,8 @@ const MediaWidget = memo(() => {
                 {!isCompleted && (
                     <div
                         {...getRootProps()}
-                        className="h-20 max-w-20 w-20 border-2 border-[color:var(--color-text)] rounded-lg flex
-                        items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                        className="h-20 max-w-20 w-20 bg-[color:var(--color-main)] rounded-lg flex
+                        items-center justify-center cursor-pointer hover:opacity-90 transition-all duration-200 shadow-sm"
                         role="button"
                         tabIndex={0}
                         aria-label="Upload media files. Click or drag and drop files here"
@@ -98,7 +98,7 @@ const MediaWidget = memo(() => {
                             aria-label="File input for media upload"
                             data-testid="file-input"
                         />
-                        <IconPlus aria-hidden="true" />
+                        <IconPlus aria-hidden="true" className="text-white" stroke={2.5} size={32} />
                         <span id="upload-instructions" className="sr-only">
                             Click to select files or drag and drop images and videos here
                         </span>

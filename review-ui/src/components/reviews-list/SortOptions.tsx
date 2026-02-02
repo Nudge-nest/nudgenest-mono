@@ -22,8 +22,8 @@ const SortOptions: FC<SortOptionsProps> = ({ currentSort, onSortChange, onAddRev
         >
             <button
                 onClick={onAddReview}
-                className="px-4 py-2 border border-[color:var(--color-border)] hover:bg-[color:var(--color-main)]
-                hover:text-[color:var(--color-white)] transition-colors"
+                className="px-6 py-3 min-h-[44px] bg-[color:var(--color-main)] text-white rounded-lg
+                hover:opacity-90 transition-all duration-200 font-medium shadow-sm"
                 aria-label="Add a new review"
                 data-testid="add-review-button"
                 type="button"
@@ -34,21 +34,22 @@ const SortOptions: FC<SortOptionsProps> = ({ currentSort, onSortChange, onAddRev
             <Dropdown
                 trigger={
                     <button
-                        className="px-4 py-2 border border-[color:var(--color-border)] hover:bg-[color:var(--color-main)]
-                         hover:text-[color:var(--color-white)] transition-colors relative group"
+                        className="px-4 py-3 min-h-[44px] min-w-[44px] border-2 border-[color:var(--color-main)]
+                        text-[color:var(--color-main)] hover:bg-[color:var(--color-main-light)]
+                        transition-all duration-200 rounded-lg relative group flex items-center justify-center"
                         aria-label={`Sort reviews. Currently: ${currentSortLabel}`}
                         data-testid="sort-trigger-button"
                         type="button"
                     >
-                        <IconArrowsUpDown size={24} aria-hidden="true" />
+                        <IconArrowsUpDown size={24} aria-hidden="true" stroke={2} />
                         <span
-                            className="absolute -top-8 right-0 bg-[color:var(--color-dark)] text-[color:var(--color-white)]
-                             text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                            className="absolute -top-10 right-0 bg-[color:var(--color-dark)] text-[color:var(--color-white)]
+                             text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10"
                             role="tooltip"
                             aria-hidden="true"
                             data-testid="sort-tooltip"
                         >
-                            Currently sorted by: {currentSortLabel}
+                            Sort: {currentSortLabel}
                         </span>
                     </button>
                 }
@@ -65,10 +66,10 @@ const SortOptions: FC<SortOptionsProps> = ({ currentSort, onSortChange, onAddRev
                         <li key={option.value} role="none">
                             <button
                                 onClick={() => onSortChange(option.value)}
-                                className={`w-full text-left px-4 py-2 hover:bg-[color:var(--color-light)] 
-                                hover:text-[color:var(--color-text)] transition-colors 
+                                className={`w-full text-left px-4 py-3 min-h-[44px] hover:bg-[color:var(--color-main-light)]
+                                hover:text-[color:var(--color-text)] transition-colors
                                 flex items-center justify-between
-                                ${currentSort === option.value ? 'bg-blue-50 font-semibold' : ''}`}
+                                ${currentSort === option.value ? 'bg-[color:var(--color-main-light)] font-semibold' : ''}`}
                                 role="menuitem"
                                 aria-current={currentSort === option.value ? 'true' : undefined}
                                 aria-label={`Sort by ${option.label}`}

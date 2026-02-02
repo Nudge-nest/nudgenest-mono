@@ -59,7 +59,7 @@ const ReviewPage = () => {
                 aria-live="polite"
                 aria-label="Loading reviews"
                 data-testid="review-loading"
-                className="flex justify-center items-center h-full"
+                className="absolute inset-0 flex justify-center items-center bg-[color:var(--color-bg)]"
             >
                 <Loading />
                 <span className="sr-only text-red-600">Loading reviews...</span>
@@ -95,8 +95,12 @@ const ReviewPage = () => {
 
     return (
         <div
-            className="h-full px-4 text-center grid grid-rows-[95%_auto]"
+            className="h-screen px-4 text-center grid grid-rows-[95%_auto] safe-area-inset"
             data-testid="review-page"
+            style={{
+                paddingTop: 'max(1rem, env(safe-area-inset-top))',
+                paddingBottom: 'max(1rem, env(safe-area-inset-bottom))'
+            }}
         >
             {/* Main content area with slider */}
             <section
@@ -114,12 +118,12 @@ const ReviewPage = () => {
                     aria-label="Product ratings"
                     data-testid="rating-slide"
                 >
-                    <div className="h-full flex flex-col gap-2 p-4">
+                    <div className={`h-full flex flex-col gap-2 p-4 ${items.length === 1 ? 'justify-center' : 'justify-start pt-8'}`}>
                         <h2 className="sr-only">Rate Your Products</h2>
 
                         {/* Scrollable container for rating widgets */}
                         <div
-                            className="flex-1 overflow-y-auto overflow-x-hidden"
+                            className={`flex-1 overflow-y-auto overflow-x-hidden ${items.length > 3 ? 'space-y-6' : items.length === 1 ? 'flex items-center justify-center' : 'flex flex-col justify-evenly'}`}
                             role="list"
                             aria-label="Products to rate"
                             data-testid="rating-widgets-container"
@@ -129,7 +133,7 @@ const ReviewPage = () => {
                                 scrollbarColor: 'var(--color-main) transparent'
                             }}
                         >
-                            <div className="space-y-4">
+                            <div className={items.length > 3 ? 'space-y-4' : items.length === 1 ? '' : 'flex flex-col justify-evenly h-full'}>
                                 {items.map((item: IReviewItem, index: number) => (
                                     <div
                                         key={item.id || index}
@@ -192,9 +196,10 @@ const ReviewPage = () => {
                     aria-label="Review sections navigation"
                     data-testid="slider-navigation"
                 >
-                    <ul className="dots flex justify-center gap-4 list-none">
+                    <ul className="dots flex justify-center gap-2 list-none">
                         {[...Array(slideCount).keys()].map((idx) => {
-                            const isActive = idx <= sliderHook.currentSlide;
+                            const isCurrent = idx === sliderHook.currentSlide;
+                            const isCompleted = idx < sliderHook.currentSlide;
                             const slideLabel = getSlideLabel(idx);
 
                             return (
@@ -203,21 +208,23 @@ const ReviewPage = () => {
                                         onClick={() => navigateToSlide(idx)}
                                         onKeyDown={(e) => handleKeyDown(e, idx)}
                                         className={`
-                      dot w-20 h-1.5 rounded transition-all duration-200
-                      ${isActive
-                                            ? 'bg-[color:var(--color-main)]'
-                                            : 'bg-[color:var(--color-disabled)]'}
-                      hover:opacity-80 focus:outline-none focus:ring-2 
-                      focus:ring-[color:var(--color-main)] focus:ring-offset-2
+                      dot transition-all duration-300 ease-out rounded-full
+                      ${isCurrent
+                          ? 'w-8 h-2 bg-[color:var(--color-main)]'
+                          : isCompleted
+                          ? 'w-2 h-2 bg-[color:var(--color-main)] opacity-60'
+                          : 'w-2 h-2 bg-[color:var(--color-disabled)]'}
+                      hover:scale-110 hover:opacity-100
+                      focus:outline-none focus:ring-2 focus:ring-[color:var(--color-main)] focus:ring-offset-1
                     `}
                                         aria-label={`Go to ${slideLabel}`}
-                                        aria-current={idx === sliderHook.currentSlide ? 'step' : undefined}
-                                        aria-pressed={idx === sliderHook.currentSlide}
+                                        aria-current={isCurrent ? 'step' : undefined}
+                                        aria-pressed={isCurrent}
                                         data-testid={`slider-dot-${idx}`}
                                         tabIndex={0}
                                     >
                     <span className="sr-only">
-                      {slideLabel} - {idx === sliderHook.currentSlide ? 'Current' : 'Navigate to'}
+                      {slideLabel} - {isCurrent ? 'Current' : 'Navigate to'}
                     </span>
                                     </button>
                                 </li>

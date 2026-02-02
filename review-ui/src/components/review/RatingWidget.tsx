@@ -95,10 +95,11 @@ const RatingWidget: FC<RatingWidgetProps> = memo(({ product, result, isCompleted
                             aria-checked={isSelected}
                             aria-label={`${ratingValue} star${ratingValue > 1 ? 's' : ''} - ${RATING_LABELS[idx]}`}
                             tabIndex={isCompleted ? -1 : 0}
+                            className="focus:outline-none"
                         >
                             <RatingStar
                                 fill="#fcc800"
-                                defaultFill="#f9f9f9"
+                                defaultFill="#e5e7eb"
                                 isFilled={ratingValue <= selectedRating}
                                 onClick={() => handleSetRating(ratingValue)}
                                 title={RATING_LABELS[idx]}
