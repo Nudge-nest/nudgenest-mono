@@ -7,7 +7,11 @@ export const useSlider = (totalSlides: number) => {
 
     const [sliderRef, instanceRef] = useKeenSlider({
         initial: 0,
-        slides: { number: totalSlides },
+        slides: {
+            number: totalSlides,
+            perView: 1,
+            spacing: 0
+        },
         slideChanged: (slider) => {
             setCurrentSlide(slider.track.details.rel);
         },

@@ -95,7 +95,7 @@ const RatingWidget: FC<RatingWidgetProps> = memo(({ product, result, isCompleted
                             aria-checked={isSelected}
                             aria-label={`${ratingValue} star${ratingValue > 1 ? 's' : ''} - ${RATING_LABELS[idx]}`}
                             tabIndex={isCompleted ? -1 : 0}
-                            className="focus:outline-none focus:ring-2 focus:ring-[color:var(--color-main)] focus:ring-offset-2 rounded-full"
+                            className="focus:outline-none"
                         >
                             <RatingStar
                                 fill="#fcc800"
