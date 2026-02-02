@@ -59,8 +59,7 @@ const ReviewPage = () => {
                 aria-live="polite"
                 aria-label="Loading reviews"
                 data-testid="review-loading"
-                className="fixed inset-0 flex justify-center items-center bg-[color:var(--color-bg)]"
-                style={{ zIndex: 9999 }}
+                className="absolute inset-0 flex justify-center items-center bg-[color:var(--color-bg)]"
             >
                 <Loading />
                 <span className="sr-only text-red-600">Loading reviews...</span>
