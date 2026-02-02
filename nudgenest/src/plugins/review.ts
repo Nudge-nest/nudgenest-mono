@@ -41,7 +41,7 @@ const reviewsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/reviews/list',
                 handler: listReviewsByMerchantId,
                 options: {
-                    auth: 'false',
+                    auth: false,
                 },
             },
         ]);
