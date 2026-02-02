@@ -196,9 +196,10 @@ const ReviewPage = () => {
                     aria-label="Review sections navigation"
                     data-testid="slider-navigation"
                 >
-                    <ul className="dots flex justify-center gap-4 list-none">
+                    <ul className="dots flex justify-center gap-2 list-none">
                         {[...Array(slideCount).keys()].map((idx) => {
-                            const isActive = idx <= sliderHook.currentSlide;
+                            const isCurrent = idx === sliderHook.currentSlide;
+                            const isCompleted = idx < sliderHook.currentSlide;
                             const slideLabel = getSlideLabel(idx);
 
                             return (
@@ -207,21 +208,23 @@ const ReviewPage = () => {
                                         onClick={() => navigateToSlide(idx)}
                                         onKeyDown={(e) => handleKeyDown(e, idx)}
                                         className={`
-                      dot w-20 h-1.5 rounded transition-all duration-200
-                      ${isActive
-                                            ? 'bg-[color:var(--color-main)]'
-                                            : 'bg-[color:var(--color-disabled)]'}
-                      hover:opacity-80 focus:outline-none focus:ring-2 
-                      focus:ring-[color:var(--color-main)] focus:ring-offset-2
+                      dot transition-all duration-300 ease-out rounded-full
+                      ${isCurrent
+                          ? 'w-8 h-2 bg-[color:var(--color-main)]'
+                          : isCompleted
+                          ? 'w-2 h-2 bg-[color:var(--color-main)] opacity-60'
+                          : 'w-2 h-2 bg-[color:var(--color-disabled)]'}
+                      hover:scale-110 hover:opacity-100
+                      focus:outline-none focus:ring-2 focus:ring-[color:var(--color-main)] focus:ring-offset-1
                     `}
                                         aria-label={`Go to ${slideLabel}`}
-                                        aria-current={idx === sliderHook.currentSlide ? 'step' : undefined}
-                                        aria-pressed={idx === sliderHook.currentSlide}
+                                        aria-current={isCurrent ? 'step' : undefined}
+                                        aria-pressed={isCurrent}
                                         data-testid={`slider-dot-${idx}`}
                                         tabIndex={0}
                                     >
                     <span className="sr-only">
-                      {slideLabel} - {idx === sliderHook.currentSlide ? 'Current' : 'Navigate to'}
+                      {slideLabel} - {isCurrent ? 'Current' : 'Navigate to'}
                     </span>
                                     </button>
                                 </li>
