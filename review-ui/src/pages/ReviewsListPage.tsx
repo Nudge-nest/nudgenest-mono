@@ -75,6 +75,7 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
                 aria-live="polite"
                 aria-label="Loading reviews"
                 data-testid="reviews-loading"
+                className="fixed inset-0 flex justify-center items-center bg-[color:var(--color-bg)]"
             >
                 <Loading />
                 <span className="sr-only">Loading reviews...</span>
@@ -111,9 +112,15 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
 
     return (
         <main
-            className="w-full mx-auto px-4 py-8 min-h-[500px]"
+            className="w-full max-w-7xl mx-auto px-4 py-8"
             aria-labelledby="reviews-page-title"
             data-testid="reviews-list-page"
+            style={{
+                paddingTop: 'max(2rem, env(safe-area-inset-top))',
+                paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
+                paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+                paddingRight: 'max(1rem, env(safe-area-inset-right))'
+            }}
         >
 
             <header
@@ -129,22 +136,19 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
             </header>
 
             <section
-                className="max-w-full"
+                className="w-full"
                 aria-label="Reviews list"
                 data-testid="reviews-container"
             >
                 <div
-                    className="flex flex-nowrap gap-4 px-4 overflow-x-scroll"
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
                     role="list"
                     aria-label={`${reviews.length} customer reviews`}
-                    tabIndex={0}
-                    aria-describedby="scroll-instructions"
-                    data-testid="reviews-scroll-container"
+                    data-testid="reviews-grid-container"
                 >
                     {reviews.map((review, index) => (
                         <article
                             key={review.id || review.createdAt}
-                            className="flex-shrink-0 w-64"
                             role="listitem"
                             aria-label={`Review ${index + 1} of ${reviews.length}`}
                             data-testid={`review-item-${index}`}
@@ -156,9 +160,6 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
                         </article>
                     ))}
                 </div>
-                <span id="scroll-instructions" className="sr-only">
-                    Use arrow keys to scroll through reviews horizontally
-                </span>
             </section>
 
             {/* Screen reader announcement for sort changes */}
