@@ -59,7 +59,7 @@ const ReviewPage = () => {
                 aria-live="polite"
                 aria-label="Loading reviews"
                 data-testid="review-loading"
-                className="flex justify-center items-center h-full"
+                className="flex justify-center items-center h-screen"
             >
                 <Loading />
                 <span className="sr-only text-red-600">Loading reviews...</span>
@@ -95,8 +95,12 @@ const ReviewPage = () => {
 
     return (
         <div
-            className="h-full px-4 text-center grid grid-rows-[95%_auto]"
+            className="h-screen px-4 text-center grid grid-rows-[95%_auto] safe-area-inset"
             data-testid="review-page"
+            style={{
+                paddingTop: 'max(1rem, env(safe-area-inset-top))',
+                paddingBottom: 'max(1rem, env(safe-area-inset-bottom))'
+            }}
         >
             {/* Main content area with slider */}
             <section
@@ -114,12 +118,12 @@ const ReviewPage = () => {
                     aria-label="Product ratings"
                     data-testid="rating-slide"
                 >
-                    <div className="h-full flex flex-col gap-2 p-4">
+                    <div className={`h-full flex flex-col gap-2 p-4 ${items.length === 1 ? 'justify-center' : 'justify-start pt-8'}`}>
                         <h2 className="sr-only">Rate Your Products</h2>
 
                         {/* Scrollable container for rating widgets */}
                         <div
-                            className="flex-1 overflow-y-auto overflow-x-hidden"
+                            className={`flex-1 overflow-y-auto overflow-x-hidden ${items.length > 3 ? 'space-y-6' : items.length === 1 ? 'flex items-center justify-center' : 'flex flex-col justify-evenly'}`}
                             role="list"
                             aria-label="Products to rate"
                             data-testid="rating-widgets-container"
@@ -129,7 +133,7 @@ const ReviewPage = () => {
                                 scrollbarColor: 'var(--color-main) transparent'
                             }}
                         >
-                            <div className="space-y-4">
+                            <div className={items.length > 3 ? 'space-y-4' : items.length === 1 ? '' : 'flex flex-col justify-evenly h-full'}>
                                 {items.map((item: IReviewItem, index: number) => (
                                     <div
                                         key={item.id || index}

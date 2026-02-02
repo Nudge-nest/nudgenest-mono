@@ -68,7 +68,7 @@ const MediaWidget = memo(() => {
             </header>
 
             <div
-                className="w-full h-fit grid grid-cols-5 gap-1.5 p-2 border-1 border-[color:var(--color-text)] rounded-lg"
+                className={`w-full h-fit grid grid-cols-5 gap-1.5 p-2 rounded-lg ${reviewFormHook.media.length > 0 ? 'border-1 border-[color:var(--color-text)]' : ''}`}
                 role="region"
                 aria-label="Media uploads"
                 data-testid="media-container"
