@@ -18,7 +18,11 @@ const BillingPage = lazy(() => import('./pages/billing/BillingPage.tsx'));
 
 const App = () => {
     return (
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={
+            <div className="fixed inset-0 flex justify-center items-center bg-[color:var(--color-bg)]">
+                <Loading />
+            </div>
+        }>
             <Routes>
                 <Route element={<Layout />}>
                     <Route path="/" element={<LandingPage />} />
