@@ -1,5 +1,5 @@
 /*Readonly Star, no clicking just displaying*/
-import { IconStar, IconStarFilled } from '@tabler/icons-react';
+import { IconStar } from '@tabler/icons-react';
 import { FC } from 'react';
 import { StarRatingProps } from '../../types/review.ts';
 
@@ -9,31 +9,27 @@ const StarRating: FC<StarRatingProps> = ({ rating, size = 16, showEmpty = true }
 
     return (
         <div
-            className="flex gap-0.5"
+            className="flex gap-1"
             data-testid="star-rating"
         >
             {[1, 2, 3, 4, 5].map((star) => {
                 const isFilled = star <= validRating;
 
                 return (
-                    <span
+                    <IconStar
                         key={star}
-                        className="text-[color:var(--color-yellow)]"
-                        data-testid={`star-${star}`}
-                    >
-                        {isFilled ? (
-                            <IconStarFilled
-                                size={size}
-                                data-testid={`star-filled-${star}`}
-                            />
-                        ) : showEmpty ? (
-                            <IconStar
-                                size={size}
-                                className="text-[color:var(--color-text)]"
-                                data-testid={`star-empty-${star}`}
-                            />
-                        ) : null}
-                    </span>
+                        size={size}
+                        fill={isFilled ? '#fcc800' : '#e5e7eb'}
+                        stroke={1.5}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="transition-all duration-200"
+                        style={{
+                            filter: isFilled ? 'drop-shadow(0 2px 4px rgba(252, 200, 0, 0.3))' : 'none',
+                            color: isFilled ? '#fcc800' : '#9ca3af'
+                        }}
+                        data-testid={`star-${star}${isFilled ? '-filled' : '-empty'}`}
+                    />
                 );
             })}
         </div>

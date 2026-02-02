@@ -1,7 +1,7 @@
 import { FC, memo } from 'react';
 import { ReviewItemProps } from '../../types/review.ts';
 import { calculateReviewRating, sanitizeReviewText } from '../../utils/reviewsListing.ts';
-import { IconPhoto, IconShieldCheckFilled } from '@tabler/icons-react';
+import { IconPhoto, IconShieldCheckFilled, IconStar } from '@tabler/icons-react';
 import StarRating from './StarRating.tsx';
 
 const ReviewItem: FC<ReviewItemProps> = memo(({ review, onMediaClick }) => {
@@ -18,14 +18,14 @@ const ReviewItem: FC<ReviewItemProps> = memo(({ review, onMediaClick }) => {
 
     return (
         <article
-            className="border border-[color:var(--color-border)] hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 h-auto grid grid-rows-[64%_auto]"
+            className="border border-[color:var(--color-border)] hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 rounded-lg overflow-hidden flex flex-col h-full"
             role="article"
             aria-label={reviewAriaLabel}
             data-testid="review-item"
         >
-            {allMedia.length > 0 && (
+            {allMedia.length > 0 ? (
                 <button
-                    className="relative cursor-pointer overflow-hidden w-full h-full bg-transparent border-none p-0"
+                    className="relative cursor-pointer overflow-hidden w-full aspect-square bg-gray-100 border-none p-0 flex-shrink-0"
                     onClick={() => onMediaClick(allMedia, 0)}
                     aria-label={mediaAriaLabel}
                     data-testid="review-media-button"
@@ -58,9 +58,13 @@ const ReviewItem: FC<ReviewItemProps> = memo(({ review, onMediaClick }) => {
                         />
                     )}
                 </button>
+            ) : (
+                <div className="w-full aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-shrink-0">
+                    <IconStar size={48} className="text-gray-300" />
+                </div>
             )}
 
-            <div className="p-4 flex flex-col h-fit">
+            <div className="p-4 flex flex-col flex-1">
                 <header className="flex items-center gap-1 mb-1">
                     <h3
                         className="font-bold text-[color:var(--color-text)] m-0"
