@@ -36,12 +36,20 @@ const getShopReview = (merchantConfigs: IReviewConfiguration[], merchantId: stri
     if (!merchantConfigs) return;
     const { general } = merchantConfigs[0];
     const shopQuestions = general.shopReviewQuestions as IConfigField[];
-    const shopReviewItems = shopQuestions.map((shopQuestion): IReviewItem => {
-        return { id: '14767045378186', name: shopQuestion.value };
-    });
+
+    // Use only the first question for store review (simplified like Loox)
+    const firstQuestion = shopQuestions[0];
+    const questionText = firstQuestion?.value || 'How would you rate your experience?';
+
+    // Create single store review item with special ID to identify store reviews
+    const storeItem: IReviewItem = {
+        id: 'store-general', // Special identifier for store reviews
+        name: questionText
+    };
+
     return {
         merchantId: merchantId,
-        items: shopReviewItems,
+        items: [storeItem], // Single item array
         status: 'Pending',
         customerName: '',
         merchantBusinessId: '',
@@ -69,13 +77,16 @@ export const ReviewProvider: FC<{ children: ReactNode }> = ({ children }) => {
         isLoadingMerchantConfigs,
     } = useReviewData(reviewId, pathname);
     const sliderHook = useSlider(3);
-    const formHook = useReviewForm(review as IReview);
     const [shopReview, setShopReview] = useState<IReview | null>(null);
+
+    // Use shopReview for store review page, regular review for product review page
+    const reviewDataForForm = pathname.includes('store') ? shopReview : review;
+    const formHook = useReviewForm(reviewDataForForm as IReview);
 
     useEffect(() => {
         if (isLoading || isLoadingMerchantConfigs) return;
         if (merchantConfigs && !shopReview) setShopReview(getShopReview(merchantConfigs, merchantId) as IReview);
-    }, [merchantConfigs, shopReview, merchantId]);
+    }, [merchantConfigs, shopReview, merchantId, isLoading, isLoadingMerchantConfigs]);
 
     // Extract and store merchantApiKey from review data
     useEffect(() => {

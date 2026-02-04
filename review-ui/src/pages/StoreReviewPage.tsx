@@ -18,7 +18,15 @@ const StoreReviewPage = () => {
     }, [shopReview]);
     if (isLoadingMerchantConfigs) return <Loading />;
     return (
-        <div className={`h-full px-4 text-center grid grid-rows-[95%_auto]`}>
+        <div
+            className="h-full text-center grid grid-rows-[95%_auto]"
+            style={{
+                paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+                paddingRight: 'max(1rem, env(safe-area-inset-right))',
+                paddingTop: 'max(0.5rem, env(safe-area-inset-top))',
+                paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))'
+            }}
+        >
             <div ref={sliderHook.sliderRef} className="h-full scroll-auto keen-slider">
                 <div
                     className={`h-full flex flex-col gap-2 ${items.length <= 1 ? 'justify-center' : 'justify-start'} pt-4 keen-slider__slide overflow-auto`}
