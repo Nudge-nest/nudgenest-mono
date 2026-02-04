@@ -26,7 +26,7 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
     const [selectedMedia, setSelectedMedia] = useState<IUploadedMediaObject[]>([]);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
-    const { data: reviewsData, isError, isFetching, error } = useListReviewsQuery(id ? id : '67580297354');
+    const { data: reviewsData, isError, isFetching } = useListReviewsQuery(id ? id : '67580297354');
 
     // Auto-detect if we're in an iframe (Shopify embedding)
     const isIframe = useConstrainedView();
