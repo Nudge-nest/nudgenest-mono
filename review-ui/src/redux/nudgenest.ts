@@ -6,7 +6,9 @@ export const nudgeNestApi = createApi({
     reducerPath: 'nudgeNestApi',
     tagTypes: ['review', 'media', 'config', 'billing'],
     baseQuery: fetchBaseQuery({
-        baseUrl: import.meta.env.VITE_APP_BACKEND_HOST_LOCAL,
+        baseUrl: import.meta.env.PROD
+            ? import.meta.env.VITE_APP_BACKEND_HOST
+            : import.meta.env.VITE_APP_BACKEND_HOST_LOCAL,
         prepareHeaders: (headers) => {
             const apiKey = localStorage.getItem('nn-apiKey');
             if (apiKey) {
