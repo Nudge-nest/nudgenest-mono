@@ -25,7 +25,7 @@ const reviewsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/reviews/{reviewId}',
                 handler: getReviewById,
                 options: {
-                    auth: false, // Allow unauthenticated access so customers can fetch their review
+                    auth: { mode: 'optional' }, // Allow unauthenticated access so customers can fetch their review
                 },
             },
             {
@@ -41,7 +41,7 @@ const reviewsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/reviews/list',
                 handler: listReviewsByMerchantId,
                 options: {
-                    auth: false,
+                    auth: { mode: 'optional' },
                 },
             },
         ]);
