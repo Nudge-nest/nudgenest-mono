@@ -128,27 +128,27 @@ const ReviewQrCodeComponent = () => {
                         {reviewConfigs.qrCode.map(renderField).filter(Boolean)}
 
                         {/* QR Code Preview */}
-                        <div className="mt-6 p-6 border border-gray-700 rounded-lg bg-gray-800">
+                        <div className="mt-6 p-6 border border-[color:var(--color-border)] rounded-lg bg-[color:var(--color-lighter)]">
                             <div className="flex items-start gap-6">
                                 <div className="flex-1">
-                                    <h3 className="text-white font-medium text-sm mb-2">QR Code Preview</h3>
-                                    <p className="text-gray-400 text-sm">
+                                    <h3 className="text-[color:var(--color-text)] font-medium text-sm mb-2">QR Code Preview</h3>
+                                    <p className="text-[color:var(--color-text)] opacity-75 text-sm">
                                         This QR code will direct customers to your review page.
                                     </p>
                                 </div>
 
                                 <div className="flex-shrink-0">
                                     {isGenerating ? (
-                                        <div className="w-48 h-48 bg-gray-700 rounded-lg flex items-center justify-center">
+                                        <div className="w-48 h-48 bg-[color:var(--color-bg)] rounded-lg flex items-center justify-center">
                                             <Loading />
                                         </div>
                                     ) : qrCodeImage ? (
-                                        <div className="bg-white p-4 rounded-lg">
+                                        <div className="bg-white p-4 rounded-lg shadow-sm">
                                             <img src={qrCodeImage} alt="Review QR Code" className="w-40 h-40" />
                                         </div>
                                     ) : (
-                                        <div className="w-48 h-48 bg-gray-700 rounded-lg flex items-center justify-center">
-                                            <span className="text-gray-400 text-sm">No QR Code</span>
+                                        <div className="w-48 h-48 bg-[color:var(--color-bg)] rounded-lg flex items-center justify-center">
+                                            <span className="text-[color:var(--color-text)] opacity-50 text-sm">No QR Code</span>
                                         </div>
                                     )}
                                 </div>
@@ -163,7 +163,7 @@ const ReviewQrCodeComponent = () => {
                                             link.href = qrCodeImage;
                                             link.click();
                                         }}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                                        className="px-4 py-2 bg-[color:var(--color-main)] text-white rounded-md hover:opacity-90 transition-all text-sm font-medium"
                                     >
                                         Download QR Code
                                     </button>

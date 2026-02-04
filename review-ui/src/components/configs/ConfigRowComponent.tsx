@@ -55,7 +55,7 @@ const ConfigRowComponent: React.FC<ConfigRowProps> = ({ field, onFieldChange, cl
 
     const renderInput = () => {
         const baseClasses =
-            'w-full px-3 py-2 bg-[color:var(--color-bg)] border border-gray-600 rounded-md text-[color:var(--color-text)] placeholder-[color:var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors';
+            'w-full px-3 py-2 bg-[color:var(--color-bg)] border border-gray-600 rounded-md text-[color:var(--color-text)] placeholder-[color:var(--color-text)] focus:outline-none focus:border-gray-500 transition-colors';
         const disabledClasses = field.disabled ? 'opacity-50 cursor-not-allowed' : '';
         const inputClasses = `${baseClasses} ${disabledClasses}`;
 
@@ -157,7 +157,7 @@ const ConfigRowComponent: React.FC<ConfigRowProps> = ({ field, onFieldChange, cl
                             required={field.required}
                             aria-describedby={descriptionId}
                             aria-required={field.required}
-                            className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                            className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:outline-none"
                             data-testid={`checkbox-${field.key}`}
                         />
                         <span
