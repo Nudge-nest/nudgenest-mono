@@ -26,11 +26,21 @@ export const nudgeNestApi = createApi({
                 providesTags: ['review'],
             }),
             listReviews: builder.query({
-                query: (shopId: string) => ({
-                    url: `reviews/list?shopid=${shopId}`,
-                    method: 'GET',
-                }),
-                transformResponse: (response: { data: any }) => response.data,
+                query: (shopId: string) => {
+                    console.log('[Redux API] === START DEBUG ===');
+                    console.log('[Redux API] listReviews called with shopId:', shopId);
+                    const url = `reviews/list?shopid=${shopId}`;
+                    console.log('[Redux API] Full URL:', url);
+                    console.log('[Redux API] === END DEBUG ===');
+                    return {
+                        url,
+                        method: 'GET',
+                    };
+                },
+                transformResponse: (response: { data: any }) => {
+                    console.log('[Redux API] Transform response - data length:', response.data?.length);
+                    return response.data;
+                },
                 providesTags: ['review'],
             }),
             updateReview: builder.mutation({

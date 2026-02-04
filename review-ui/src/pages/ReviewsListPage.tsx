@@ -27,7 +27,18 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
     const [reviewFormOpen, setReviewFormOpen] = useState(false);
     const [selectedMedia, setSelectedMedia] = useState<IUploadedMediaObject[]>([]);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
-    const { data: reviewsData, isError, isFetching } = useListReviewsQuery(id ? id : '67580297354');
+
+    console.log('[ReviewsListPage] === START DEBUG ===');
+    console.log('[ReviewsListPage] Route param id:', id);
+    console.log('[ReviewsListPage] Prop merchantId:', merchantId);
+    console.log('[ReviewsListPage] Using shopId for query:', id ? id : '67580297354');
+
+    const { data: reviewsData, isError, isFetching, error } = useListReviewsQuery(id ? id : '67580297354');
+
+    console.log('[ReviewsListPage] Query state - isFetching:', isFetching, 'isError:', isError);
+    if (error) console.error('[ReviewsListPage] Query error:', error);
+    if (reviewsData) console.log('[ReviewsListPage] Reviews data received, count:', reviewsData.length);
+    console.log('[ReviewsListPage] === END DEBUG ===');
 
     // Auto-detect if we're in a constrained view (Shopify iframe)
     const isConstrained = useConstrainedView(600);

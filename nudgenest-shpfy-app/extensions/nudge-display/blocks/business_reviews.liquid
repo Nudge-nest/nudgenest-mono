@@ -32,18 +32,28 @@
 
 
       async function loadReviews() {
-        console.log('Container dataset',container.dataset, merchantId);
+        console.log('[Shopify Liquid] === START DEBUG ===');
+        console.log('[Shopify Liquid] Container dataset:', container.dataset);
+        console.log('[Shopify Liquid] MerchantId from data attribute:', merchantId);
+        console.log('[Shopify Liquid] Shop object info:');
+        console.log('[Shopify Liquid] - shop.id: {{ shop.id }}');
+        console.log('[Shopify Liquid] - shop.permanent_domain: {{ shop.permanent_domain }}');
+        console.log('[Shopify Liquid] - shop.domain: {{ shop.domain }}');
+
         if (!gridEl) {
-          console.error('Media container not found for review form');
+          console.error('[Shopify Liquid] ERROR: Media container not found for review form');
           return;
         }
 
         // Clear any existing content
         gridEl.innerHTML = '';
 
+        const iframeUrl = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/reviews/${merchantId}`;
+        console.log('[Shopify Liquid] Creating iframe with URL:', iframeUrl);
+
         // Create iframe for the review form
         const iframe = document.createElement('iframe');
-        iframe.src = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/reviews/${merchantId}`;
+        iframe.src = iframeUrl;
         iframe.style.cssText = `
           width: 1200px;
           height: 600px;
@@ -55,9 +65,11 @@
         iframe.allow = 'camera; microphone'; // Allow camera/mic for media uploads
 
         gridEl.appendChild(iframe);
+        console.log('[Shopify Liquid] Iframe appended to DOM');
+        console.log('[Shopify Liquid] === END DEBUG ===');
 
-        function handleReviewFormMessage() {
-          console.log('Received review form message');
+        function handleReviewFormMessage(event) {
+          console.log('[Shopify Liquid] Received message from iframe:', event.data);
         }
 
         // Handle iframe communication (optional)
