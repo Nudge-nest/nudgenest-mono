@@ -52,7 +52,7 @@ const ReviewConfigsPage = () => {
     }, [reviewConfigFormHoook.reviewConfigs]);
 
     return (
-        <div className={`pt-8`}>
+        <div className="w-full max-w-7xl mx-auto">
             <Tabs
                 tabs={_Tabs}
                 variant="minimal"
