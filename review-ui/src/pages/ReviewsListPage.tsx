@@ -254,15 +254,6 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
                                 </article>
                             ))}
                         </div>
-
-                        {/* Fade gradient hint for more content */}
-                        {reviews.length > 3 && (
-                            <div
-                                className="absolute right-0 top-12 bottom-0 w-12 pointer-events-none
-                                bg-gradient-to-l from-[color:var(--color-bg)] to-transparent"
-                                aria-hidden="true"
-                            />
-                        )}
                     </div>
                 ) : (
                     /* Grid mode for standalone/larger views */
