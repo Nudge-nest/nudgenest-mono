@@ -15,9 +15,7 @@ import ReviewFormModal from '../components/reviews-list/ReviewFormModal.tsx';
 import { useListReviewsQuery } from '../redux/nudgenest.ts';
 import { useParams } from 'react-router';
 import { useConstrainedView } from '../hooks/useConstrainedView.ts';
-import { useSlider } from '../hooks/useSlider.ts';
-import { IconChevronLeft, IconChevronRight, IconStar } from '@tabler/icons-react';
-import 'keen-slider/keen-slider.min.css';
+import { IconStar } from '@tabler/icons-react';
 
 const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456a2575dd1aae' }) => {
     const { id } = useParams<{ id: string }>();
@@ -28,23 +26,10 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
     const [selectedMedia, setSelectedMedia] = useState<IUploadedMediaObject[]>([]);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
-    console.log('[ReviewsListPage] === START DEBUG ===');
-    console.log('[ReviewsListPage] Route param id:', id);
-    console.log('[ReviewsListPage] Prop merchantId:', merchantId);
-    console.log('[ReviewsListPage] Using shopId for query:', id ? id : '67580297354');
-
     const { data: reviewsData, isError, isFetching, error } = useListReviewsQuery(id ? id : '67580297354');
 
-    console.log('[ReviewsListPage] Query state - isFetching:', isFetching, 'isError:', isError);
-    if (error) console.error('[ReviewsListPage] Query error:', error);
-    if (reviewsData) console.log('[ReviewsListPage] Reviews data received, count:', reviewsData.length);
-    console.log('[ReviewsListPage] === END DEBUG ===');
-
-    // Auto-detect if we're in a constrained view (Shopify iframe)
-    const isConstrained = useConstrainedView(600);
-
-    // Slider for carousel mode (constrained view)
-    const { currentSlide, loaded, sliderRef, instanceRef } = useSlider(reviews.length);
+    // Auto-detect if we're in an iframe (Shopify embedding)
+    const isIframe = useConstrainedView();
 
     const sortReviews = useCallback((reviewsToSort: IReview[], sortType: SortType): IReview[] => {
         const sorted = [...reviewsToSort];
@@ -224,14 +209,30 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
                 aria-label="Reviews list"
                 data-testid="reviews-container"
             >
-                {isConstrained ? (
-                    /* Carousel mode for constrained views (Shopify iframe) */
+                {isIframe ? (
+                    /* Horizontal scroll mode for iframe (Shopify) */
                     <div className="relative">
-                        <div ref={sliderRef} className="keen-slider">
+                        {/* Review count indicator */}
+                        <div className="mb-4 text-sm text-[color:var(--color-text)] opacity-75">
+                            Showing {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
+                        </div>
+
+                        {/* Horizontal scrollable container */}
+                        <div
+                            className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth
+                            scrollbar-thin scrollbar-thumb-[color:var(--color-main)] scrollbar-track-gray-200"
+                            role="list"
+                            aria-label={`${reviews.length} customer reviews`}
+                            data-testid="reviews-horizontal-scroll"
+                            style={{
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: 'var(--color-main) #e5e7eb'
+                            }}
+                        >
                             {reviews.map((review, index) => (
-                                <div
+                                <article
                                     key={review.id || review.createdAt}
-                                    className="keen-slider__slide"
+                                    className="flex-shrink-0 w-80 snap-start"
                                     role="listitem"
                                     aria-label={`Review ${index + 1} of ${reviews.length}`}
                                     data-testid={`review-item-${index}`}
@@ -240,65 +241,9 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
                                         review={review}
                                         onMediaClick={handleMediaClick}
                                     />
-                                </div>
+                                </article>
                             ))}
                         </div>
-
-                        {/* Navigation arrows */}
-                        {loaded && instanceRef.current && reviews.length > 1 && (
-                            <>
-                                <button
-                                    onClick={() => instanceRef.current?.prev()}
-                                    disabled={currentSlide === 0}
-                                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-[color:var(--color-bg)] bg-opacity-90 rounded-full p-2 shadow-lg hover:bg-opacity-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed z-10"
-                                    aria-label="Previous review"
-                                    data-testid="carousel-prev"
-                                >
-                                    <IconChevronLeft size={24} className="text-[color:var(--color-text)]" />
-                                </button>
-                                <button
-                                    onClick={() => instanceRef.current?.next()}
-                                    disabled={currentSlide === reviews.length - 1}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-[color:var(--color-bg)] bg-opacity-90 rounded-full p-2 shadow-lg hover:bg-opacity-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed z-10"
-                                    aria-label="Next review"
-                                    data-testid="carousel-next"
-                                >
-                                    <IconChevronRight size={24} className="text-[color:var(--color-text)]" />
-                                </button>
-                            </>
-                        )}
-
-                        {/* Pagination dots */}
-                        {loaded && reviews.length > 1 && (
-                            <div className="flex justify-center items-center gap-2 mt-6" role="tablist" aria-label="Review pagination">
-                                {reviews.map((_, idx) => {
-                                    const isCurrent = idx === currentSlide;
-                                    const isCompleted = idx < currentSlide;
-
-                                    return (
-                                        <button
-                                            key={idx}
-                                            onClick={() => {
-                                                instanceRef.current?.moveToIdx(idx);
-                                            }}
-                                            className={`
-                                                dot transition-all duration-300 ease-out rounded-full
-                                                ${isCurrent
-                                                    ? 'w-8 h-2 bg-[color:var(--color-main)]'
-                                                    : isCompleted
-                                                    ? 'w-2 h-2 bg-[color:var(--color-main)] opacity-60'
-                                                    : 'w-2 h-2 bg-[color:var(--color-disabled)]'}
-                                                hover:scale-110 hover:opacity-100
-                                            `}
-                                            aria-label={`Go to review ${idx + 1}`}
-                                            aria-current={isCurrent ? 'true' : undefined}
-                                            role="tab"
-                                            data-testid={`carousel-dot-${idx}`}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        )}
                     </div>
                 ) : (
                     /* Grid mode for standalone/larger views */

@@ -169,13 +169,7 @@ const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseTo
     const { shopid } = request.query as any;
     const { prisma } = request.server.app;
 
-    console.log('[listReviews] === START DEBUG ===');
-    console.log('[listReviews] Received shopid from query:', shopid);
-    console.log('[listReviews] Query params:', request.query);
-    console.log('[listReviews] Request URL:', request.url.href);
-
     try {
-        console.log('[listReviews] Querying database with shopId:', shopid);
         const reviews = await prisma.reviews.findMany({
             where: {
                 shopId: shopid as string
@@ -197,13 +191,8 @@ const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseTo
                 updatedAt: true,
             },
         });
-        console.log('[listReviews] Found reviews count:', reviews.length);
-        console.log('[listReviews] Sample shopIds from results:', reviews.slice(0, 3).map(r => r.shopId));
-        console.log('[listReviews] === END DEBUG ===');
         return h.response({ version: '1.0.0', data: reviews }).code(200);
     } catch (error: any) {
-        console.error('[listReviews] ERROR:', error.message);
-        console.error('[listReviews] Stack:', error.stack);
         return h
             .response({
                 version: '1.0.0',

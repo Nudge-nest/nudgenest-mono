@@ -15,11 +15,11 @@ api_version = "2024-10"
 
   [[webhooks.subscriptions]]
   topics = [ "orders/create" ]
-  uri = "https://4a51a16970e7.ngrok-free.app/api/v1/shopify-webhook"
+  uri = "https://99d5-81-197-254-117.ngrok-free.app/api/v1/shopify-webhook"
 
   [[webhooks.subscriptions]]
   topics = [ "draft_orders/create" ]
-  uri = "https://4a51a16970e7.ngrok-free.app/api/v1/shopify-webhook"
+  uri = "https://99d5-81-197-254-117.ngrok-free.app/api/v1/shopify-webhook"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes https://nudgenest-backend-1094805904049.europe-west1.run.app
