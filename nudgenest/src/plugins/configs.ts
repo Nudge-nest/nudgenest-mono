@@ -34,14 +34,6 @@ const reviewConfigsPlugin: Hapi.Plugin<null> = {
                 },
             },
             {
-                method: 'PUT',
-                path: '/api/v1/config/{merchantId}',
-                handler: updateReviewConfigsHandler,
-                options: {
-                    auth: 'apikey', // Requires auth to prevent unauthorized updates
-                },
-            },
-            {
                 method: 'PATCH',
                 path: '/api/v1/config/{merchantId}',
                 handler: updateReviewConfigsHandler,
