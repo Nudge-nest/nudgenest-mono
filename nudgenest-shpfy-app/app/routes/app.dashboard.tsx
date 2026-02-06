@@ -19,7 +19,7 @@ function CustomerDashboard({ merchantData, shopInfo }: {
 
   const openConfigModal = useCallback(() => {
     const shopDomain = merchantData?.domains || shopInfo.myshopifyDomain;
-    const merchantId = merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
+    const merchantId = merchantData?.id || merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
     const configUrl = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/configs/${merchantId}`;
 
     const overlayHTML = `
@@ -111,7 +111,7 @@ function CustomerDashboard({ merchantData, shopInfo }: {
   }, [merchantData, shopInfo]);
 
   const shopDomain = merchantData?.domains || shopInfo.myshopifyDomain;
-  const merchantId = merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
+  const merchantId = merchantData?.id || merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
 
   return (
     <Page>
