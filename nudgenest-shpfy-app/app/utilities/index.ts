@@ -27,11 +27,18 @@ export interface IShopifyBusinessEntityData {
   id: string;
 }
 
+export interface ReviewStats {
+  totalReviews: number;
+  averageRating: string;
+  responseRate: number;
+}
+
 export interface LoaderData {
   isRegistered: boolean;
   shopInfo: IShopifyShop | null;
   businessInfo: IShopifyBusinessEntityData | null;
   merchantData?: any;
+  reviewStats?: ReviewStats | null;
   error?: string;
 }
 
@@ -122,5 +129,18 @@ export const registerMerchant = async (merchantData: any) => {
   });
 };
 
+export const fetchReviewStats = async (merchantId: string): Promise<ReviewStats | null> => {
+  try {
+    const url = `${BASE_URL}reviews/stats/${merchantId}`;
+    const response = await fetchWithErrorHandling(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data || null;
+  } catch (error) {
+    console.error("Error fetching review stats:", error);
+    return null;
+  }
+};
 
 

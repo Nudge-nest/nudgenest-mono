@@ -1,11 +1,12 @@
 import { TitleBar } from "@shopify/app-bridge-react";
 import {Banner, BlockStack, Button, Card, InlineStack, Layout, Page, Toast, Text} from "@shopify/polaris";
-import {useCallback, useState} from "react";
-import type {IShopifyShop} from "../utilities";
+import {useCallback, useState, useEffect} from "react";
+import type {IShopifyShop, ReviewStats} from "../utilities";
 
-function CustomerDashboard({ merchantData, shopInfo }: {
+function CustomerDashboard({ merchantData, shopInfo, reviewStats }: {
   merchantData: any;
   shopInfo: IShopifyShop;
+  reviewStats?: ReviewStats | null;
 }) {
   const [toastActive, setToastActive] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -115,8 +116,6 @@ function CustomerDashboard({ merchantData, shopInfo }: {
 
   return (
     <Page>
-      <TitleBar title="Nudge-nest Reviews Dashboard" />
-
       <BlockStack gap="500">
         {/* Welcome Banner */}
         <Banner title="Welcome Back!" >
@@ -159,7 +158,7 @@ function CustomerDashboard({ merchantData, shopInfo }: {
                 <InlineStack gap="400" align="space-around">
                   <BlockStack gap="100" align="center">
                     <Text variant="heading2xl" as="p">
-                      {merchantData?.totalReviews || 0}
+                      {reviewStats?.totalReviews ?? 0}
                     </Text>
                     <Text variant="bodySm" as="p" >
                       Total Reviews
@@ -168,7 +167,7 @@ function CustomerDashboard({ merchantData, shopInfo }: {
 
                   <BlockStack gap="100" align="center">
                     <Text variant="heading2xl" as="p">
-                      {merchantData?.averageRating || '0.0'}
+                      {reviewStats?.averageRating ?? '0.0'}
                     </Text>
                     <Text variant="bodySm" as="p" >
                       Average Rating
@@ -177,7 +176,7 @@ function CustomerDashboard({ merchantData, shopInfo }: {
 
                   <BlockStack gap="100" align="center">
                     <Text variant="heading2xl" as="p">
-                      {merchantData?.responseRate || '0'}%
+                      {reviewStats?.responseRate ?? 0}%
                     </Text>
                     <Text variant="bodySm" as="p" >
                       Response Rate

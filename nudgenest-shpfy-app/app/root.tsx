@@ -19,6 +19,15 @@ export default function App() {
         />
         <Meta />
         <Links />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: #f6f6f7;
+            }
+          `
+        }} />
       </head>
       <body>
         <Outlet />

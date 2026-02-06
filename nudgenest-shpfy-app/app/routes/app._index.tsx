@@ -1,10 +1,9 @@
-import {Banner, BlockStack, Page, Text} from "@shopify/polaris";
+import {Banner, Page} from "@shopify/polaris";
 import RegistrationPage from "./app.registration";
 import CustomerDashboard from "./app.dashboard";
 import {useLoaderData} from "@remix-run/react";
-import {useEffect, useState} from "react";
 import type { LoaderData} from "../utilities";
-import {checkMerchantRegistration, getMerchantDataFromShopify, registerMerchant} from "../utilities";
+import {checkMerchantRegistration, getMerchantDataFromShopify, registerMerchant, fetchReviewStats} from "../utilities";
 import type {ActionFunctionArgs, LoaderFunctionArgs} from "@remix-run/node";
 import { json} from "@remix-run/node";
 import {authenticate} from "../shopify.server";
@@ -24,11 +23,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     // Check if merchant is already registered in Nudge-nest
     const registrationCheck = await checkMerchantRegistration(shopInfo.id);
 
+    // Fetch review stats if merchant is registered
+    let reviewStats = null;
+    if (registrationCheck.data?.id) {
+      reviewStats = await fetchReviewStats(registrationCheck.data.id);
+    }
+
     const loaderData: LoaderData = {
       isRegistered: !!registrationCheck.data,
       shopInfo,
       businessInfo,
       merchantData: registrationCheck.data || null,
+      reviewStats,
     };
 
     return json(loaderData);
@@ -88,17 +94,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
   const data = useLoaderData<LoaderData>();
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Prevent flash of content
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-  if (isLoading || !data) {
+  if (!data) {
     return (
       <div style={{
         position: 'fixed',
@@ -108,21 +105,26 @@ export default function Index() {
         height: '100vh',
         backgroundColor: '#f6f6f7',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        gap: '12px',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}>
-        <BlockStack gap="200" align="center">
-          <div style={{
-            width: '32px',
-            height: '32px',
-            border: '3px solid #e1e3e5',
-            borderTop: '3px solid #ef4444',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <Text variant="bodyMd" as="p">Loading...</Text>
-        </BlockStack>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          border: '3px solid #e1e3e5',
+          borderTop: '3px solid #ef4444',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{
+          margin: 0,
+          fontSize: '14px',
+          fontWeight: 400,
+          color: '#202223'
+        }}>Loading...</p>
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -161,6 +163,7 @@ export default function Index() {
     <CustomerDashboard
       merchantData={data.merchantData}
       shopInfo={data.shopInfo}
+      reviewStats={data.reviewStats}
     />
   ) : (
     <RegistrationPage

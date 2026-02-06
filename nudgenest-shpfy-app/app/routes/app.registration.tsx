@@ -27,8 +27,6 @@ function RegistrationPage({ shopInfo, businessInfo }: {
 
   return (
     <Page>
-      <TitleBar title="Welcome to Nudge-nest Reviews" />
-
       <Layout>
         <Layout.Section>
           <BlockStack gap="500">
