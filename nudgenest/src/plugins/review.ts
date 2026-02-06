@@ -29,6 +29,14 @@ const reviewsPlugin: Hapi.Plugin<null> = {
                 },
             },
             {
+                method: 'POST',
+                path: '/api/v1/reviews',
+                handler: createReview,
+                options: {
+                    auth: false, // Allow unauthenticated access for store reviews
+                },
+            },
+            {
                 method: 'PUT',
                 path: '/api/v1/reviews/{reviewId}',
                 handler: updateReviewById,
@@ -81,6 +89,47 @@ const getReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => 
                 error: error.message,
             })
             .code(500);
+    }
+};
+
+const createReview = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+    const reviewData = request.payload as any;
+    const { prisma } = request.server.app;
+
+    try {
+        // Validate required fields
+        if (!reviewData.merchantId || !reviewData.customerName || !reviewData.status) {
+            return h.response({
+                version: '1.0.0',
+                error: 'Missing required fields: merchantId, customerName, status'
+            }).code(400);
+        }
+
+        // Create the review
+        const newReview = await prisma.reviews.create({
+            data: {
+                merchantId: reviewData.merchantId,
+                merchantBusinessId: reviewData.merchantBusinessId || '',
+                shopId: reviewData.shopId || '',
+                customerEmail: reviewData.customerEmail || '',
+                customerPhone: reviewData.customerPhone || '',
+                customerName: reviewData.customerName,
+                items: reviewData.items || [],
+                result: reviewData.result || null,
+                verified: reviewData.verified ?? false,
+                replies: reviewData.replies || null,
+                status: reviewData.status,
+                merchantApiKey: reviewData.merchantApiKey || null,
+            },
+        });
+
+        return h.response({ version: '1.0.0', data: newReview }).code(201);
+    } catch (error: any) {
+        console.error('Error creating review:', error);
+        return h.response({
+            version: '1.0.0',
+            error: error.message || 'Failed to create review'
+        }).code(500);
     }
 };
 

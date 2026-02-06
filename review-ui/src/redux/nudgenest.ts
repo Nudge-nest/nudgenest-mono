@@ -35,6 +35,15 @@ export const nudgeNestApi = createApi({
                 transformResponse: (response: { data: any }) => response.data,
                 providesTags: ['review'],
             }),
+            createReview: builder.mutation({
+                query: (reviewData: Partial<IReview>) => ({
+                    url: `reviews`,
+                    method: 'POST',
+                    body: reviewData,
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                invalidatesTags: ['review'],
+            }),
             updateReview: builder.mutation({
                 query: (review: IReview) => ({
                     url: `reviews/${review.id}`,
@@ -137,6 +146,7 @@ export const nudgeNestApi = createApi({
 export const {
     useGetReviewQuery,
     useListReviewsQuery,
+    useCreateReviewMutation,
     useUpdateReviewMutation,
     useUploadReviewMediaMutation,
     useDeleteReviewMediaMutation,

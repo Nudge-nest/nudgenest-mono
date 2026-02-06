@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 import { IconStar } from '@tabler/icons-react';
 import Loading from '../components/Loading.tsx';
-import { useGetReviewConfigsQuery } from '../redux/nudgenest.ts';
+import { useGetReviewConfigsQuery, useCreateReviewMutation } from '../redux/nudgenest.ts';
 import { useSlider } from '../hooks/useSlider.ts';
 
 const StoreReviewPage = () => {
     const { merchantId } = useParams<{ merchantId: string }>();
     const { data: merchantConfigs, isLoading } = useGetReviewConfigsQuery(merchantId as string);
+    const [createReview] = useCreateReviewMutation();
 
     // Simple state management
     const [rating, setRating] = useState(0);
@@ -32,29 +33,33 @@ const StoreReviewPage = () => {
         try {
             // Create review object
             const storeReview = {
-                merchantId: merchantId,
+                merchantId: merchantId as string,
                 items: [{
                     id: 'store-general',
                     name: questionText
                 }],
                 result: [
-                    { id: 'store-general', value: rating },
-                    { comment: comment }
+                    { id: 'store-general', value: rating, comment: comment }
                 ],
-                status: 'Completed',
+                status: 'Completed' as const,
                 customerName: customerName,
                 verified: false,
                 merchantBusinessId: '',
-                replies: []
+                shopId: '',
+                customerEmail: '',
+                customerPhone: '',
+                replies: null
             };
 
-            // TODO: Submit to API
-            console.log('Submitting store review:', storeReview);
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Submit to API
+            await createReview(storeReview).unwrap();
 
             setSubmitSuccess(true);
+
+            // Notify parent window if in iframe
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'review_submitted' }, '*');
+            }
         } catch (error) {
             console.error('Failed to submit review:', error);
             alert('Failed to submit review. Please try again.');
