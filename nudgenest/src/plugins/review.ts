@@ -15,47 +15,7 @@ declare module '@hapi/hapi' {
     }
 }
 
-const reviewsPlugin: Hapi.Plugin<null> = {
-    name: 'reviewsPlugin',
-    dependencies: ['prisma'],
-    register: async (server: Hapi.Server) => {
-        server.route([
-            {
-                method: 'GET',
-                path: '/api/v1/reviews/{reviewId}',
-                handler: getReviewById,
-                options: {
-                    auth: false, // Allow unauthenticated access so customers can fetch their review
-                },
-            },
-            {
-                method: 'POST',
-                path: '/api/v1/reviews',
-                handler: createReview,
-                options: {
-                    auth: false, // Allow unauthenticated access for store reviews
-                },
-            },
-            {
-                method: 'PUT',
-                path: '/api/v1/reviews/{reviewId}',
-                handler: updateReviewById,
-                options: {
-                    auth: 'apikey',
-                },
-            },
-            {
-                method: 'GET',
-                path: '/api/v1/reviews/list',
-                handler: listReviewsByMerchantId,
-                options: {
-                    auth: false, // Public endpoint - no authentication required
-                },
-            },
-        ]);
-    },
-};
-
+// Handler functions
 const getReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const { reviewId } = request.params;
     const { prisma } = request.server.app;
@@ -249,6 +209,48 @@ const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseTo
             })
             .code(500);
     }
+};
+
+// Plugin definition
+const reviewsPlugin: Hapi.Plugin<null> = {
+    name: 'reviewsPlugin',
+    dependencies: ['prisma'],
+    register: async (server: Hapi.Server) => {
+        server.route([
+            {
+                method: 'GET',
+                path: '/api/v1/reviews/{reviewId}',
+                handler: getReviewById,
+                options: {
+                    auth: false, // Allow unauthenticated access so customers can fetch their review
+                },
+            },
+            {
+                method: 'POST',
+                path: '/api/v1/reviews',
+                handler: createReview,
+                options: {
+                    auth: false, // Allow unauthenticated access for store reviews
+                },
+            },
+            {
+                method: 'PUT',
+                path: '/api/v1/reviews/{reviewId}',
+                handler: updateReviewById,
+                options: {
+                    auth: 'apikey',
+                },
+            },
+            {
+                method: 'GET',
+                path: '/api/v1/reviews/list',
+                handler: listReviewsByMerchantId,
+                options: {
+                    auth: false, // Public endpoint - no authentication required
+                },
+            },
+        ]);
+    },
 };
 
 export default reviewsPlugin;
