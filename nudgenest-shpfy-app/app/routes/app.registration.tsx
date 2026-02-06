@@ -10,6 +10,15 @@ function RegistrationPage({ shopInfo, businessInfo }: {
 }) {
   const fetcher = useFetcher();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showTitleBar, setShowTitleBar] = useState(false);
+
+  useEffect(() => {
+    // Delay TitleBar rendering to prevent flicker
+    const timer = setTimeout(() => {
+      setShowTitleBar(true);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleRegister = useCallback(() => {
     setIsSubmitting(true);
@@ -27,7 +36,7 @@ function RegistrationPage({ shopInfo, businessInfo }: {
 
   return (
     <Page>
-      <TitleBar title="Welcome to Nudge-nest Reviews" />
+      {showTitleBar && <TitleBar title="Welcome to Nudge-nest Reviews" />}
 
       <Layout>
         <Layout.Section>
