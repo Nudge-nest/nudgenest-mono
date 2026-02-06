@@ -118,12 +118,23 @@ function CustomerDashboard({ merchantData, shopInfo, reviewStats }: {
     <Page>
       <BlockStack gap="500">
         {/* Welcome Banner */}
-        <Banner title="Welcome Back!" >
-          <p>
-            Your review system is active and collecting customer feedback.
-            Manage your settings and view analytics below.
-          </p>
-        </Banner>
+        <div style={{
+          background: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderLeft: '4px solid #ef4444',
+          borderRadius: '8px',
+          padding: '16px 20px',
+        }}>
+          <BlockStack gap="200">
+            <Text variant="headingMd" as="h2" fontWeight="semibold" tone="base">
+              Welcome Back!
+            </Text>
+            <Text variant="bodyMd" as="p" tone="subdued">
+              Your review system is active and collecting customer feedback.
+              Manage your settings and view analytics below.
+            </Text>
+          </BlockStack>
+        </div>
 
         <Layout>
           {/* Configuration Section */}
