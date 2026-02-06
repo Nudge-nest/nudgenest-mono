@@ -115,8 +115,6 @@ function CustomerDashboard({ merchantData, shopInfo }: {
 
   return (
     <Page>
-      <TitleBar title="Nudge-nest Reviews Dashboard" />
-
       <BlockStack gap="500">
         {/* Welcome Banner */}
         <Banner title="Welcome Back!" >
