@@ -16,7 +16,7 @@ function CustomerDashboard({ merchantData, shopInfo }: {
     // Delay TitleBar rendering to prevent flicker
     const timer = setTimeout(() => {
       setShowTitleBar(true);
-    }, 150);
+    }, 250);
     return () => clearTimeout(timer);
   }, []);
 
