@@ -10,15 +10,6 @@ function CustomerDashboard({ merchantData, shopInfo }: {
   const [toastActive, setToastActive] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastError, setToastError] = useState(false);
-  const [showTitleBar, setShowTitleBar] = useState(false);
-
-  useEffect(() => {
-    // Delay TitleBar rendering to prevent flicker
-    const timer = setTimeout(() => {
-      setShowTitleBar(true);
-    }, 250);
-    return () => clearTimeout(timer);
-  }, []);
 
   const showToast = useCallback((message: string, isError = false) => {
     setToastMessage(message);
@@ -124,7 +115,6 @@ function CustomerDashboard({ merchantData, shopInfo }: {
 
   return (
     <Page>
-      {showTitleBar && <TitleBar title="Nudge-nest Reviews Dashboard" />}
       <BlockStack gap="500">
         {/* Welcome Banner */}
         <Banner title="Welcome Back!" >
