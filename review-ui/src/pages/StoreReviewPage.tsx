@@ -10,7 +10,6 @@ const StoreReviewPage = () => {
     const { data: merchantConfigs, isLoading } = useGetReviewConfigsQuery(merchantId as string);
 
     // Simple state management
-    const [currentSlide, setCurrentSlide] = useState(0);
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
     const [customerName, setCustomerName] = useState('');
