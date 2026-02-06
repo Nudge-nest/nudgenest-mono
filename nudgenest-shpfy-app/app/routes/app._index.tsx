@@ -2,7 +2,6 @@ import {Banner, Page} from "@shopify/polaris";
 import RegistrationPage from "./app.registration";
 import CustomerDashboard from "./app.dashboard";
 import {useLoaderData} from "@remix-run/react";
-import {useEffect, useState} from "react";
 import type { LoaderData} from "../utilities";
 import {checkMerchantRegistration, getMerchantDataFromShopify, registerMerchant} from "../utilities";
 import type {ActionFunctionArgs, LoaderFunctionArgs} from "@remix-run/node";
@@ -88,17 +87,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
   const data = useLoaderData<LoaderData>();
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Prevent flash of content
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-  if (isLoading || !data) {
+  if (!data) {
     return (
       <div style={{
         position: 'fixed',
