@@ -120,13 +120,6 @@ const StoreReviewPage = () => {
                             {rating} star{rating !== 1 ? 's' : ''}
                         </p>
                     )}
-                    <button
-                        onClick={() => sliderHook.instanceRef.current?.moveToIdx(1)}
-                        disabled={rating === 0}
-                        className="mt-8 px-6 py-3 bg-[color:var(--color-main)] text-white rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Next
-                    </button>
                 </div>
 
                 {/* Slide 2: Comment */}
@@ -160,18 +153,30 @@ const StoreReviewPage = () => {
 
             {/* Navigation dots */}
             {sliderHook.loaded && sliderHook.instanceRef.current && (
-                <div className="w-full dots flex justify-center gap-4 py-2">
-                    {[0, 1].map((idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => sliderHook.instanceRef.current?.moveToIdx(idx)}
-                            className={`dot w-20 h-1.5 rounded transition-all ${
-                                idx <= sliderHook.currentSlide
-                                    ? 'bg-[color:var(--color-main)]'
-                                    : 'bg-[color:var(--color-disabled)]'
-                            }`}
-                        />
-                    ))}
+                <div className="w-full dots flex justify-center gap-2 py-4">
+                    {[0, 1].map((idx) => {
+                        const isCurrent = idx === sliderHook.currentSlide;
+                        const isCompleted = idx < sliderHook.currentSlide;
+
+                        return (
+                            <button
+                                key={idx}
+                                onClick={() => sliderHook.instanceRef.current?.moveToIdx(idx)}
+                                className={`
+                                    dot transition-all duration-300 ease-out rounded-full
+                                    ${isCurrent
+                                        ? 'w-8 h-2 bg-[color:var(--color-main)]'
+                                        : isCompleted
+                                        ? 'w-2 h-2 bg-[color:var(--color-main)] opacity-60'
+                                        : 'w-2 h-2 bg-[color:var(--color-disabled)]'}
+                                    hover:scale-110 hover:opacity-100
+                                    focus:outline-none focus:ring-2 focus:ring-[color:var(--color-main)] focus:ring-offset-1
+                                `}
+                                aria-label={`Go to ${idx === 0 ? 'rating' : 'comment'} section`}
+                                aria-current={isCurrent ? 'step' : undefined}
+                            />
+                        );
+                    })}
                 </div>
             )}
         </div>
