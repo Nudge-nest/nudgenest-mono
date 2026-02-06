@@ -26,12 +26,6 @@ export default function App() {
               padding: 0;
               background: #f6f6f7;
             }
-            body {
-              visibility: hidden;
-            }
-            body.polaris-loaded {
-              visibility: visible;
-            }
           `
         }} />
       </head>
@@ -39,20 +33,6 @@ export default function App() {
         <Outlet />
         <ScrollRestoration />
         <Scripts />
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              // Wait for Polaris styles to load
-              if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function() {
-                  document.body.classList.add('polaris-loaded');
-                });
-              } else {
-                document.body.classList.add('polaris-loaded');
-              }
-            })();
-          `
-        }} />
       </body>
     </html>
   );
