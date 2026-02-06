@@ -3,7 +3,7 @@ import RegistrationPage from "./app.registration";
 import CustomerDashboard from "./app.dashboard";
 import {useLoaderData} from "@remix-run/react";
 import type { LoaderData} from "../utilities";
-import {checkMerchantRegistration, getMerchantDataFromShopify, registerMerchant} from "../utilities";
+import {checkMerchantRegistration, getMerchantDataFromShopify, registerMerchant, fetchReviewStats} from "../utilities";
 import type {ActionFunctionArgs, LoaderFunctionArgs} from "@remix-run/node";
 import { json} from "@remix-run/node";
 import {authenticate} from "../shopify.server";
@@ -23,11 +23,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     // Check if merchant is already registered in Nudge-nest
     const registrationCheck = await checkMerchantRegistration(shopInfo.id);
 
+    // Fetch review stats if merchant is registered
+    let reviewStats = null;
+    if (registrationCheck.data?.id) {
+      reviewStats = await fetchReviewStats(registrationCheck.data.id);
+    }
+
     const loaderData: LoaderData = {
       isRegistered: !!registrationCheck.data,
       shopInfo,
       businessInfo,
       merchantData: registrationCheck.data || null,
+      reviewStats,
     };
 
     return json(loaderData);
@@ -156,6 +163,7 @@ export default function Index() {
     <CustomerDashboard
       merchantData={data.merchantData}
       shopInfo={data.shopInfo}
+      reviewStats={data.reviewStats}
     />
   ) : (
     <RegistrationPage

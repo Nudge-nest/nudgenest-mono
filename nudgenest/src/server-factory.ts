@@ -14,6 +14,7 @@ import healthcheck from './plugins/healthcheck';
 import reviewConfigsPlugin from './plugins/configs';
 import reviewMediaPlugin from './plugins/media';
 import billingPlugin from './plugins/billing';
+import reviewStatsPlugin from './plugins/reviewStats';
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ export const createServer = async () => {
         reviewConfigsPlugin,
         reviewMediaPlugin,
         billingPlugin,
+        reviewStatsPlugin,
     ]);
     server.route({
         method: 'GET',
