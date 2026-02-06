@@ -19,11 +19,40 @@ export default function App() {
         />
         <Meta />
         <Links />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: #f6f6f7;
+            }
+            body {
+              visibility: hidden;
+            }
+            body.polaris-loaded {
+              visibility: visible;
+            }
+          `
+        }} />
       </head>
       <body>
         <Outlet />
         <ScrollRestoration />
         <Scripts />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              // Wait for Polaris styles to load
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                  document.body.classList.add('polaris-loaded');
+                });
+              } else {
+                document.body.classList.add('polaris-loaded');
+              }
+            })();
+          `
+        }} />
       </body>
     </html>
   );
