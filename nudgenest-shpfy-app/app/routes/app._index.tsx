@@ -1,4 +1,4 @@
-import {Banner, BlockStack, Page, Text} from "@shopify/polaris";
+import {Banner, Page} from "@shopify/polaris";
 import RegistrationPage from "./app.registration";
 import CustomerDashboard from "./app.dashboard";
 import {useLoaderData} from "@remix-run/react";
@@ -108,21 +108,26 @@ export default function Index() {
         height: '100vh',
         backgroundColor: '#f6f6f7',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        gap: '12px',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}>
-        <BlockStack gap="200" align="center">
-          <div style={{
-            width: '32px',
-            height: '32px',
-            border: '3px solid #e1e3e5',
-            borderTop: '3px solid #ef4444',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <Text variant="bodyMd" as="p">Loading...</Text>
-        </BlockStack>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          border: '3px solid #e1e3e5',
+          borderTop: '3px solid #ef4444',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{
+          margin: 0,
+          fontSize: '14px',
+          fontWeight: 400,
+          color: '#202223'
+        }}>Loading...</p>
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
