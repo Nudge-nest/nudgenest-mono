@@ -30,15 +30,15 @@ const reviewConfigsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/config/{merchantId}',
                 handler: getReviewConfigsHandler,
                 options: {
-                    auth: 'apikey',
+                    auth: false, // Public endpoint - config data is not sensitive
                 },
             },
             {
-                method: 'PUT',
+                method: 'PATCH',
                 path: '/api/v1/config/{merchantId}',
                 handler: updateReviewConfigsHandler,
                 options: {
-                    auth: 'apikey',
+                    auth: 'apikey', // Requires auth to prevent unauthorized updates
                 },
             },
         ]);
