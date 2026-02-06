@@ -133,7 +133,7 @@ const verifyMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
     const { merchantPlatformId } = request.params as { merchantPlatformId: string };
     const { prisma } = request.server.app;
     try {
-        const merchant = await prisma.merchants.findMany({
+        const merchant = await prisma.merchants.findFirst({
             where: {
                 shopId: {
                     contains: merchantPlatformId,

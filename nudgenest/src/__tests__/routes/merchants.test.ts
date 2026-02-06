@@ -43,7 +43,7 @@ describe('Merchants route', () => {
     });
     test('POST /api/v1/merchants/verify/{merchantPlatformId} returns merchant data and 200 status', async () => {
         const merchantPlatformId = 'TESTSH0P1D';
-        prismaMock.merchants.findMany.mockResolvedValue([mockMerchant]);
+        prismaMock.merchants.findFirst.mockResolvedValue(mockMerchant);
         const res: ServerInjectResponse<{ version: string; data: responseType }> = await server.inject({
             method: 'POST',
             url: '/api/v1/merchants/verify/' + merchantPlatformId,
@@ -54,7 +54,7 @@ describe('Merchants route', () => {
         expect(res.result?.version).toMatch('1.0.0');
     });
     test('POST /api/v1/merchants/verify/{merchantPlatformId} return 500 on error', async () => {
-        prismaMock.merchants.findMany.mockRejectedValue(new Error('Invalid `prisma.reviews.findUnique()` invocation'));
+        prismaMock.merchants.findFirst.mockRejectedValue(new Error('Invalid `prisma.reviews.findUnique()` invocation'));
         const res: ServerInjectResponse<{ version: string; error: responseType }> = await server.inject({
             method: 'POST',
             url: '/api/v1/merchants/verify/nonexistent',
