@@ -24,11 +24,11 @@ const SortOptions: FC<SortOptionsProps> = ({ currentSort, onSortChange, onAddRev
                 onClick={onAddReview}
                 className="px-6 py-3 min-h-[44px] bg-[color:var(--color-main)] text-white rounded-lg
                 hover:opacity-90 transition-all duration-200 font-medium shadow-sm cursor-pointer"
-                aria-label="Write your store review"
+                aria-label="Review our store"
                 data-testid="add-review-button"
                 type="button"
             >
-                Write Store Review
+                Review Our Store
             </button>
 
             <Dropdown

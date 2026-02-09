@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 import { IconStar } from '@tabler/icons-react';
 import Loading from '../components/Loading.tsx';
+import ThankYouComponent from '../components/ThankYouComponent.tsx';
 import { useGetReviewConfigsQuery, useGetMerchantQuery, useCreateReviewMutation } from '../redux/nudgenest.ts';
 import { useSlider } from '../hooks/useSlider.ts';
 
@@ -86,9 +87,7 @@ const StoreReviewPage = () => {
     if (submitSuccess) {
         return (
             <div className="h-full flex flex-col items-center justify-center gap-4 p-4">
-                <div className="text-6xl">🎉</div>
-                <h2 className="text-2xl font-bold text-[color:var(--color-text)]">Thank you!</h2>
-                <p className="text-[color:var(--color-text)] opacity-75">Your review has been submitted successfully.</p>
+                <ThankYouComponent message="Your review has been submitted successfully. Thank you!" />
             </div>
         );
     }

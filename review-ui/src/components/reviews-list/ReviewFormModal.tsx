@@ -11,7 +11,13 @@ const ReviewFormModal: FC<ReviewFormModalProps> = ({ isOpen, onClose, merchantId
 
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
-            if (event.origin !== 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app') return;
+            // Accept messages from localhost (dev) or production
+            const allowedOrigins = [
+                'http://localhost:3001',
+                'https://nudgenest-review-ui-1094805904049.europe-west1.run.app'
+            ];
+
+            if (!allowedOrigins.includes(event.origin)) return;
 
             switch (event.data.type) {
                 case 'review_submitted':
