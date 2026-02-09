@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 import { IconStar } from '@tabler/icons-react';
 import Loading from '../components/Loading.tsx';
-import { useGetReviewConfigsQuery, useCreateReviewMutation } from '../redux/nudgenest.ts';
+import { useGetReviewConfigsQuery, useGetMerchantQuery, useCreateReviewMutation } from '../redux/nudgenest.ts';
 import { useSlider } from '../hooks/useSlider.ts';
 
 const StoreReviewPage = () => {
     const { merchantId } = useParams<{ merchantId: string }>();
-    const { data: merchantConfigs, isLoading } = useGetReviewConfigsQuery(merchantId as string);
+    const { data: merchantConfigs, isLoading: configsLoading } = useGetReviewConfigsQuery(merchantId as string);
+    const { data: merchantData, isLoading: merchantLoading } = useGetMerchantQuery(merchantId as string);
     const [createReview] = useCreateReviewMutation();
+
+    const isLoading = configsLoading || merchantLoading;
 
     // Simple state management
     const [rating, setRating] = useState(0);
@@ -44,8 +47,8 @@ const StoreReviewPage = () => {
                 status: 'Completed' as const,
                 customerName: customerName,
                 verified: false,
-                merchantBusinessId: '',
-                shopId: '',
+                merchantBusinessId: merchantData?.businessInfo || '',
+                shopId: merchantData?.shopId || '',
                 customerEmail: '',
                 customerPhone: '',
                 replies: null

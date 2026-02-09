@@ -82,6 +82,14 @@ export const nudgeNestApi = createApi({
                 transformResponse: (response: { data: any }) => response.data,
                 invalidatesTags: ['media'],
             }),
+            getMerchant: builder.query({
+                query: (merchantId: string) => ({
+                    url: `merchants/${merchantId}`,
+                    method: 'GET',
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                providesTags: ['config'],
+            }),
             getReviewConfigs: builder.query({
                 query: (merchantId: string) => ({
                     url: `config/${merchantId}`,
@@ -162,6 +170,7 @@ export const {
     useUpdateReviewMutation,
     useUploadReviewMediaMutation,
     useDeleteReviewMediaMutation,
+    useGetMerchantQuery,
     useGetReviewConfigsQuery,
     useUpdateReviewConfigsMutation,
     useGetPlansQuery,

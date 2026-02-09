@@ -28,6 +28,14 @@ const merchantsPlugin: Hapi.Plugin<null> = {
                 },
             },
             {
+                method: 'GET',
+                path: '/api/v1/merchants/{merchantId}',
+                handler: getMerchantHandler,
+                options: {
+                    auth: false,
+                },
+            },
+            {
                 method: 'POST',
                 path: '/api/v1/merchants',
                 handler: createMerchantHandler,
@@ -127,6 +135,44 @@ export const defaultConfigs = {
             },
         ],
     },
+};
+
+const getMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+    const { merchantId } = request.params as { merchantId: string };
+    const { prisma } = request.server.app;
+    try {
+        const merchant = await prisma.merchants.findUnique({
+            where: {
+                id: merchantId,
+            },
+            select: {
+                id: true,
+                shopId: true,
+                domains: true,
+                email: true,
+                name: true,
+                businessInfo: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+
+        if (!merchant) {
+            return h.response({
+                version: '1.0.0',
+                error: 'Merchant not found'
+            }).code(404);
+        }
+
+        return h.response({ version: '1.0.0', data: merchant }).code(200);
+    } catch (error: any) {
+        return h
+            .response({
+                version: '1.0.0',
+                error: error.message,
+            })
+            .code(500);
+    }
 };
 
 const verifyMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
