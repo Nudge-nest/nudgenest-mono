@@ -287,8 +287,9 @@ const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
             data: { ...(merchantData || {}), apiKey } as any,
         });
 
-        // Generate store review QR code URL
-        const storeReviewUrl = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/store/review/${merchant.id}`;
+        // Generate store review QR code URL from env
+        const reviewUiBaseUrl = process.env.REVIEW_UI_BASE_URL || 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
+        const storeReviewUrl = `${reviewUiBaseUrl}/store/review/${merchant.id}`;
 
         // Update qrCode config with generated URL
         const configsWithQrUrl = {

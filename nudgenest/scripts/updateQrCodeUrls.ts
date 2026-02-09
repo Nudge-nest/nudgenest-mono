@@ -1,4 +1,7 @@
 import { PrismaClient } from '../generated/prisma/prisma/client';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const prisma = new PrismaClient();
 
@@ -29,8 +32,9 @@ async function updateQrCodeUrls() {
             const shouldUpdate = !currentUrl || currentUrl === '' || currentUrl.includes('your-domain.com');
 
             if (shouldUpdate) {
-                // Generate new store review URL
-                const newUrl = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/store/review/${config.merchantId}`;
+                // Generate new store review URL from env
+                const reviewUiBaseUrl = process.env.REVIEW_UI_BASE_URL || 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
+                const newUrl = `${reviewUiBaseUrl}/store/review/${config.merchantId}`;
 
                 // Update the qrCode array
                 const updatedQrCode = qrCodeArray.map((field: any) =>

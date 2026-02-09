@@ -21,7 +21,7 @@
         "db-g": "npx prisma generate",
         "db-p": "npx prisma db push",
         "lint": "eslint .",
-        "migrate:qr-urls": "tsc scripts/updateQrCodeUrls.ts --outDir build/scripts && node build/scripts/updateQrCodeUrls.js"
+        "migrate:qr-urls": "ts-node scripts/updateQrCodeUrls.ts"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.940.0",
