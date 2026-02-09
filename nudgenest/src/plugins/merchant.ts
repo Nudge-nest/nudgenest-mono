@@ -286,8 +286,21 @@ const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         const merchant = await prisma.merchants.create({
             data: { ...(merchantData || {}), apiKey } as any,
         });
+
+        // Generate store review QR code URL
+        const storeReviewUrl = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/store/review/${merchant.id}`;
+
+        // Update qrCode config with generated URL
+        const configsWithQrUrl = {
+            ...defaultConfigs,
+            qrCode: defaultConfigs.qrCode.map(field =>
+                field.key === 'qrCodeUrl' ? { ...field, value: storeReviewUrl } : field
+            ),
+            merchantId: merchant.id
+        };
+
         const reviewConfigs = await prisma.configurations.create({
-            data: { ...defaultConfigs, merchantId: merchant.id } as any,
+            data: configsWithQrUrl as any,
         });
 
         // Auto-assign free plan with 14-day trial

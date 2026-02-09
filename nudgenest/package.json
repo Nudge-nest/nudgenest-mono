@@ -20,7 +20,8 @@
         "format": "prettier --write .",
         "db-g": "npx prisma generate",
         "db-p": "npx prisma db push",
-        "lint": "eslint ."
+        "lint": "eslint .",
+        "migrate:qr-urls": "tsc scripts/updateQrCodeUrls.ts --outDir build/scripts && node build/scripts/updateQrCodeUrls.js"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.940.0",
