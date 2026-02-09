@@ -42,6 +42,7 @@ const StoreReviewPage = () => {
 
         try {
             // Create review object with extracted IDs (not GID URLs)
+            // Result array structure: [rating, media (optional), comment]
             const storeReview = {
                 merchantId: merchantId as string,
                 items: [{
@@ -49,7 +50,8 @@ const StoreReviewPage = () => {
                     name: questionText
                 }],
                 result: [
-                    { id: 'store-general', value: rating, comment: comment }
+                    { id: 'store-general', value: rating },
+                    { comment: comment }
                 ],
                 status: 'Completed' as const,
                 customerName: customerName,
