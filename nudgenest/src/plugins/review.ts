@@ -175,14 +175,25 @@ const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) 
 //test merchant id MTY3NTgwMjk3MzU0
 
 const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
-    const { shopid } = request.query as any;
+    const { shopid, merchantid } = request.query as any;
     const { prisma } = request.server.app;
 
     try {
+        // Build where clause to support filtering by either shopId or merchantId
+        const whereClause: any = {};
+        if (shopid) {
+            whereClause.shopId = shopid as string;
+        } else if (merchantid) {
+            whereClause.merchantId = merchantid as string;
+        } else {
+            return h.response({
+                version: '1.0.0',
+                error: 'Either shopid or merchantid query parameter is required'
+            }).code(400);
+        }
+
         const reviews = await prisma.reviews.findMany({
-            where: {
-                shopId: shopid as string
-            },
+            where: whereClause,
             select: {
                 // Explicitly select fields (excludes otpSecret)
                 id: true,
@@ -199,6 +210,9 @@ const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseTo
                 createdAt: true,
                 updatedAt: true,
             },
+            orderBy: {
+                createdAt: 'desc'
+            }
         });
         return h.response({ version: '1.0.0', data: reviews }).code(200);
     } catch (error: any) {

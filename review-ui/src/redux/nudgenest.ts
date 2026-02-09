@@ -28,10 +28,22 @@ export const nudgeNestApi = createApi({
                 providesTags: ['review'],
             }),
             listReviews: builder.query({
-                query: (shopId: string) => ({
-                    url: `reviews/list?shopid=${shopId}`,
-                    method: 'GET',
-                }),
+                query: (params: string | { shopId?: string; merchantId?: string }) => {
+                    // Support both old string format and new object format
+                    if (typeof params === 'string') {
+                        return {
+                            url: `reviews/list?shopid=${params}`,
+                            method: 'GET',
+                        };
+                    }
+                    const queryParams = new URLSearchParams();
+                    if (params.shopId) queryParams.append('shopid', params.shopId);
+                    if (params.merchantId) queryParams.append('merchantid', params.merchantId);
+                    return {
+                        url: `reviews/list?${queryParams.toString()}`,
+                        method: 'GET',
+                    };
+                },
                 transformResponse: (response: { data: any }) => response.data,
                 providesTags: ['review'],
             }),
