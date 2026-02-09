@@ -58,6 +58,7 @@ const StoreReviewPage = () => {
                 shopId: extractIdFromGid(merchantData?.shopId),
                 customerEmail: '',
                 customerPhone: '',
+                merchantApiKey: merchantData?.apiKey || null,
                 replies: null
             };
 

@@ -152,6 +152,7 @@ const getMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit
                 email: true,
                 name: true,
                 businessInfo: true,
+                apiKey: true,
                 createdAt: true,
                 updatedAt: true,
             },
