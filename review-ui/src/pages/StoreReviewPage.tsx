@@ -25,6 +25,13 @@ const StoreReviewPage = () => {
     // Get question text from configs
     const questionText = merchantConfigs?.[0]?.general?.shopReviewQuestions?.[0]?.value || 'How would you rate your experience?';
 
+    // Extract numeric ID from GraphQL ID (gid://shopify/Shop/67580297354 -> 67580297354)
+    const extractIdFromGid = (gid: string | undefined): string => {
+        if (!gid) return '';
+        const parts = gid.split('/');
+        return parts[parts.length - 1] || '';
+    };
+
     const handleSubmit = async () => {
         if (!rating || !comment.trim() || !customerName.trim()) {
             alert('Please complete all fields');
@@ -34,7 +41,7 @@ const StoreReviewPage = () => {
         setIsSubmitting(true);
 
         try {
-            // Create review object
+            // Create review object with extracted IDs (not GID URLs)
             const storeReview = {
                 merchantId: merchantId as string,
                 items: [{
@@ -47,8 +54,8 @@ const StoreReviewPage = () => {
                 status: 'Completed' as const,
                 customerName: customerName,
                 verified: false,
-                merchantBusinessId: merchantData?.businessInfo || '',
-                shopId: merchantData?.shopId || '',
+                merchantBusinessId: extractIdFromGid(merchantData?.businessInfo),
+                shopId: extractIdFromGid(merchantData?.shopId),
                 customerEmail: '',
                 customerPhone: '',
                 replies: null
