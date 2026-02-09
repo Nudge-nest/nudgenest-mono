@@ -7,7 +7,7 @@ import ColumnHeaderComponent from './ColumnHeaderComponent.tsx';
 import QRCode from 'qrcode';
 
 const ReviewQrCodeComponent = () => {
-    const { reviewConfigs, reviewConfigFormHoook } = useReviewConfig();
+    const { reviewConfigs, reviewConfigFormHoook, merchantId } = useReviewConfig();
     const [qrCodeImage, setQrCodeImage] = useState<string>('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [hasGenerated, setHasGenerated] = useState(false);
@@ -16,10 +16,10 @@ const ReviewQrCodeComponent = () => {
     const qrCodeUrl = reviewConfigs?.qrCode?.find((field) => field.key === 'qrCodeUrl')?.value || '';
     const qrCodeData = reviewConfigs?.qrCode?.find((field) => field.key === 'qrCodeData')?.value || '';
 
-    // Generate review URL
+    // Generate store review URL
     const generateReviewUrl = () => {
-        const baseUrl = 'https://your-domain.com';
-        return `${baseUrl}/review/68414ac959456a2575dd1aae`;
+        const baseUrl = 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
+        return `${baseUrl}/store/review/${merchantId}`;
     };
 
     // Generate QR code from URL
@@ -159,7 +159,7 @@ const ReviewQrCodeComponent = () => {
                                     <button
                                         onClick={() => {
                                             const link = document.createElement('a');
-                                            link.download = `review-qr-68414ac959456a2575dd1aae.png`;
+                                            link.download = `store-review-qr-${merchantId}.png`;
                                             link.href = qrCodeImage;
                                             link.click();
                                         }}

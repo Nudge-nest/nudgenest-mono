@@ -9,6 +9,7 @@ import { useReviewConfigForm } from '../hooks/useReviewConfigForm.ts';
 interface IReviewConfigContext {
     // Data
     reviewConfigs: IReviewConfiguration | null;
+    merchantId: string | undefined;
     isLoading: boolean;
     isError: boolean;
     isFetching: boolean;
@@ -31,6 +32,7 @@ export const ReviewConfigProvider: FC<{ children: ReactNode }> = ({ children }) 
         <ReviewConfigContext.Provider
             value={{
                 reviewConfigs,
+                merchantId,
                 isLoading,
                 isError,
                 isFetching,
