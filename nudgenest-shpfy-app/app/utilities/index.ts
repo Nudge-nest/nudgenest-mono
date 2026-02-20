@@ -33,16 +33,90 @@ export interface ReviewStats {
   responseRate: number;
 }
 
+export interface SubscriptionDetails {
+  subscription?: {
+    id: string;
+    status: string;
+    currentPeriodEnd: string;
+    trialEnd?: string;
+    Plans: {
+      id: string;
+      name: string;
+      displayName: string;
+      tier: string;
+      price: number;
+      billingInterval: string;
+    };
+  } | null;
+  usage?: {
+    REVIEW_REQUEST?: number;
+    EMAIL_SENT?: number;
+    API_CALL?: number;
+  };
+  limits?: {
+    reviewRequestsPerMonth: number;
+    emailsPerMonth: number;
+    apiCallsPerDay: number;
+  };
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  tier: string;
+  price: number;
+  billingInterval: string;
+  limits: {
+    reviewRequestsPerMonth: number;
+    emailsPerMonth: number;
+    smsPerMonth: number;
+    storageGB: number;
+    apiCallsPerDay: number;
+    teamMembers: number;
+  };
+  features: {
+    emailReviewRequests: boolean;
+    smsReviewRequests: boolean;
+    autoReminders: boolean;
+    customEmailTemplates: boolean;
+    reviewIncentives: boolean;
+    bulkImport: boolean;
+    advancedAnalytics: boolean;
+    apiAccess: boolean;
+    whiteLabel: boolean;
+    prioritySupport: boolean;
+    dedicatedAccountManager: boolean;
+  };
+}
+
 export interface LoaderData {
   isRegistered: boolean;
   shopInfo: IShopifyShop | null;
   businessInfo: IShopifyBusinessEntityData | null;
   merchantData?: any;
   reviewStats?: ReviewStats | null;
+  subscriptionDetails?: SubscriptionDetails | null;
+  defaultPlan?: {
+    id: string;
+    name: string;
+    displayName: string;
+    tier: string;
+    price: number;
+    billingInterval: string;
+  } | null;
+  allPlans?: Plan[] | null;
+  reviewUiBaseUrl?: string;
+  billingStatus?: string | null;
   error?: string;
 }
 
-export const BASE_URL = "https://nudgenest-backend-1094805904049.europe-west1.run.app/api/v1/";
+if (!process.env.NUDGENEST_BACKEND_URL) {
+  throw new Error("Missing required env var: NUDGENEST_BACKEND_URL");
+}
+// Remove trailing slash to avoid double slash in URLs
+export const BASE_URL = process.env.NUDGENEST_BACKEND_URL.replace(/\/$/, '');
 
 export const fetchWithErrorHandling = async (url: string, options: RequestInit) => {
   try {
@@ -113,7 +187,7 @@ export const checkMerchantRegistration = async (shopId: string) => {
     throw new Error("Invalid shop ID format");
   }
 
-  const url = `${BASE_URL}merchants/verify/${trimmedShopId}`;
+  const url = `${BASE_URL}/merchants/verify/${trimmedShopId}`;
   return fetchWithErrorHandling(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -121,7 +195,7 @@ export const checkMerchantRegistration = async (shopId: string) => {
 };
 
 export const registerMerchant = async (merchantData: any) => {
-  const url = `${BASE_URL}merchants`;
+  const url = `${BASE_URL}/merchants`;
   return fetchWithErrorHandling(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -129,16 +203,36 @@ export const registerMerchant = async (merchantData: any) => {
   });
 };
 
-export const fetchReviewStats = async (merchantId: string): Promise<ReviewStats | null> => {
+export const fetchReviewStats = async (merchantId: string, apiKey?: string): Promise<ReviewStats | null> => {
   try {
-    const url = `${BASE_URL}reviews/stats/${merchantId}`;
+    const url = `${BASE_URL}/reviews/stats/${merchantId}`;
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (apiKey) headers['x-api-key'] = apiKey;
+
     const response = await fetchWithErrorHandling(url, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers,
     });
     return response.data || null;
   } catch (error) {
     console.error("Error fetching review stats:", error);
+    return null;
+  }
+};
+
+export const fetchSubscriptionDetails = async (merchantId: string, apiKey?: string): Promise<SubscriptionDetails | null> => {
+  try {
+    const url = `${BASE_URL}/billing/subscription/${merchantId}`;
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (apiKey) headers['x-api-key'] = apiKey;
+
+    const response = await fetchWithErrorHandling(url, {
+      method: "GET",
+      headers,
+    });
+    return response.data || null;
+  } catch (error) {
+    console.error("Error fetching subscription details:", error);
     return null;
   }
 };
