@@ -35,14 +35,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     let subscriptionDetails = null;
     if (registrationCheck.data?.id) {
       const merchantApiKey = registrationCheck.data.apiKey;
-      console.log('Fetching data for merchant ID:', registrationCheck.data.id);
-      console.log('Using API key:', merchantApiKey ? 'Present' : 'Missing');
-
       reviewStats = await fetchReviewStats(registrationCheck.data.id, merchantApiKey);
       subscriptionDetails = await fetchSubscriptionDetails(registrationCheck.data.id, merchantApiKey);
-      console.log('Subscription details fetched:', subscriptionDetails);
-    } else {
-      console.log('No merchant ID found in registrationCheck:', registrationCheck);
     }
 
     // Fetch all plans from backend (used for registration and billing cards)

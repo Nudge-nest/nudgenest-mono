@@ -1,5 +1,5 @@
 import { Card, BlockStack, InlineStack, Text, Badge, ProgressBar, Box, Divider } from "@shopify/polaris";
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { PlanSelector } from "./PlanSelector";
 import type { Plan } from "../utilities";
@@ -49,12 +49,7 @@ export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, 
   const handleSelectPlan = async (planId: string, planTier: string) => {
     setIsProcessing(true);
     try {
-      console.log("💳 [C1] handleSelectPlan called — planTier:", planTier);
-
       const token = await shopify.idToken();
-      console.log("💳 [C2] idToken() succeeded — token prefix:", token?.substring(0, 20) + "...");
-
-      console.log("💳 [C3] Sending fetch to /api/billing/request");
       const response = await fetch("/api/billing/request", {
         method: "POST",
         headers: {
@@ -64,14 +59,10 @@ export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, 
         body: JSON.stringify({ planTier }),
       });
 
-      // If fetch resolved (App Bridge did NOT intercept), log what we got
-      console.log("💳 [C4] fetch resolved — status:", response.status);
       const reauthorizeUrl = response.headers.get("x-shopify-api-request-failure-reauthorize-url");
-      console.log("💳 [C4] X-Shopify-API-Request-Failure-Reauthorize-Url:", reauthorizeUrl);
 
       // Paid plan — App Bridge intercepts the 401 and redirects to approval page
       if (reauthorizeUrl) {
-        console.log("💳 [C5] App Bridge did NOT intercept — redirecting window.top manually");
         window.top!.location.href = reauthorizeUrl;
         return;
       }
@@ -81,18 +72,16 @@ export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, 
       if (response.ok) {
         const data = await response.json();
         if (data.downgraded || planTier === "FREE") {
-          console.log("💳 [C5] FREE downgrade complete — setting cookie and reloading");
           document.cookie = `nudgenest_billing_status=${encodeURIComponent("success:FREE")}; path=/; max-age=120; SameSite=None; Secure`;
           window.location.reload();
           return;
         }
       }
 
-      console.log("💳 [C5] Unexpected response — reloading");
       setIsProcessing(false);
       window.location.reload();
     } catch (e) {
-      console.error("💳 [C-ERR] Billing request error:", e);
+      console.error("Billing request error:", e);
       setIsProcessing(false);
     }
   };

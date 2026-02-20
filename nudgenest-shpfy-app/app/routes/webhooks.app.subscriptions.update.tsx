@@ -17,9 +17,6 @@ import { BASE_URL } from "../utilities";
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { shop, topic, payload } = await authenticate.webhook(request);
 
-  console.log(`📨 Received ${topic} webhook for ${shop}`);
-  console.log("Payload:", JSON.stringify(payload, null, 2));
-
   try {
     const subscription = payload.app_subscription;
 
@@ -37,7 +34,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     } = subscription;
 
     const status = rawStatus.toUpperCase();
-    console.log(`Subscription status: ${status} for plan: ${planName}`);
 
     // Map Shopify plan name → our tier
     const planTierMap: Record<string, string> = {
@@ -64,22 +60,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         webhookTopic: topic,
       };
 
-      console.log("Syncing with backend:", syncPayload);
-
       const syncResponse = await fetch(`${BASE_URL}/billing/sync-shopify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(syncPayload),
       });
 
-      if (syncResponse.ok) {
-        console.log(`✅ Successfully synced with Nudgenest backend — planTier: ${syncPayload.planTier}, status: ${status}`);
-      } else {
+      if (!syncResponse.ok) {
         const errorText = await syncResponse.text();
-        console.error("❌ Failed to sync with backend:", syncResponse.status, errorText);
+        console.error("Failed to sync with backend:", syncResponse.status, errorText);
       }
     } catch (error) {
-      console.error("❌ Error syncing with backend:", error);
+      console.error("Error syncing with backend:", error);
       // Don't fail the webhook if backend sync fails
     }
 
