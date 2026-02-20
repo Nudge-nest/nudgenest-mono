@@ -231,10 +231,6 @@ export function PlanSelector({
                     )}
                   </div>
 
-                  <Text variant="bodySm" as="p" tone={isCurrent ? undefined : 'subdued'}>
-                    {plan.description}
-                  </Text>
-
                   {isCurrent && currentPeriodEnd && (
                     <Text variant="bodySm" as="p">
                       Renews {formatDate(currentPeriodEnd)}
