@@ -334,27 +334,27 @@ const billingPlugin: Hapi.Plugin<any> = {
                             },
                         });
 
-                        // If status is CANCELLED/EXPIRED and plan is not FREE, downgrade to FREE
-                        if ((status === 'CANCELLED' || status === 'EXPIRED') && planTier !== 'FREE') {
+                        const periodEnd = currentPeriodEnd
+                            ? new Date(currentPeriodEnd)
+                            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+                        // Handle CANCELLED / EXPIRED — downgrade to FREE by switching the existing
+                        // subscription's plan in-place. Never create a new subscription here because
+                        // FREE subscriptions have shopifyChargeId = null, and the @unique constraint
+                        // only allows one null value across the whole collection.
+                        if (status === 'CANCELLED' || status === 'EXPIRED') {
                             const freePlan = await BillingService.getPlanByTier('FREE');
                             if (freePlan && existingSubscription) {
                                 await request.server.app.prisma.subscriptions.update({
                                     where: { id: existingSubscription.id },
                                     data: {
-                                        status: 'CANCELED',
-                                        canceledAt: new Date(),
-                                        shopifyChargeId: shopifyChargeId || existingSubscription.shopifyChargeId,
+                                        planId: freePlan.id,
+                                        shopifyChargeId: null,
+                                        currentPeriodEnd: periodEnd,
                                     },
                                 });
 
-                                // Create new FREE subscription
-                                await BillingService.createSubscription({
-                                    merchantId: merchant.id,
-                                    planId: freePlan.id,
-                                    trialDays: 0,
-                                });
-
-                                request.logger.info({ merchantId, shopId }, 'Downgraded to FREE plan');
+                                request.logger.info({ merchantId: merchant.id, shopId }, 'Downgraded to FREE plan');
                                 return h.response({
                                     data: {
                                         message: 'Subscription downgraded to FREE',
@@ -362,65 +362,72 @@ const billingPlugin: Hapi.Plugin<any> = {
                                     },
                                 }).code(200);
                             }
+                            // No active subscription to downgrade — nothing to do
+                            request.logger.info({ merchantId: merchant.id, shopId }, 'No active subscription to downgrade');
+                            return h.response({
+                                data: { message: 'No active subscription to update', planTier: 'FREE', status },
+                            }).code(200);
                         }
 
-                        // Handle active subscription (Shopify uses ACCEPTED in webhooks, ACTIVE in API)
+                        // Handle ACTIVE / ACCEPTED — upgrade/switch to the new paid plan.
+                        // We set shopifyChargeId directly in the create call to avoid a
+                        // two-step create→update that could race, and to satisfy the @unique
+                        // constraint atomically.
                         if (status === 'ACTIVE' || status === 'ACCEPTED') {
+                            const now = new Date();
+
                             if (existingSubscription) {
-                                // Update existing subscription
                                 if (existingSubscription.planId !== plan.id) {
-                                    // Plan changed - cancel old, create new
+                                    // Plan changed — cancel old subscription, create new one with
+                                    // shopifyChargeId set in a single create call.
                                     await request.server.app.prisma.subscriptions.update({
                                         where: { id: existingSubscription.id },
                                         data: {
                                             status: 'CANCELED',
-                                            canceledAt: new Date(),
+                                            canceledAt: now,
+                                            shopifyChargeId: null,
                                         },
                                     });
 
-                                    const newSubscription = await BillingService.createSubscription({
-                                        merchantId: merchant.id,
-                                        planId: plan.id,
-                                        trialDays: 0,
-                                    });
-
-                                    // Update with Shopify charge ID
-                                    await request.server.app.prisma.subscriptions.update({
-                                        where: { id: newSubscription.id },
+                                    await request.server.app.prisma.subscriptions.create({
                                         data: {
+                                            merchantId: merchant.id,
+                                            planId: plan.id,
+                                            status: 'ACTIVE',
+                                            currentPeriodStart: now,
+                                            currentPeriodEnd: periodEnd,
                                             shopifyChargeId: shopifyChargeId || null,
-                                            currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
                                         },
                                     });
 
-                                    request.logger.info({ merchantId, oldPlan: existingSubscription.planId, newPlan: plan.id }, 'Plan changed');
+                                    request.logger.info(
+                                        { merchantId: merchant.id, oldPlan: existingSubscription.planId, newPlan: plan.id },
+                                        'Plan upgraded/changed'
+                                    );
                                 } else {
-                                    // Just update metadata
+                                    // Same plan — just update metadata (e.g. renewal)
                                     await request.server.app.prisma.subscriptions.update({
                                         where: { id: existingSubscription.id },
                                         data: {
                                             shopifyChargeId: shopifyChargeId || existingSubscription.shopifyChargeId,
-                                            currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd) : existingSubscription.currentPeriodEnd,
+                                            currentPeriodEnd: periodEnd,
                                         },
                                     });
                                 }
                             } else {
-                                // No existing subscription - create new one
-                                const newSubscription = await BillingService.createSubscription({
-                                    merchantId: merchant.id,
-                                    planId: plan.id,
-                                    trialDays: 0,
-                                });
-
-                                await request.server.app.prisma.subscriptions.update({
-                                    where: { id: newSubscription.id },
+                                // No existing subscription — create one with shopifyChargeId set directly
+                                await request.server.app.prisma.subscriptions.create({
                                     data: {
+                                        merchantId: merchant.id,
+                                        planId: plan.id,
+                                        status: 'ACTIVE',
+                                        currentPeriodStart: now,
+                                        currentPeriodEnd: periodEnd,
                                         shopifyChargeId: shopifyChargeId || null,
-                                        currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
                                     },
                                 });
 
-                                request.logger.info({ merchantId, planId: plan.id }, 'Created new subscription');
+                                request.logger.info({ merchantId: merchant.id, planId: plan.id }, 'Created new subscription');
                             }
                         }
 
