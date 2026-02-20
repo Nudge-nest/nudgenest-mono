@@ -51,10 +51,10 @@ const convertToDisplayPlan = (dbPlan: DatabasePlan): DisplayPlan => {
   // 3. Auto reminders — scheduler is built and works on all plans
   features.push('Automated review reminders');
 
-  // 4. Custom email templates — built, gated on plan feature flag
-  if (dbPlan.features.customEmailTemplates) {
-    features.push('Custom email templates');
-  }
+  // 4. Custom email templates — built and available on all plans.
+  // The pubsubConsumer spreads merchant config overrides into every send
+  // with no plan-tier check, so gating this to paid plans would be misleading.
+  features.push('Custom email templates');
 
   // 5. QR code — built (ReviewQrCodeComponent + merchant endpoint)
   features.push('QR code for in-store reviews');
@@ -91,6 +91,7 @@ const FALLBACK_PLANS: DisplayPlan[] = [
       '25 review requests/month',
       'Email review requests',
       'Automated review reminders',
+      'Custom email templates',
       'QR code for in-store reviews',
       'Review analytics & stats',
     ],
