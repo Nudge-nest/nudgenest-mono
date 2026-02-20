@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated/prisma/prisma/client';
+import { PlanTier, PrismaClient } from '../../generated/prisma/prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -69,6 +69,7 @@ export class BillingService {
                 merchantId,
                 status: { in: ['ACTIVE', 'TRIALING'] },
             },
+            orderBy: { createdAt: 'desc' },
             include: {
                 Plans: true,
             },
@@ -194,6 +195,7 @@ export class BillingService {
                 merchantId,
                 status: { in: ['ACTIVE', 'TRIALING'] },
             },
+            orderBy: { createdAt: 'desc' },
             include: {
                 Plans: true,
             },
@@ -225,6 +227,7 @@ export class BillingService {
                 merchantId,
                 status: { in: ['ACTIVE', 'TRIALING'] },
             },
+            orderBy: { createdAt: 'desc' },
         });
 
         if (!subscription) {
@@ -252,6 +255,7 @@ export class BillingService {
                 merchantId,
                 status: { in: ['ACTIVE', 'TRIALING'] },
             },
+            orderBy: { createdAt: 'desc' },
         });
 
         if (!currentSubscription) {
@@ -348,6 +352,18 @@ export class BillingService {
         return await prisma.plans.findMany({
             where: { isActive: true },
             orderBy: { price: 'asc' },
+        });
+    }
+
+    /**
+     * Get a plan by tier
+     */
+    async getPlanByTier(tier: string) {
+        return await prisma.plans.findFirst({
+            where: {
+                tier: tier as PlanTier,
+                isActive: true,
+            },
         });
     }
 }

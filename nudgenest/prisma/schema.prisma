@@ -46,7 +46,10 @@ model Reviews {
   verified           Boolean    @default(true)
   replies            Json?
   status             String     @default("Pending")
+  published          Boolean    @default(false)
   merchantApiKey     String?
+  remindersSent      Int        @default(0)
+  lastReminderAt     DateTime?
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   Merchants          Merchants? @relation(fields: [merchantId], references: [id])
@@ -148,7 +151,7 @@ model Subscriptions {
   canceledAt      DateTime?
   trialStart      DateTime?
   trialEnd        DateTime?
-  shopifyChargeId String?            @unique
+  shopifyChargeId String?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   Merchants       Merchants          @relation(fields: [merchantId], references: [id])
