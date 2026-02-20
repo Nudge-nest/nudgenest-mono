@@ -190,12 +190,27 @@ export function PlanSelector({
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
               {/* ── Header ──────────────────────────────────────────── */}
+              {/*
+                bg-fill-brand gives a solid brand-blue background with enough
+                contrast for white text. Avoid bg-fill-brand-active — it maps
+                to a near-black token that makes text illegible.
+                For unselected cards use bg-surface-secondary (light grey).
+              */}
               <Box
                 padding="400"
-                background={isCurrent ? 'bg-fill-brand-active' : 'bg-surface-secondary'}
+                background={isCurrent ? 'bg-fill-brand' : 'bg-surface-secondary'}
                 borderRadius="300"
               >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    // Force white text on the brand-blue header so plan name,
+                    // price, and description are legible against the dark bg.
+                    color: isCurrent ? '#ffffff' : undefined,
+                  }}
+                >
                   <InlineStack align="space-between" blockAlign="start">
                     <Text variant="headingMd" as="h3" fontWeight="bold">
                       {plan.displayName}
@@ -208,18 +223,20 @@ export function PlanSelector({
                       {plan.price === 0 ? 'Free' : `$${plan.price.toFixed(2)}`}
                     </Text>
                     {plan.price > 0 && (
-                      <Text variant="bodySm" as="span" tone="subdued">
-                        /mo
-                      </Text>
+                      <span style={{ fontSize: '13px', opacity: isCurrent ? 0.85 : 1 }}>
+                        <Text variant="bodySm" as="span" tone={isCurrent ? undefined : 'subdued'}>
+                          /mo
+                        </Text>
+                      </span>
                     )}
                   </div>
 
-                  <Text variant="bodySm" as="p" tone="subdued">
+                  <Text variant="bodySm" as="p" tone={isCurrent ? undefined : 'subdued'}>
                     {plan.description}
                   </Text>
 
                   {isCurrent && currentPeriodEnd && (
-                    <Text variant="bodySm" as="p" tone="subdued">
+                    <Text variant="bodySm" as="p">
                       Renews {formatDate(currentPeriodEnd)}
                     </Text>
                   )}
