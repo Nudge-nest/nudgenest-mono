@@ -42,7 +42,7 @@ const convertToDisplayPlan = (dbPlan: DatabasePlan): DisplayPlan => {
   if (dbPlan.limits.reviewRequestsPerMonth === -1) {
     features.push('Unlimited review requests/month');
   } else {
-    features.push(`${dbPlan.limits.reviewRequestsPerMonth.toLocaleString()} review requests/month`);
+    features.push(`${dbPlan.limits.reviewRequestsPerMonth.toLocaleString('en-US')} review requests/month`);
   }
 
   // 2. Email review requests — built on all plans
@@ -254,11 +254,9 @@ export function PlanSelector({
                 }}
               >
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {plan.features.map((feature, index) => (
+                  {plan.features.filter(f => f.trim() !== '').map((feature, index) => (
                     <InlineStack key={index} gap="200" blockAlign="start">
-                      <Text variant="bodySm" as="span" tone="success">
-                        ✓
-                      </Text>
+                      <Text variant="bodySm" as="span" tone="success">✓</Text>
                       <Text variant="bodySm" as="p">
                         {feature}
                       </Text>

@@ -121,7 +121,6 @@ export const BASE_URL = process.env.NUDGENEST_BACKEND_URL.replace(/\/$/, '');
 export const fetchWithErrorHandling = async (url: string, options: RequestInit) => {
   try {
     const response = await fetch(url, options);
-    console.log("Fetch ", response);
     // Handle different response statuses
     if (response.status === 404) {
       return { exists: false, data: null };
