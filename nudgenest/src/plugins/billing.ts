@@ -309,7 +309,9 @@ const billingPlugin: Hapi.Plugin<any> = {
                         // Get merchant
                         // shopId in DB is a Shopify GID (e.g. gid://shopify/Shop/67580297354)
                         // but the webhook sends the plain domain (e.g. nudgenest.myshopify.com)
-                        // so we also check the domains field which stores the plain domain
+                        // so we also check the domains field which stores the plain domain.
+                        // Order by createdAt asc so that if there are duplicate domain records,
+                        // we always resolve to the original/real merchant, not a test duplicate.
                         const merchant = await request.server.app.prisma.merchants.findFirst({
                             where: {
                                 OR: [
@@ -319,6 +321,7 @@ const billingPlugin: Hapi.Plugin<any> = {
                                     { domains: { contains: merchantId } },
                                 ],
                             },
+                            orderBy: { createdAt: 'asc' },
                         });
 
                         if (!merchant) {
@@ -326,109 +329,89 @@ const billingPlugin: Hapi.Plugin<any> = {
                             return h.response({ error: `Merchant not found for shopId: ${shopId}` }).code(404);
                         }
 
-                        // Find existing active subscription
-                        const existingSubscription = await request.server.app.prisma.subscriptions.findFirst({
+                        const periodEnd = currentPeriodEnd
+                            ? new Date(currentPeriodEnd)
+                            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+                        const now = new Date();
+
+                        // Fetch ALL active subscriptions for this merchant — we must cancel every
+                        // stale ACTIVE row before creating a new one, otherwise duplicate ACTIVE
+                        // records accumulate and getSubscriptionDetails keeps returning the wrong one.
+                        const allActiveSubscriptions = await request.server.app.prisma.subscriptions.findMany({
                             where: {
                                 merchantId: merchant.id,
                                 status: 'ACTIVE',
                             },
                         });
 
-                        const periodEnd = currentPeriodEnd
-                            ? new Date(currentPeriodEnd)
-                            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                        const allActiveIds = allActiveSubscriptions.map((s: { id: string }) => s.id);
 
-                        // Handle CANCELLED / EXPIRED — downgrade to FREE by switching the existing
-                        // subscription's plan in-place. Never create a new subscription here because
-                        // FREE subscriptions have shopifyChargeId = null, and the @unique constraint
-                        // only allows one null value across the whole collection.
+                        // Handle CANCELLED / EXPIRED — mark ALL active subscriptions as CANCELED,
+                        // then create a single clean FREE subscription. This clears any stale rows.
                         if (status === 'CANCELLED' || status === 'EXPIRED') {
                             const freePlan = await BillingService.getPlanByTier('FREE');
-                            if (freePlan && existingSubscription) {
-                                await request.server.app.prisma.subscriptions.update({
-                                    where: { id: existingSubscription.id },
-                                    data: {
-                                        planId: freePlan.id,
-                                        shopifyChargeId: null,
-                                        currentPeriodEnd: periodEnd,
-                                    },
-                                });
-
-                                request.logger.info({ merchantId: merchant.id, shopId }, 'Downgraded to FREE plan');
-                                return h.response({
-                                    data: {
-                                        message: 'Subscription downgraded to FREE',
-                                        planTier: 'FREE',
-                                    },
-                                }).code(200);
+                            if (!freePlan) {
+                                request.logger.error('FREE plan not found in DB');
+                                return h.response({ error: 'FREE plan not found' }).code(500);
                             }
-                            // No active subscription to downgrade — nothing to do
-                            request.logger.info({ merchantId: merchant.id, shopId }, 'No active subscription to downgrade');
+
+                            // Cancel all existing active subscriptions
+                            if (allActiveIds.length > 0) {
+                                await request.server.app.prisma.subscriptions.updateMany({
+                                    where: { id: { in: allActiveIds } },
+                                    data: { status: 'CANCELED', canceledAt: now, shopifyChargeId: null },
+                                });
+                            }
+
+                            // Create one clean FREE subscription
+                            await request.server.app.prisma.subscriptions.create({
+                                data: {
+                                    merchantId: merchant.id,
+                                    planId: freePlan.id,
+                                    status: 'ACTIVE',
+                                    currentPeriodStart: now,
+                                    currentPeriodEnd: periodEnd,
+                                    shopifyChargeId: null,
+                                },
+                            });
+
+                            request.logger.info(
+                                { merchantId: merchant.id, shopId, cancelledCount: allActiveIds.length },
+                                'Downgraded to FREE plan — cancelled all stale active subscriptions'
+                            );
                             return h.response({
-                                data: { message: 'No active subscription to update', planTier: 'FREE', status },
+                                data: { message: 'Subscription downgraded to FREE', planTier: 'FREE' },
                             }).code(200);
                         }
 
-                        // Handle ACTIVE / ACCEPTED — upgrade/switch to the new paid plan.
-                        // We set shopifyChargeId directly in the create call to avoid a
-                        // two-step create→update that could race, and to satisfy the @unique
-                        // constraint atomically.
+                        // Handle ACTIVE / ACCEPTED — cancel ALL active subscriptions, then create
+                        // one single clean paid subscription. This prevents stale rows accumulating.
                         if (status === 'ACTIVE' || status === 'ACCEPTED') {
-                            const now = new Date();
-
-                            if (existingSubscription) {
-                                if (existingSubscription.planId !== plan.id) {
-                                    // Plan changed — cancel old subscription, create new one with
-                                    // shopifyChargeId set in a single create call.
-                                    await request.server.app.prisma.subscriptions.update({
-                                        where: { id: existingSubscription.id },
-                                        data: {
-                                            status: 'CANCELED',
-                                            canceledAt: now,
-                                            shopifyChargeId: null,
-                                        },
-                                    });
-
-                                    await request.server.app.prisma.subscriptions.create({
-                                        data: {
-                                            merchantId: merchant.id,
-                                            planId: plan.id,
-                                            status: 'ACTIVE',
-                                            currentPeriodStart: now,
-                                            currentPeriodEnd: periodEnd,
-                                            shopifyChargeId: shopifyChargeId || null,
-                                        },
-                                    });
-
-                                    request.logger.info(
-                                        { merchantId: merchant.id, oldPlan: existingSubscription.planId, newPlan: plan.id },
-                                        'Plan upgraded/changed'
-                                    );
-                                } else {
-                                    // Same plan — just update metadata (e.g. renewal)
-                                    await request.server.app.prisma.subscriptions.update({
-                                        where: { id: existingSubscription.id },
-                                        data: {
-                                            shopifyChargeId: shopifyChargeId || existingSubscription.shopifyChargeId,
-                                            currentPeriodEnd: periodEnd,
-                                        },
-                                    });
-                                }
-                            } else {
-                                // No existing subscription — create one with shopifyChargeId set directly
-                                await request.server.app.prisma.subscriptions.create({
-                                    data: {
-                                        merchantId: merchant.id,
-                                        planId: plan.id,
-                                        status: 'ACTIVE',
-                                        currentPeriodStart: now,
-                                        currentPeriodEnd: periodEnd,
-                                        shopifyChargeId: shopifyChargeId || null,
-                                    },
+                            // Cancel every existing ACTIVE subscription for this merchant
+                            if (allActiveIds.length > 0) {
+                                await request.server.app.prisma.subscriptions.updateMany({
+                                    where: { id: { in: allActiveIds } },
+                                    data: { status: 'CANCELED', canceledAt: now, shopifyChargeId: null },
                                 });
-
-                                request.logger.info({ merchantId: merchant.id, planId: plan.id }, 'Created new subscription');
                             }
+
+                            // Create one clean subscription for the new plan
+                            await request.server.app.prisma.subscriptions.create({
+                                data: {
+                                    merchantId: merchant.id,
+                                    planId: plan.id,
+                                    status: 'ACTIVE',
+                                    currentPeriodStart: now,
+                                    currentPeriodEnd: periodEnd,
+                                    shopifyChargeId: shopifyChargeId || null,
+                                },
+                            });
+
+                            request.logger.info(
+                                { merchantId: merchant.id, planTier, cancelledCount: allActiveIds.length },
+                                'Plan activated — cancelled all stale active subscriptions, created new one'
+                            );
                         }
 
                         return h.response({
