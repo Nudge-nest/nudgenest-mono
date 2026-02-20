@@ -9,6 +9,7 @@ interface DisplayPlan {
   price: number;
   billingInterval: string;
   description: string;
+  /** Ordered list of feature strings to display on this plan card. */
   features: string[];
 }
 
@@ -20,70 +21,46 @@ interface PlanSelectorProps {
 }
 
 /**
- * Build a feature list that accurately matches what is stored in the DB.
- * Every plan shows the same set of feature rows so cards stay the same height
- * regardless of how many features a plan has. Features the plan doesn't have
- * are rendered as "dimmed" (not ticked).
+ * Build the feature list for a plan card.
+ *
+ * Only features that are FULLY BUILT and working are shown here:
+ *   - Email review requests        ✅ built (Resend + EJS)
+ *   - Auto reminders               ✅ built (daily scheduler, all plans)
+ *   - Custom email templates       ✅ built (subject / body / button overrides)
+ *   - QR code                      ✅ built (auto-generated, downloadable)
+ *   - Review analytics             ✅ built (total, avg rating, response rate)
+ *   - Review volume limit          ✅ enforced via usage tracking
+ *
+ * Features intentionally NOT listed (flag only, not implemented):
+ *   SMS requests, review incentives, bulk import, advanced analytics,
+ *   API access, white-label, priority/dedicated support.
  */
-const ALL_FEATURES: { key: string; label: (plan: DatabasePlan) => string | null }[] = [
-  {
-    key: 'reviewRequests',
-    label: (p) =>
-      p.limits.reviewRequestsPerMonth === -1
-        ? 'Unlimited review requests/mo'
-        : `${p.limits.reviewRequestsPerMonth.toLocaleString()} review requests/mo`,
-  },
-  {
-    key: 'emailReviewRequests',
-    label: (p) => (p.features.emailReviewRequests ? 'Email review requests' : null),
-  },
-  {
-    key: 'smsReviewRequests',
-    label: (p) => (p.features.smsReviewRequests ? 'SMS review requests' : null),
-  },
-  {
-    key: 'autoReminders',
-    label: (p) => (p.features.autoReminders ? 'Automated reminders' : null),
-  },
-  {
-    key: 'customEmailTemplates',
-    label: (p) => (p.features.customEmailTemplates ? 'Custom email templates' : null),
-  },
-  {
-    key: 'reviewIncentives',
-    label: (p) => (p.features.reviewIncentives ? 'Review incentives' : null),
-  },
-  {
-    key: 'bulkImport',
-    label: (p) => (p.features.bulkImport ? 'Bulk review import' : null),
-  },
-  {
-    key: 'advancedAnalytics',
-    label: (p) => (p.features.advancedAnalytics ? 'Advanced analytics' : null),
-  },
-  {
-    key: 'apiAccess',
-    label: (p) => (p.features.apiAccess ? 'API access' : null),
-  },
-  {
-    key: 'whiteLabel',
-    label: (p) => (p.features.whiteLabel ? 'White-label (remove branding)' : null),
-  },
-  {
-    key: 'prioritySupport',
-    label: (p) => (p.features.prioritySupport ? 'Priority support' : null),
-  },
-  {
-    key: 'dedicatedAccountManager',
-    label: (p) => (p.features.dedicatedAccountManager ? 'Dedicated account manager' : null),
-  },
-];
-
 const convertToDisplayPlan = (dbPlan: DatabasePlan): DisplayPlan => {
-  // Only include features that this plan actually has (non-null labels)
-  const features: string[] = ALL_FEATURES
-    .map((f) => f.label(dbPlan))
-    .filter((label): label is string => label !== null);
+  const features: string[] = [];
+
+  // 1. Review request volume — always first, anchors the value proposition
+  if (dbPlan.limits.reviewRequestsPerMonth === -1) {
+    features.push('Unlimited review requests/month');
+  } else {
+    features.push(`${dbPlan.limits.reviewRequestsPerMonth.toLocaleString()} review requests/month`);
+  }
+
+  // 2. Email review requests — built on all plans
+  features.push('Email review requests');
+
+  // 3. Auto reminders — scheduler is built and works on all plans
+  features.push('Automated review reminders');
+
+  // 4. Custom email templates — built, gated on plan feature flag
+  if (dbPlan.features.customEmailTemplates) {
+    features.push('Custom email templates');
+  }
+
+  // 5. QR code — built (ReviewQrCodeComponent + merchant endpoint)
+  features.push('QR code for in-store reviews');
+
+  // 6. Review analytics — basic stats endpoint built on all plans
+  features.push('Review analytics & stats');
 
   return {
     id: dbPlan.id,
@@ -97,7 +74,10 @@ const convertToDisplayPlan = (dbPlan: DatabasePlan): DisplayPlan => {
   };
 };
 
-// Fallback plans — mirrors DB values exactly (used only if API fetch fails)
+/**
+ * Fallback plan data — mirrors DB values exactly.
+ * Used only when the API fetch fails.
+ */
 const FALLBACK_PLANS: DisplayPlan[] = [
   {
     id: '1',
@@ -107,7 +87,13 @@ const FALLBACK_PLANS: DisplayPlan[] = [
     price: 0,
     billingInterval: 'MONTHLY',
     description: '25 review requests/month',
-    features: ['25 review requests/mo', 'Email review requests'],
+    features: [
+      '25 review requests/month',
+      'Email review requests',
+      'Automated review reminders',
+      'QR code for in-store reviews',
+      'Review analytics & stats',
+    ],
   },
   {
     id: '2',
@@ -118,11 +104,12 @@ const FALLBACK_PLANS: DisplayPlan[] = [
     billingInterval: 'MONTHLY',
     description: '300 review requests/month',
     features: [
-      '300 review requests/mo',
+      '300 review requests/month',
       'Email review requests',
-      'SMS review requests',
-      'Automated reminders',
+      'Automated review reminders',
       'Custom email templates',
+      'QR code for in-store reviews',
+      'Review analytics & stats',
     ],
   },
   {
@@ -134,15 +121,12 @@ const FALLBACK_PLANS: DisplayPlan[] = [
     billingInterval: 'MONTHLY',
     description: '1,000 review requests/month',
     features: [
-      '1,000 review requests/mo',
+      '1,000 review requests/month',
       'Email review requests',
-      'SMS review requests',
-      'Automated reminders',
+      'Automated review reminders',
       'Custom email templates',
-      'Review incentives',
-      'Bulk review import',
-      'Advanced analytics',
-      'API access',
+      'QR code for in-store reviews',
+      'Review analytics & stats',
     ],
   },
   {
@@ -154,22 +138,22 @@ const FALLBACK_PLANS: DisplayPlan[] = [
     billingInterval: 'MONTHLY',
     description: '5,000 review requests/month',
     features: [
-      '5,000 review requests/mo',
+      '5,000 review requests/month',
       'Email review requests',
-      'SMS review requests',
-      'Automated reminders',
+      'Automated review reminders',
       'Custom email templates',
-      'Review incentives',
-      'Bulk review import',
-      'Advanced analytics',
-      'API access',
-      'White-label (remove branding)',
-      'Priority support',
+      'QR code for in-store reviews',
+      'Review analytics & stats',
     ],
   },
 ];
 
-export function PlanSelector({ plans, currentPlanTier, currentPeriodEnd, onSelectPlan }: PlanSelectorProps) {
+export function PlanSelector({
+  plans,
+  currentPlanTier,
+  currentPeriodEnd,
+  onSelectPlan,
+}: PlanSelectorProps) {
   const displayPlans: DisplayPlan[] =
     plans && plans.length > 0 ? plans.map(convertToDisplayPlan) : FALLBACK_PLANS;
 
@@ -198,13 +182,13 @@ export function PlanSelector({ plans, currentPlanTier, currentPeriodEnd, onSelec
             shadow={isCurrent ? '200' : '100'}
           >
             {/*
-              Use a flex column so the features section stretches and the
-              "Select Plan" button always sits at the bottom of every card,
-              regardless of how many feature rows the plan has.
+              flex-column + flex:1 on the feature list ensures the Divider and
+              "Select Plan" button are always pinned to the bottom of every card
+              at the same level, regardless of how many feature rows exist.
             */}
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-              {/* ── Header ────────────────────────────────────────────── */}
+              {/* ── Header ──────────────────────────────────────────── */}
               <Box
                 padding="400"
                 background={isCurrent ? 'bg-fill-brand-active' : 'bg-surface-secondary'}
@@ -241,13 +225,25 @@ export function PlanSelector({ plans, currentPlanTier, currentPeriodEnd, onSelec
                 </div>
               </Box>
 
-              {/* ── Features (grows to fill remaining height) ─────────── */}
-              <div style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* ── Features (grows to fill remaining height) ────────── */}
+              <div
+                style={{
+                  flex: 1,
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                }}
+              >
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {plan.features.map((feature, index) => (
                     <InlineStack key={index} gap="200" blockAlign="start">
-                      <Text variant="bodySm" as="span" tone="success">✓</Text>
-                      <Text variant="bodySm" as="p">{feature}</Text>
+                      <Text variant="bodySm" as="span" tone="success">
+                        ✓
+                      </Text>
+                      <Text variant="bodySm" as="p">
+                        {feature}
+                      </Text>
                     </InlineStack>
                   ))}
                 </div>
@@ -262,7 +258,11 @@ export function PlanSelector({ plans, currentPlanTier, currentPeriodEnd, onSelec
                   disabled={isCurrent}
                   onClick={() => onSelectPlan(plan.id, plan.tier)}
                 >
-                  {isCurrent ? 'Current Plan' : plan.tier === 'FREE' ? 'Downgrade to Free' : 'Select Plan'}
+                  {isCurrent
+                    ? 'Current Plan'
+                    : plan.tier === 'FREE'
+                    ? 'Downgrade to Free'
+                    : 'Select Plan'}
                 </Button>
               </div>
 
