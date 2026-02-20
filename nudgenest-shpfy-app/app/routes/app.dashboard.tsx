@@ -32,7 +32,12 @@ function CustomerDashboard({ merchantData, shopInfo, reviewStats, subscriptionDe
     if (!initialBillingStatus) return;
     if (initialBillingStatus.startsWith('success')) {
       const plan = initialBillingStatus.includes(':') ? initialBillingStatus.split(':')[1] : null;
-      showToast(plan ? `✅ Successfully upgraded to ${plan} plan!` : '✅ Plan updated successfully!');
+      const message = plan === 'FREE'
+        ? '✅ Downgraded to Free plan.'
+        : plan
+          ? `✅ Successfully upgraded to ${plan} plan!`
+          : '✅ Plan updated successfully!';
+      showToast(message);
     } else if (initialBillingStatus === 'declined') {
       showToast('❌ Billing charge was declined. Please try again.', true);
     }
