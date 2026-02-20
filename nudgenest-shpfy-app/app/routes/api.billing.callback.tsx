@@ -29,8 +29,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const chargeId = url.searchParams.get("charge_id");
   const shop = url.searchParams.get("shop"); // e.g. "nudgenest.myshopify.com"
 
-  console.log("💳 Billing callback received:", { planTier, chargeId, shop, fullUrl: url.toString() });
-
   // Extract shop name (strip .myshopify.com suffix)
   const shopName = shop ? shop.replace(".myshopify.com", "") : null;
 
@@ -62,7 +60,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // SameSite=None; Secure is required for the cookie to be sent in the
   // cross-site embedded iframe context.
   const adminAppUrl = `https://admin.shopify.com/store/${shopName}/apps/${appHandle}`;
-  console.log("💳 Redirecting to Shopify Admin:", adminAppUrl);
 
   return redirect(adminAppUrl, {
     headers: {
