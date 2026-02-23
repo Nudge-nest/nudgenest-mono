@@ -15,12 +15,19 @@ Sentry.init({
     environment: import.meta.env.PROD ? 'production' : 'development',
     release: import.meta.env.VITE_COMMIT_SHA || 'unknown',
     tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
-    enabled: import.meta.env.PROD,
+    enabled: !!import.meta.env.VITE_APP_SENTRY_FE_DSN,
     integrations: [Sentry.browserTracingIntegration()],
 });
 
 const apiKey = localStorage.getItem('nn-apiKey');
 if (apiKey) Sentry.setUser({ id: apiKey });
+
+if (new URLSearchParams(window.location.search).has('sentry-test')) {
+    Sentry.captureMessage(
+        `[sentry-test] Review UI event @ ${new Date().toISOString()}`,
+        'info'
+    );
+}
 
 function Fallback({ error }: { error: Error }) {
     // Call resetErrorBoundary() to reset the error boundary and retry the render.
