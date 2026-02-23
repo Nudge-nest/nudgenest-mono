@@ -239,12 +239,13 @@ const pubsubConsumerPlugin: Hapi.Plugin<null> = {
 
         // Listen for messages (pull model)
         const messageHandler = async (message: any) => {
+            let rawContent: IRabbitDataObject<IReviewMessagePayloadContent> | undefined;
             try {
                 console.log('📨 Received message from Pub/Sub');
 
                 // Parse message data
                 const messageData = message.data.toString('utf-8');
-                const rawContent = JSON.parse(messageData) as IRabbitDataObject<IReviewMessagePayloadContent>;
+                rawContent = JSON.parse(messageData) as IRabbitDataObject<IReviewMessagePayloadContent>;
                 const { eventType } = rawContent;
 
                 console.log(`Processing message with eventType: ${eventType}`);

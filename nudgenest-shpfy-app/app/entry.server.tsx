@@ -24,9 +24,12 @@ Sentry.init({
     },
 });
 
+// Patches createRequestHandler globally — instruments all loaders/actions
+Sentry.instrumentServer();
+
 const ABORT_DELAY = 5000;
 
-export default Sentry.wrapRemixHandleRequest(async function handleRequest(
+export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
@@ -71,4 +74,4 @@ export default Sentry.wrapRemixHandleRequest(async function handleRequest(
 
     setTimeout(abort, ABORT_DELAY);
   });
-});
+}
