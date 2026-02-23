@@ -24,8 +24,8 @@ Sentry.init({
     },
 });
 
-// Patches createRequestHandler globally — instruments all loaders/actions
-Sentry.instrumentServer();
+// Captures errors that bubble up through Remix's handleError pipeline
+export const handleError = Sentry.sentryHandleError;
 
 const ABORT_DELAY = 5000;
 
