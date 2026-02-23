@@ -7,6 +7,7 @@ import {BASE_URL, checkMerchantRegistration, fetchWithErrorHandling, getMerchant
 import type {ActionFunctionArgs, LoaderFunctionArgs} from "@remix-run/node";
 import { json} from "@remix-run/node";
 import {authenticate} from "../shopify.server";
+import * as Sentry from "@sentry/remix";
 
 /** Parse a cookie header string and return the value for a given key */
 function parseCookie(cookieHeader: string | null, key: string): string | null {
@@ -201,6 +202,10 @@ export default function Index() {
       </Page>
     );
   }
+
+  // Set Sentry user context now that shop identity is confirmed
+  Sentry.setUser({ username: data.shopInfo.myshopifyDomain });
+  Sentry.setTag("shop", data.shopInfo.myshopifyDomain);
 
   // Conditional rendering based on registration status
   return data.isRegistered ? (

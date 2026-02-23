@@ -3,6 +3,9 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+ARG COMMIT_SHA=unknown
+ENV COMMIT_SHA=$COMMIT_SHA
+
 # Enable Corepack and prepare pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -15,7 +16,22 @@ export default defineConfig({
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
     },
   },
-  plugins: [react(),tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    ...(process.env.SENTRY_AUTH_TOKEN ? [sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT_REVIEW_UI,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      release: { name: process.env.COMMIT_SHA || 'unknown' },
+      sourcemaps: {
+        filesToDeleteAfterUpload: ['./dist/**/*.map'],
+      },
+    })] : []),
+  ],
+  build: {
+    sourcemap: true,
+  },
   preview: {
     port: 3001,
     strictPort: true,

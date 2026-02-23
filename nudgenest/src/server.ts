@@ -1,5 +1,8 @@
 'use strict';
 
+import { initSentry, Sentry } from './lib/sentry';
+initSentry();
+
 import { createServer } from './server-factory';
 import { Server } from '@hapi/hapi';
 
@@ -26,6 +29,7 @@ process.on('SIGTERM', async () => {
         await server.stop({ timeout: 10000 });
         console.log('Server stopped');
     }
+    await Sentry.flush(2000);
     process.exit(0);
 });
 

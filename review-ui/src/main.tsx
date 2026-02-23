@@ -6,8 +6,21 @@ import { Provider } from 'react-redux';
 import { store } from './redux/store.ts';
 import { BrowserRouter } from 'react-router';
 import { ErrorBoundary } from 'react-error-boundary';
+import * as Sentry from '@sentry/react';
 
 import './index.css';
+
+Sentry.init({
+    dsn: import.meta.env.VITE_APP_SENTRY_FE_DSN || '',
+    environment: import.meta.env.PROD ? 'production' : 'development',
+    release: import.meta.env.VITE_COMMIT_SHA || 'unknown',
+    tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
+    enabled: import.meta.env.PROD,
+    integrations: [Sentry.browserTracingIntegration()],
+});
+
+const apiKey = localStorage.getItem('nn-apiKey');
+if (apiKey) Sentry.setUser({ id: apiKey });
 
 function Fallback({ error }: { error: Error }) {
     // Call resetErrorBoundary() to reset the error boundary and retry the render.
@@ -24,7 +37,12 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <Provider store={store}>
             <BrowserRouter>
-                <ErrorBoundary FallbackComponent={Fallback}>
+                <ErrorBoundary
+                    FallbackComponent={Fallback}
+                    onError={(error, info) =>
+                        Sentry.captureException(error, { extra: { componentStack: info.componentStack } })
+                    }
+                >
                     <App />
                 </ErrorBoundary>
             </BrowserRouter>

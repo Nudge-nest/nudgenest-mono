@@ -16,10 +16,18 @@ const secrets = {
 
     // Frontend Configuration
     VITE_APP_BACKEND_HOST: config.get("VITE_APP_BACKEND_HOST"),
+    REVIEW_UI_BASE_URL: config.get("REVIEW_UI_BASE_URL"),
 
     // CI/CD Secrets
     GITHUB_TOKEN: config.get("GITHUB_TOKEN"),
     GITHUB_APP_INSTALLER_ID: config.get("GITHUB_APP_INSTALLER_ID"),
+
+    // Sentry Error Monitoring (GCP-deployed services only)
+    SENTRY_BACKEND_DSN: config.get("SENTRY_BACKEND_DSN"),
+    VITE_APP_SENTRY_FE_DSN: config.get("VITE_APP_SENTRY_FE_DSN"),
+    SENTRY_AUTH_TOKEN: config.get("SENTRY_AUTH_TOKEN"),
+    SENTRY_ORG: config.get("SENTRY_ORG"),
+    SENTRY_PROJECT_REVIEW_UI: config.get("SENTRY_PROJECT_REVIEW_UI"),
 
     // Deprecated - kept for backward compatibility during migration
     // RABBITMQ_URL_AWS: Migrated to Pub/Sub
