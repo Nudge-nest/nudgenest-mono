@@ -22,16 +22,17 @@ api_version = "2024-10"
   uri = "/webhooks/app/subscriptions/update"
 
   # GDPR mandatory webhooks — required for Shopify App Store submission
+  # Note: compliance webhooks use `compliance_topics`, not `topics`
   [[webhooks.subscriptions]]
-  topics = [ "customers/data_request" ]
+  compliance_topics = [ "customers/data_request" ]
   uri = "/webhooks/customers/data-request"
 
   [[webhooks.subscriptions]]
-  topics = [ "customers/redact" ]
+  compliance_topics = [ "customers/redact" ]
   uri = "/webhooks/customers/redact"
 
   [[webhooks.subscriptions]]
-  topics = [ "shop/redact" ]
+  compliance_topics = [ "shop/redact" ]
   uri = "/webhooks/shop/redact"
 
 [access_scopes]
