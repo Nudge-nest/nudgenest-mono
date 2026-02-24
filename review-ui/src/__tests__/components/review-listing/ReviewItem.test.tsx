@@ -196,13 +196,6 @@ describe('ReviewItem', () => {
         expect(screen.queryByTestId('review-comment')).not.toBeInTheDocument();
     });
 
-    test.skip('displays sanitized review text', () => {
-        render(<ReviewItem review={mockReview} onMediaClick={mockOnMediaClick} />);
-
-        const commentElement = screen.getByTestId('review-comment');
-        expect(commentElement).toHaveTextContent('Great product! Really love it and would recommend to others.');
-    });
-
     test('media button has proper accessibility attributes', () => {
         render(<ReviewItem review={mockReview} onMediaClick={mockOnMediaClick} />);
 
