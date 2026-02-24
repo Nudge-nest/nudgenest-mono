@@ -5,7 +5,7 @@ import App from './App.tsx';
 import { Provider } from 'react-redux';
 import { store } from './redux/store.ts';
 import { BrowserRouter } from 'react-router';
-import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import * as Sentry from '@sentry/react';
 
 import './index.css';
@@ -29,13 +29,13 @@ if (new URLSearchParams(window.location.search).has('sentry-test')) {
     );
 }
 
-function Fallback({ error }: { error: Error }) {
-    // Call resetErrorBoundary() to reset the error boundary and retry the render.
-
+function Fallback({ error }: FallbackProps) {
+    // react-error-boundary v6 widened error to `unknown` — narrow before accessing .message
+    const message = error instanceof Error ? error.message : String(error);
     return (
         <div role="alert">
             <p>Something went wrong:</p>
-            <pre style={{ color: 'red' }}>{error.message}</pre>
+            <pre style={{ color: 'red' }}>{message}</pre>
         </div>
     );
 }
