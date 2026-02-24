@@ -12,7 +12,9 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:integration": "npx playwright test"
+    "test:integration": "npx playwright test",
+    "build:analyze": "ANALYZE=true pnpm build",
+    "lhci:audit": "lhci autorun"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.0",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.57.0",
     "@sentry/vite-plugin": "^5.0.0",
     "@testing-library/jest-dom": "^6.9.1",
@@ -54,6 +57,7 @@
     "globals": "^15.15.0",
     "jsdom": "^26.1.0",
     "prettier": "^3.7.3",
+    "rollup-plugin-visualizer": "^7.0.0",
     "typescript": "~5.7.3",
     "typescript-eslint": "^8.48.0",
     "vite": "^6.4.1",

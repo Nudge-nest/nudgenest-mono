@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react-swc'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -28,6 +29,13 @@ export default defineConfig({
         filesToDeleteAfterUpload: ['./dist/**/*.map'],
       },
     })] : []),
+    // Bundle size visualiser — only when ANALYZE=true (run: pnpm build:analyze)
+    ...(process.env.ANALYZE === 'true' ? [visualizer({
+      open: true,
+      filename: 'dist/bundle-report.html',
+      gzipSize: true,
+      brotliSize: true,
+    })] : []),
   ],
   build: {
     sourcemap: true,
@@ -47,6 +55,8 @@ export default defineConfig({
         environment: 'jsdom',
         setupFiles: ['./src/setupTests.ts'],
         css: true,
+        // Exclude Playwright spec files — they use a different test runner
+        exclude: ['**/node_modules/**', '**/*.spec.ts', '**/*.spec.tsx', 'tests-examples/**'],
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],

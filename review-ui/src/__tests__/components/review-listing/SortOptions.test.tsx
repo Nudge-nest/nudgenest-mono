@@ -153,11 +153,14 @@ describe('SortOptions', () => {
             // Open dropdown
             fireEvent.click(screen.getByTestId('sort-trigger-button'));
 
+            // Component uses a CSS variable class for bg (not bg-blue-50), but font-semibold is reliable
             const lowestOption = screen.getByTestId('sort-option-lowest');
-            expect(lowestOption).toHaveClass('bg-blue-50', 'font-semibold');
+            expect(lowestOption).toHaveClass('font-semibold');
+            expect(lowestOption).toHaveAttribute('aria-current', 'true');
 
             const newestOption = screen.getByTestId('sort-option-newest');
-            expect(newestOption).not.toHaveClass('bg-blue-50');
+            expect(newestOption).not.toHaveClass('font-semibold');
+            expect(newestOption).not.toHaveAttribute('aria-current');
         });
     });
 

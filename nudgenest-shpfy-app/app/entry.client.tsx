@@ -14,7 +14,9 @@ Sentry.init({
     environment: window.__ENV?.NODE_ENV || "development",
     release: window.__ENV?.COMMIT_SHA || "unknown",
     tracesSampleRate: window.__ENV?.NODE_ENV === "production" ? 0.1 : 1.0,
-    integrations: [Sentry.browserTracingIntegration()],
+    // browserTracingIntegration() requires Remix hooks (useEffect, useLocation,
+    // useMatches) as options — calling it with no args throws at runtime.
+    // It is also not useful inside Shopify's embedded app iframe. Omitted.
     beforeSend(event, hint) {
         const err = hint.originalException;
         // billing.request() always throws Response(401) intentionally — never report it
