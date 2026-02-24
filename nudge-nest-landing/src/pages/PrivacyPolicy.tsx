@@ -3,7 +3,7 @@ const PrivacyPolicy = () => {
     const contactEmail = 'support@nudgenest.com';
 
     return (
-        <div className="max-w-4xl mx-auto px-6 py-16 text-[color:var(--color-text)]">
+        <div className="max-w-4xl mx-auto px-6 py-16 text-[color:var(--color-dark)]">
             {/* Header */}
             <div className="mb-12">
                 <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
@@ -164,7 +164,7 @@ const PrivacyPolicy = () => {
                 <p className="text-base leading-relaxed opacity-80">
                     For privacy-related questions or to exercise your rights, please contact us at:
                 </p>
-                <div className="mt-4 p-4 rounded-lg bg-[color:var(--color-surface)] opacity-80">
+                <div className="mt-4 p-4 rounded-lg bg-[color:var(--color-white)] opacity-80">
                     <p className="font-semibold">Nudgenest</p>
                     <p>
                         Email:{' '}
