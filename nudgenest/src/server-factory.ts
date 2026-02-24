@@ -17,6 +17,7 @@ import reviewMediaPlugin from './plugins/media';
 import billingPlugin from './plugins/billing';
 import reviewStatsPlugin from './plugins/reviewStats';
 import reminderSchedulerPlugin from './plugins/reminderScheduler';
+import gdprPlugin from './plugins/gdpr';
 import sentryTestPlugin from './plugins/sentryTest';
 
 dotenv.config();
@@ -52,6 +53,7 @@ export const createServer = async () => {
         billingPlugin,
         reviewStatsPlugin,
         reminderSchedulerPlugin,
+        gdprPlugin,
         sentryTestPlugin,
     ]);
 

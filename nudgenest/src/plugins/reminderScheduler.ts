@@ -1,16 +1,18 @@
 /**
  * Reminder Scheduler Plugin
  *
- * Runs a background job once daily at 00:00 UTC that:
- * 1. Queries all Pending reviews where the customer hasn't submitted a review yet
- * 2. For each review, reads the merchant's reminder configuration
- *    - remindersQty  → max number of reminders to send (default: 2)
- *    - remindersPeriod → WEEKLY | BIWEEKLY | MONTHLY | BIMONTHLY (default: WEEKLY)
- * 3. Publishes a 'reminder' event to Pub/Sub if the review is eligible
- * 4. Increments remindersSent and updates lastReminderAt on the review record
+ * Runs a background job once daily at 00:00 UTC that handles two phases:
  *
- * The pubsubConsumer plugin already handles 'reminder' eventType and routes
- * it to EmailService.sendReviewReminder().
+ * Phase 1 — Initial review request emails (delayed send)
+ *   Queries Pending reviews where scheduledEmailAt has arrived but
+ *   initialEmailSentAt is still null, then publishes a 'new-review' event.
+ *   Reviews with scheduledEmailAt = null predate this feature and already
+ *   had their initial email sent by the webhook — they are skipped here.
+ *
+ * Phase 2 — Reminder emails
+ *   For reviews whose initial email was sent (initialEmailSentAt IS NOT NULL)
+ *   or legacy reviews (scheduledEmailAt IS NULL), reads the merchant's reminder
+ *   config and sends follow-up emails based on remindersQty / remindersPeriod.
  *
  * Manual trigger: POST /api/v1/reminders/run  (no auth required, for testing)
  */
@@ -46,6 +48,43 @@ function msUntilMidnightUTC(): number {
         Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)
     );
     return midnight.getTime() - now.getTime();
+}
+
+// ---------------------------------------------------------------------------
+// Helper: build a Pub/Sub initial review-request message payload
+// Used by Phase 1 (delayed send) to trigger the first customer email.
+// ---------------------------------------------------------------------------
+function buildInitialEmailMessage(
+    review: any
+): IRabbitDataObject<IReviewMessagePayloadContent> {
+    const items = Array.isArray(review.items) ? review.items : [];
+    return {
+        messageId: uuidv4(),
+        timestamp: new Date().toISOString(),
+        eventType: 'new-review',
+        priority: 'NORMAL',
+        payload: {
+            userId: review.merchantId,
+            context: {
+                action: 'send_review_request',
+                details: `Delayed initial review request for review ${review.id}`,
+                receiver: ['reviewer'],
+            },
+            content: {
+                userName: review.customerName || 'Valued Customer',
+                type: 'email',
+                email: review.customerEmail,
+                line_items: items,
+                order_number: undefined,
+                reviewId: review.id,
+                currency: undefined,
+                merchantId: review.merchantId,
+            },
+        },
+        metadata: {
+            retries: 0,
+        },
+    };
 }
 
 // ---------------------------------------------------------------------------
@@ -85,25 +124,89 @@ function buildReminderMessage(
 }
 
 // ---------------------------------------------------------------------------
-// Core: process all pending reviews due for a reminder
+// Core: process all pending reviews
+// Phase 1: send deferred initial emails whose scheduledEmailAt has arrived.
+// Phase 2: send follow-up reminders per merchant configuration.
 // Returns a result summary so the manual-trigger endpoint can report back.
 // ---------------------------------------------------------------------------
-export async function processReminders(server: Hapi.Server): Promise<{ reminded: number; skipped: number; evaluated: number }> {
+export async function processReminders(server: Hapi.Server): Promise<{
+    initialEmailsSent: number;
+    reminded: number;
+    skipped: number;
+    evaluated: number;
+}> {
     const prisma = server.app.prisma;
     const { pubsub } = server.app;
     const { messagingTopic } = pubsub;
     const now = new Date();
 
-    server.log(['info', 'reminderScheduler'], '🔔 Reminder job started');
+    server.log(['info', 'reminderScheduler'], '🔔 Scheduler job started');
 
+    // ==========================================================================
+    // Phase 1 — Initial review request emails (delayed send)
+    // Query: Pending reviews whose scheduledEmailAt has arrived AND whose
+    // initial email hasn't been sent yet.
+    // ==========================================================================
+    const reviewsDueForInitialEmail = await prisma.reviews.findMany({
+        where: {
+            status: 'Pending',
+            scheduledEmailAt: { not: null, lte: now },
+            initialEmailSentAt: null,
+        },
+    });
+
+    server.log(
+        ['info', 'reminderScheduler'],
+        `📧 Phase 1: ${reviewsDueForInitialEmail.length} review(s) due for initial email`
+    );
+
+    let initialEmailsSent = 0;
+
+    for (const review of reviewsDueForInitialEmail) {
+        try {
+            const msg = buildInitialEmailMessage(review);
+            const msgBuffer = convertObjectToBuffer(msg);
+            await messagingTopic.publishMessage({ data: msgBuffer });
+
+            await prisma.reviews.update({
+                where: { id: review.id },
+                data: { initialEmailSentAt: now },
+            });
+
+            initialEmailsSent++;
+            server.log(
+                ['info', 'reminderScheduler'],
+                `✅ Initial email queued for review ${review.id} (${review.customerEmail})`
+            );
+        } catch (err: any) {
+            server.log(
+                ['error', 'reminderScheduler'],
+                `❌ Failed to send initial email for review ${review.id}: ${err.message}`
+            );
+            Sentry.captureException(err, {
+                tags: { component: 'reminderScheduler', phase: 'initialEmail' },
+                extra: { reviewId: review.id, merchantId: review.merchantId },
+            });
+        }
+    }
+
+    // ==========================================================================
+    // Phase 2 — Follow-up reminder emails
+    // Only consider reviews where:
+    //   - initialEmailSentAt IS NOT NULL (initial email already sent), OR
+    //   - scheduledEmailAt IS NULL (legacy reviews created before this feature,
+    //     whose initial email was sent immediately by the webhook at order time).
+    // ==========================================================================
     const pendingReviews = await prisma.reviews.findMany({
         where: {
             status: 'Pending',
             createdAt: {
-                // Only consider reviews created at least 24 h ago so the
-                // initial review request email has been delivered first.
                 lt: new Date(now.getTime() - MS_PER_DAY),
             },
+            OR: [
+                { initialEmailSentAt: { not: null } },
+                { scheduledEmailAt: null },
+            ],
         },
         include: {
             Merchants: {
@@ -116,7 +219,7 @@ export async function processReminders(server: Hapi.Server): Promise<{ reminded:
 
     server.log(
         ['info', 'reminderScheduler'],
-        `📋 Evaluating ${pendingReviews.length} pending review(s)`
+        `📋 Phase 2: evaluating ${pendingReviews.length} review(s) for reminders`
     );
 
     let reminded = 0;
@@ -155,11 +258,15 @@ export async function processReminders(server: Hapi.Server): Promise<{ reminded:
             }
 
             // -------------------------------------------------------------------
-            // 3. Skip if the cooldown period hasn't elapsed yet
-            //    Reference: lastReminderAt (subsequent reminders) or createdAt (first)
+            // 3. Skip if the cooldown period hasn't elapsed yet.
+            //    For legacy reviews (scheduledEmailAt null): reference = lastReminderAt ?? createdAt.
+            //    For new reviews (scheduledEmailAt set): reference = initialEmailSentAt ?? lastReminderAt.
             // -------------------------------------------------------------------
             const periodMs = PERIOD_MS[period];
-            const referenceDate = review.lastReminderAt ?? review.createdAt;
+            const referenceDate =
+                review.lastReminderAt ??
+                review.initialEmailSentAt ??
+                review.createdAt;
             const nextReminderDue = new Date(referenceDate.getTime() + periodMs);
 
             if (now < nextReminderDue) {
@@ -212,7 +319,7 @@ export async function processReminders(server: Hapi.Server): Promise<{ reminded:
                 `❌ Failed to process reminder for review ${review.id}: ${err.message}`
             );
             Sentry.captureException(err, {
-                tags: { component: 'reminderScheduler' },
+                tags: { component: 'reminderScheduler', phase: 'reminder' },
                 extra: { reviewId: review.id, merchantId: review.merchantId },
             });
         }
@@ -220,10 +327,10 @@ export async function processReminders(server: Hapi.Server): Promise<{ reminded:
 
     server.log(
         ['info', 'reminderScheduler'],
-        `🏁 Reminder job complete — queued: ${reminded}, skipped: ${skipped}`
+        `🏁 Scheduler job complete — initial: ${initialEmailsSent}, reminded: ${reminded}, skipped: ${skipped}`
     );
 
-    return { reminded, skipped, evaluated: pendingReviews.length };
+    return { initialEmailsSent, reminded, skipped, evaluated: pendingReviews.length };
 }
 
 // ---------------------------------------------------------------------------
@@ -246,7 +353,7 @@ const reminderSchedulerPlugin: Hapi.Plugin<null> = {
                 try {
                     const result = await processReminders(server);
                     return h.response({
-                        message: 'Reminder job completed',
+                        message: 'Scheduler job completed',
                         ...result,
                     }).code(200);
                 } catch (err: any) {
