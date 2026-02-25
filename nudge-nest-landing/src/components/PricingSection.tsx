@@ -4,42 +4,31 @@ import { LargeHeaderTextBold, MediumBodyText, MediumHeaderTextBold, SmallBodyTex
 
 type PlanTier = 'FREE' | 'STARTER' | 'GROWTH' | 'PRO' | 'ENTERPRISE';
 
-interface PlanFeatures {
-    emailReviewRequests: boolean;
-    smsReviewRequests: boolean;
-    autoReminders: boolean;
-    customEmailTemplates: boolean;
-    reviewIncentives: boolean;
-    bulkImport: boolean;
-    advancedAnalytics: boolean;
-    apiAccess: boolean;
-    whiteLabel: boolean;
-    prioritySupport: boolean;
-    dedicatedAccountManager: boolean;
-}
-
 interface Plan {
     id: string;
     displayName: string;
     description: string;
     tier: PlanTier;
     price: number;
-    features: PlanFeatures;
+    limits: {
+        reviewRequestsPerMonth: number;
+    };
 }
 
-const FEATURE_LABELS: Record<keyof PlanFeatures, string> = {
-    emailReviewRequests: 'Email review requests',
-    smsReviewRequests: 'SMS review requests',
-    autoReminders: 'Automated reminders',
-    customEmailTemplates: 'Custom email templates',
-    reviewIncentives: 'Review incentives',
-    bulkImport: 'Bulk import',
-    advancedAnalytics: 'Advanced analytics',
-    apiAccess: 'API access',
-    whiteLabel: 'White label',
-    prioritySupport: 'Priority support',
-    dedicatedAccountManager: 'Dedicated account manager',
-};
+/**
+ * Mirrors the feature list shown in the Shopify app's PlanSelector component.
+ * Only features that are fully built and working are listed here.
+ */
+const buildFeatures = (plan: Plan): string[] => [
+    plan.limits.reviewRequestsPerMonth === -1
+        ? 'Unlimited review requests/month'
+        : `${plan.limits.reviewRequestsPerMonth.toLocaleString('en-US')} review requests/month`,
+    'Email review requests',
+    'Automated review reminders',
+    'Custom email templates',
+    'QR code for in-store reviews',
+    'Review analytics & stats',
+];
 
 const DISPLAY_TIERS: PlanTier[] = ['FREE', 'STARTER', 'GROWTH', 'PRO'];
 
@@ -94,9 +83,7 @@ const PricingSection = () => {
                     <div className="w-full flex flex-col gap-y-4 md:flex-row md:gap-x-4 items-stretch">
                         {plans.map((plan) => {
                             const isPopular = plan.tier === 'GROWTH';
-                            const enabledFeatures = (Object.keys(plan.features) as Array<keyof PlanFeatures>)
-                                .filter((key) => plan.features[key])
-                                .slice(0, 5);
+                            const features = buildFeatures(plan);
 
                             return (
                                 <div
@@ -121,10 +108,10 @@ const PricingSection = () => {
                                     </p>
                                     <SmallBodyText>{plan.description}</SmallBodyText>
                                     <ul className="flex flex-col gap-y-2 flex-1">
-                                        {enabledFeatures.map((key) => (
-                                            <li key={key} className="flex items-center gap-x-2">
+                                        {features.map((feature) => (
+                                            <li key={feature} className="flex items-center gap-x-2">
                                                 <span className="text-[color:var(--color-main)] font-bold">✓</span>
-                                                <SmallBodyText>{FEATURE_LABELS[key]}</SmallBodyText>
+                                                <SmallBodyText>{feature}</SmallBodyText>
                                             </li>
                                         ))}
                                     </ul>
