@@ -57,7 +57,8 @@ const PricingSection = () => {
                 if (!res.ok) throw new Error('Failed to fetch plans');
                 return res.json();
             })
-            .then((data: Plan[]) => {
+            .then((response: { data: { plans: Plan[] } }) => {
+                const data = response.data.plans;
                 const filtered = DISPLAY_TIERS.map((tier) => data.find((p) => p.tier === tier)).filter(
                     (p): p is Plan => p !== undefined
                 );
