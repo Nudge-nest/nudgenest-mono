@@ -15,7 +15,7 @@ const LandingPage = () => {
             </p>
             <Link
                 to="/review/demo"
-                className="text-[color:var(--color-main)] font-normal underline italic mt-4 inline-block text-balance"
+                className="text-[color:var(--color-dark)] font-normal underline italic mt-4 inline-block text-balance"
             >
                 Try it out now!
             </Link>
