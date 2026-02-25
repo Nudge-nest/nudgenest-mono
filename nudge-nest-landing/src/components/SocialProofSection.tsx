@@ -1,4 +1,6 @@
-// TODO Sprint 6: replace placeholder testimonials with real merchant testimonials
+// TODO Sprint 6: replace placeholder cards with review-ui StoreReviewPage iframe embed.
+// Use a seeded demo merchant so the actual Nudgenest product is shown in action.
+// Embed: <iframe src="{REVIEW_UI_BASE_URL}/store/review/{demoMerchantId}" ... />
 import PageSection from './PageSection';
 import { LargeHeaderTextBold, MediumBodyText, MediumHeaderTextBold, SmallBodyText } from './Typography';
 
