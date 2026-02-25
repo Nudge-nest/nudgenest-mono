@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { SmallBodyText, SmallBodyTextBold } from './Typography';
+import { Link } from 'react-router';
 import { FooterButton } from './Button';
+import { SmallBodyText, SmallBodyTextBold } from './Typography';
 
 const Footer = () => {
     const [year] = useState<string>(`${new Date().getFullYear()}`);
@@ -25,7 +26,9 @@ const Footer = () => {
             </div>
             <div className="col-span-full md:w-4/5 mx-auto flex gap-x-3 justify-center items-end pb-4">
                 <SmallBodyText className="text-[color:var(--color-main)]">&copy; {year} Nudge-nest</SmallBodyText>
-                <SmallBodyText className="text-[color:var(--color-main)]">. Privacy</SmallBodyText>
+                <Link to="/privacy" className="text-sm font-normal text-[color:var(--color-main)] hover:underline">
+                    . Privacy Policy
+                </Link>
                 <SmallBodyText className="text-[color:var(--color-main)]">. Terms</SmallBodyText>
                 <SmallBodyText className="text-[color:var(--color-main)]">. Sitemap</SmallBodyText>
             </div>

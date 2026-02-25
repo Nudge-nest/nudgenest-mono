@@ -14,10 +14,19 @@ const Header = () => {
             </a>
             <ul className="w-1/2 hidden md:flex justify-center items-center">
                 <li className={listBaseStyle}>
-                    <SmallBodyText>Home</SmallBodyText>
+                    <a href="#how-it-works">
+                        <SmallBodyText>How It Works</SmallBodyText>
+                    </a>
                 </li>
                 <li className={listBaseStyle}>
-                    <SmallBodyText>About</SmallBodyText>
+                    <a href="#pricing">
+                        <SmallBodyText>Pricing</SmallBodyText>
+                    </a>
+                </li>
+                <li className={listBaseStyle}>
+                    <a href="#faq">
+                        <SmallBodyText>FAQ</SmallBodyText>
+                    </a>
                 </li>
                 <li className={listBaseStyle}>
                     <a href={contactUrl} className="w-fit h-fit" target="_blank" rel="noopener noreferrer">

@@ -1,5 +1,9 @@
 import { Button, LinkButton } from '../components/Button';
+import FAQSection from '../components/FAQSection';
+import HowItWorksSection from '../components/HowItWorksSection';
 import PageSection from '../components/PageSection';
+import PricingSection from '../components/PricingSection';
+import SocialProofSection from '../components/SocialProofSection';
 import {
     LargeHeaderTextBold,
     LargerHeaderTextBoldItalic,
@@ -123,6 +127,10 @@ const LandingPage = () => {
                     </div>
                 </div>
             </PageSection>
+            <div id="how-it-works"><HowItWorksSection /></div>
+            <div id="social-proof"><SocialProofSection /></div>
+            <div id="pricing"><PricingSection /></div>
+            <div id="faq"><FAQSection /></div>
         </div>
     );
 };
