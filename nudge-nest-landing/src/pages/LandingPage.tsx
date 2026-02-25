@@ -1,4 +1,6 @@
-import productScreenshot from '../assets/product-screenshot.png';
+import productScreenshotStars from '../assets/product-screenshot-stars.png';
+import productScreenshotUpload from '../assets/product-screenshot-upload.png';
+import productScreenshotComment from '../assets/product-screenshot-comment.png';
 import { Button, LinkButton } from '../components/Button';
 import FAQSection from '../components/FAQSection';
 import HowItWorksSection from '../components/HowItWorksSection';
@@ -48,11 +50,21 @@ const LandingPage = () => {
                             order — no account needed, no friction. Just tap a star, leave a comment, and submit.
                         </MediumBodyText>
                     </div>
-                    <div className="flex-shrink-0 w-full md:w-64">
+                    <div className="flex-shrink-0 flex gap-3 items-start justify-center">
                         <img
-                            src={productScreenshot}
-                            alt="Nudgenest review form on mobile — star rating and comment step"
-                            className="w-full rounded-3xl shadow-xl border border-[color:var(--color-icons-border)]"
+                            src={productScreenshotStars}
+                            alt="Nudgenest review form on mobile — star rating step"
+                            className="w-28 md:w-36 rounded-3xl shadow-xl border border-[color:var(--color-icons-border)]"
+                        />
+                        <img
+                            src={productScreenshotUpload}
+                            alt="Nudgenest review form on mobile — photo upload step"
+                            className="w-28 md:w-36 rounded-3xl shadow-xl border border-[color:var(--color-icons-border)] mt-6 md:mt-8"
+                        />
+                        <img
+                            src={productScreenshotComment}
+                            alt="Nudgenest review form on mobile — comment and submit step"
+                            className="w-28 md:w-36 rounded-3xl shadow-xl border border-[color:var(--color-icons-border)] mt-12 md:mt-16"
                         />
                     </div>
                 </div>
