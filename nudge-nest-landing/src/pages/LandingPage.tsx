@@ -1,3 +1,4 @@
+import productScreenshot from '../assets/product-screenshot.png';
 import { Button, LinkButton } from '../components/Button';
 import FAQSection from '../components/FAQSection';
 import HowItWorksSection from '../components/HowItWorksSection';
@@ -38,16 +39,23 @@ const LandingPage = () => {
                     </Button>
                 </div>
             </PageSection>
-            <PageSection height="large" name="media-video">
-                <video
-                   className={'col-span-full md:w-4/5 h-full mx-auto flex flex-col items-center'}
-                   autoPlay
-                   muted
-                   playsInline
-                >
-                    <source type="video/webm"
-                            src="https://nudge-nest-media.s3.eu-north-1.amazonaws.com/nudge_nest_landing_01_HD.webm"/>
-                </video>
+            <PageSection name="product-preview">
+                <div className="col-span-full md:w-4/5 mx-auto flex flex-col md:flex-row gap-8 items-center py-16">
+                    <div className="flex-1 flex flex-col gap-y-4 text-left">
+                        <LargeHeaderTextBold>The review experience your customers will love</LargeHeaderTextBold>
+                        <MediumBodyText>
+                            Customers receive a beautifully simple, mobile-first review request after every fulfilled
+                            order — no account needed, no friction. Just tap a star, leave a comment, and submit.
+                        </MediumBodyText>
+                    </div>
+                    <div className="flex-shrink-0 w-full md:w-64">
+                        <img
+                            src={productScreenshot}
+                            alt="Nudgenest review form on mobile — star rating and comment step"
+                            className="w-full rounded-3xl shadow-xl border border-[color:var(--color-icons-border)]"
+                        />
+                    </div>
+                </div>
             </PageSection>
             <PageSection height="medium" name="features">
                 <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 justify-center items-center`}>
