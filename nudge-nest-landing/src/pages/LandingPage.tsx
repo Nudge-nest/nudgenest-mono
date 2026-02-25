@@ -22,8 +22,8 @@ const featuresUrl = `${import.meta.env.VITE_APP_FEATURES_URL}`;
 const LandingPage = () => {
     return (
         <div className="grid grid-rows-4 md:grid-rows-[auto_auto_auto_auto]">
-            <PageSection height="large" name="hero">
-                <div className={`col-span-full w-full md:w-4/5 mx-auto flex flex-col gap-y-8 justify-center`}>
+            <PageSection name="hero">
+                <div className={`col-span-full w-full md:w-4/5 mx-auto flex flex-col gap-y-8 justify-center py-24 md:py-32`}>
                     <LargerHeaderTextBoldItalic>
                         Boost Trust. Grow Your Brand. Simplify Reviews.
                     </LargerHeaderTextBoldItalic>
@@ -69,7 +69,7 @@ const LandingPage = () => {
                     </div>
                 </div>
             </PageSection>
-            <PageSection height="medium" name="features">
+            <PageSection name="features">
                 <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 justify-center items-center`}>
                     <LargeHeaderTextBold>Why Choose Nudge-Nest?</LargeHeaderTextBold>
                     <ul className="flex flex-col gap-y-4 md:flex-row md:gap-x-4">
@@ -102,7 +102,7 @@ const LandingPage = () => {
                     </ul>
                 </div>
             </PageSection>
-            <PageSection height="medium" name="advantage">
+            <PageSection name="advantage">
                 <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10  items-center`}>
                     <LargeHeaderTextBold>Our Value Proposition</LargeHeaderTextBold>
                     <div className="flex flex-col gap-y-4 md:flex-row md:gap-x-4">
