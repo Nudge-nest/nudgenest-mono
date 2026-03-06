@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import logo from '../assets/nudgenest_icon_no_bg.svg';
+import logo from '../assets/nudgenest_icon_no_bg.svg?url';
 import { FooterButton } from './Button';
 import { SmallBodyText, SmallBodyTextBold } from './Typography';
 
