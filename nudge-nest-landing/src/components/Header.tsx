@@ -1,4 +1,4 @@
-import logo from '../assets/nudgenest_icon_no_bg.svg?url';
+import logo from '../assets/nudgenest_no_bg.svg?url';
 
 const homeUrl = `${import.meta.env.VITE_APP_HOST}`;
 const contactUrl = `${import.meta.env.VITE_APP_CONTACT_URL}`;
@@ -21,8 +21,7 @@ const Header = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    <img src={logo} alt="Nudgenest logo" className="w-10 h-10" />
-                    <span className="text-xl font-bold text-[color:var(--color-dark)]">Nudgenest</span>
+                    <img src={logo} alt="Nudgenest logo" className="h-12 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
                 </a>
 
                 {/* Nav links — hidden on mobile */}

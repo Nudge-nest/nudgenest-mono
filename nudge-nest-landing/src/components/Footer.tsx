@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import logo from '../assets/nudgenest_icon_no_bg.svg?url';
+import logo from '../assets/nudgenest_no_bg.svg?url';
 import { FooterButton } from './Button';
 import { SmallBodyText, SmallBodyTextBold } from './Typography';
 
@@ -17,8 +17,7 @@ const Footer = () => {
                 {/* Brand */}
                 <div className="flex flex-col items-center gap-y-2">
                     <div className="flex items-center gap-x-2">
-                        <img src={logo} alt="Nudgenest logo" className="w-8 h-8" />
-                        <span className="text-lg font-bold text-[color:var(--color-dark)]">Nudgenest</span>
+                        <img src={logo} alt="Nudgenest logo" className="h-28 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
                     </div>
                     <SmallBodyText className="text-[color:var(--color-icons)] text-center">
                         Collect more reviews. Grow faster.
