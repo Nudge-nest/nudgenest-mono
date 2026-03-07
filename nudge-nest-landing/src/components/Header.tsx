@@ -21,7 +21,7 @@ const Header = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    <img src={logo} alt="Nudgenest logo" className="h-12 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
+                    <img src={logo} alt="Nudgenest logo" className="h-30 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
                 </a>
 
                 {/* Nav links — hidden on mobile */}

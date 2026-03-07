@@ -17,7 +17,7 @@ const Footer = () => {
                 {/* Brand */}
                 <div className="flex flex-col items-center gap-y-2">
                     <div className="flex items-center gap-x-2">
-                        <img src={logo} alt="Nudgenest logo" className="h-28 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
+                        <img src={logo} alt="Nudgenest logo" className="h-30 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
                     </div>
                     <SmallBodyText className="text-[color:var(--color-icons)] text-center">
                         Collect more reviews. Grow faster.
