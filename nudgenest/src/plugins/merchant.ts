@@ -98,8 +98,8 @@ export const defaultConfigs = {
         },
         {
             key: 'remindersPeriod',
-            value: 'BIMONTHLY',
-            description: 'Frequency of reminder emails',
+            value: 'WEEKLY',
+            description: 'Frequency of reminder emails (WEEKLY, BIWEEKLY, MONTHLY, BIMONTHLY)',
             type: 'select',
         },
     ],
@@ -194,6 +194,7 @@ const verifyMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
                 email: true,
                 name: true,
                 businessInfo: true,
+                apiKey: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -304,20 +305,20 @@ const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
             data: configsWithQrUrl as any,
         });
 
-        // Auto-assign free plan with 14-day trial
+        // Auto-assign FREE plan (no trial - it's free forever)
         const freePlan = await prisma.plans.findUnique({ where: { name: 'free' } });
         if (freePlan) {
             const now = new Date();
-            const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+            const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
             await prisma.subscriptions.create({
                 data: {
                     merchantId: merchant.id,
                     planId: freePlan.id,
-                    status: 'TRIALING',
+                    status: 'ACTIVE',
                     currentPeriodStart: now,
-                    currentPeriodEnd: trialEnd,
-                    trialStart: now,
-                    trialEnd: trialEnd,
+                    currentPeriodEnd: periodEnd,
+                    trialStart: null,
+                    trialEnd: null,
                 },
             });
         }

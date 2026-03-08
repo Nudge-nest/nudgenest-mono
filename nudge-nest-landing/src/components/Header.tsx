@@ -17,11 +17,11 @@ const Header = () => {
                 {/* Logo + brand name */}
                 <a
                     href={homeUrl}
-                    className="flex items-center gap-x-2.5 flex-shrink-0"
+                    className="flex items-center"
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    <img src={logo} alt="Nudgenest logo" className="h-[44px] w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
+                    <img src={logo} alt="Nudgenest logo" className="h-16 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
                 </a>
 
                 {/* Nav links — hidden on mobile */}
