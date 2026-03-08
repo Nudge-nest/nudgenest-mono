@@ -1,6 +1,5 @@
 import logo from '../assets/nudgenest_logo.svg?url';
 
-const homeUrl = `${import.meta.env.VITE_APP_HOST}`;
 const contactUrl = `${import.meta.env.VITE_APP_CONTACT_URL}`;
 const signupUrl = `${import.meta.env.VITE_APP_SIGNUP_URL}`;
 
@@ -16,10 +15,8 @@ const Header = () => {
             <div className="w-full px-6 h-16 flex items-center justify-between gap-x-4">
                 {/* Logo + brand name */}
                 <a
-                    href={homeUrl}
+                    href="/"
                     className="flex items-center"
-                    target="_blank"
-                    rel="noopener noreferrer"
                 >
                     <img src={logo} alt="Nudgenest logo" className="h-16 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
                 </a>

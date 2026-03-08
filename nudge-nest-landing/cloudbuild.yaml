@@ -1,0 +1,79 @@
+# [START cloudbuild_landing_build]
+steps:
+  # Step 1: Inject build-time env vars into .env
+  - name: 'ubuntu'
+    id: 'create-env'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cat <<EOF > /workspace/nudge-nest-landing/.env
+        VITE_APP_BACKEND_URL=$$VITE_APP_BACKEND_HOST/api/v1
+        VITE_APP_CONTACT_URL=${_CONTACT_URL}
+        VITE_APP_SIGNUP_URL=${_SIGNUP_URL}
+        VITE_APP_FEATURES_URL=${_FEATURES_URL}
+        EOF
+    secretEnv:
+      - 'VITE_APP_BACKEND_HOST'
+
+  # Step 2: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    args:
+      - build
+      - '--no-cache'
+      - '-t'
+      - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-landing-service/nudgenest-landing-service:$COMMIT_SHA'
+      - nudge-nest-landing
+      - '-f'
+      - nudge-nest-landing/Dockerfile
+    waitFor: ['create-env']
+
+  # Step 3: Push image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push'
+    args:
+      - push
+      - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-landing-service/nudgenest-landing-service:$COMMIT_SHA'
+    waitFor: ['build']
+
+  # Step 4: Deploy to Cloud Run (creates service on first run, updates on subsequent)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    id: 'deploy'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - nudgenest-landing
+      - '--platform=managed'
+      - '--image=$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-landing-service/nudgenest-landing-service:$COMMIT_SHA'
+      - '--labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID,$_LABELS'
+      - '--region=$_DEPLOY_REGION'
+      - '--allow-unauthenticated'
+      - '--quiet'
+    waitFor: ['push']
+
+images:
+  - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-landing-service/nudgenest-landing-service:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  substitutionOption: ALLOW_LOOSE
+
+substitutions:
+  _DEPLOY_REGION: europe-west1
+  _PLATFORM: managed
+  _CONTACT_URL: 'https://www.google.com/search?q=Nudge-nest'
+  _SIGNUP_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSdT-tPUX4C8AzsClyNjZtwbTlrvRM8ByYYdbHWTi7gEyiwLrg/viewform?usp=header'
+  _FEATURES_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSfAxwijQju0JaZNFU7OAobMZqERVIi_oGD03ZhyWhTkEPVyMg/viewform?usp=dialog'
+
+tags:
+  - gcp-cloud-build-deploy-cloud-run
+  - gcp-cloud-build-deploy-cloud-run-managed
+  - nudgenest-landing-service
+
+availableSecrets:
+  secretManager:
+    - versionName: 'projects/$PROJECT_ID/secrets/VITE_APP_BACKEND_HOST/versions/2'
+      env: 'VITE_APP_BACKEND_HOST'
+# [END cloudbuild_landing_build]
