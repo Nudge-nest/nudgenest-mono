@@ -25,9 +25,9 @@ const secrets = {
     // Sentry Error Monitoring (GCP-deployed services only)
     SENTRY_BACKEND_DSN: config.get("SENTRY_BACKEND_DSN"),
     VITE_APP_SENTRY_FE_DSN: config.get("VITE_APP_SENTRY_FE_DSN"),
-    SENTRY_AUTH_TOKEN: config.get("SENTRY_AUTH_TOKEN"),
-    SENTRY_ORG: config.get("SENTRY_ORG"),
-    SENTRY_PROJECT_REVIEW_UI: config.get("SENTRY_PROJECT_REVIEW_UI"),
+    // SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT_REVIEW_UI are Sentry CLI
+    // source-map upload credentials — not required for error reporting (DSNs above
+    // handle that). Add via `pulumi config set --secret` when source map upload is needed.
 
     // Deprecated - kept for backward compatibility during migration
     // RABBITMQ_URL_AWS: Migrated to Pub/Sub
@@ -189,12 +189,24 @@ const repo = new gcp.artifactregistry.Repository('nudgenest-service', {
     mode: "STANDARD_REPOSITORY",
 })
 
-// Frontend Artifact Registry
+// Frontend (Review UI) Artifact Registry
 const fe_repo = new gcp.artifactregistry.Repository('nudgenest-fe-service', {
     location: config.get("region"),
     repositoryId: "nudgenest-fe-service",
     format: "DOCKER",
     description: "Repository for nudgenest frontend service",
+    dockerConfig: {
+        immutableTags: false,
+    },
+    mode: "STANDARD_REPOSITORY",
+})
+
+// Landing Page Artifact Registry
+const landing_repo = new gcp.artifactregistry.Repository('nudgenest-landing-service', {
+    location: config.get("region"),
+    repositoryId: "nudgenest-landing-service",
+    format: "DOCKER",
+    description: "Repository for nudgenest landing page",
     dockerConfig: {
         immutableTags: false,
     },
@@ -253,11 +265,29 @@ const fe_connection_trigger = new gcp.cloudbuild.Trigger("frontend_build_trigger
     serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
 }, {dependsOn: [monorepo_connection_repo]})
 
+// Landing Page Build Trigger (triggers on changes to nudge-nest-landing/** directory)
+const landing_connection_trigger = new gcp.cloudbuild.Trigger("landing_build_trigger", {
+    location: config.get("region"),
+    name: 'nudgenest-landing-trigger',
+    filename: "nudge-nest-landing/cloudbuild.yaml", // Path in monorepo
+    project: "nudgenest",
+    repositoryEventConfig: {
+        repository: monorepo_connection_repo.id,
+        push: {
+            branch: "^test$",
+        },
+    },
+    includedFiles: ["nudge-nest-landing/**"], // Only trigger on landing page changes
+    serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
+}, {dependsOn: [monorepo_connection_repo, landing_repo]})
+
 // Export CI/CD resources
 export const repoName = repo.name;
 export const feRepoName = fe_repo.name;
+export const landingRepoName = landing_repo.name;
 export const monorepoConnection = monorepo_connection.name;
 export const monorepoConnectionRepo = monorepo_connection_repo.name;
 export const backendConnectionTrigger = backend_connection_trigger.name;
 export const feConnectionTrigger = fe_connection_trigger.name;
+export const landingConnectionTrigger = landing_connection_trigger.name;
 
