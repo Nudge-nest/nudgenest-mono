@@ -8,7 +8,7 @@ steps:
       - '-c'
       - |
         cat <<EOF > /workspace/nudge-nest-landing/.env
-        VITE_APP_BACKEND_URL=$$VITE_APP_BACKEND_HOST/api/v1
+        VITE_APP_BACKEND_URL=$$VITE_APP_BACKEND_HOST
         VITE_APP_CONTACT_URL=${_CONTACT_URL}
         VITE_APP_SIGNUP_URL=${_SIGNUP_URL}
         VITE_APP_FEATURES_URL=${_FEATURES_URL}

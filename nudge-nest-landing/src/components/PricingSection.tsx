@@ -32,7 +32,7 @@ const buildFeatures = (plan: Plan): string[] => [
 
 const DISPLAY_TIERS: PlanTier[] = ['FREE', 'STARTER', 'GROWTH', 'PRO'];
 
-const backendUrl = `${import.meta.env.VITE_APP_BACKEND_URL}`;
+const backendUrl = `${import.meta.env.VITE_APP_BACKEND_URL}`.replace(/\/$/, '');
 const signupUrl = `${import.meta.env.VITE_APP_SIGNUP_URL}`;
 
 const PricingSection = () => {
