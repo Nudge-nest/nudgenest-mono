@@ -1,6 +1,7 @@
 'use strict';
 
 import Hapi from '@hapi/hapi';
+import { Sentry } from './lib/sentry';
 import * as dotenv from 'dotenv';
 import loggerPlugin from './plugins/logger';
 import pubsubPlugin from './plugins/googlePubSub';
@@ -15,6 +16,9 @@ import reviewConfigsPlugin from './plugins/configs';
 import reviewMediaPlugin from './plugins/media';
 import billingPlugin from './plugins/billing';
 import reviewStatsPlugin from './plugins/reviewStats';
+import reminderSchedulerPlugin from './plugins/reminderScheduler';
+import gdprPlugin from './plugins/gdpr';
+import sentryTestPlugin from './plugins/sentryTest';
 
 dotenv.config();
 
@@ -48,7 +52,16 @@ export const createServer = async () => {
         reviewMediaPlugin,
         billingPlugin,
         reviewStatsPlugin,
+        reminderSchedulerPlugin,
+        gdprPlugin,
+        sentryTestPlugin,
     ]);
+
+    if (process.env.SENTRY_BACKEND_DSN) {
+        await Sentry.setupHapiErrorHandler(server);
+        // Hooks into onPreResponse; captures 5xx errors; skips intentional 4xx boom errors
+    }
+
     server.route({
         method: 'GET',
         path: '/{param*}',

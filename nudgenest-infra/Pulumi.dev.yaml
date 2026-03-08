@@ -28,3 +28,4 @@ config:
   nudgenest-infra:NODE_ENV: production
   nudgenest-infra:GOOGLE_CLOUD_PROJECT_ID: nudgenest
   nudgenest-infra:GCS_BUCKET_NAME: nudgenest-media
+  nudgenest-infra:REVIEW_UI_BASE_URL: https://nudgenest-review-ui-1094805904049.europe-west1.run.app

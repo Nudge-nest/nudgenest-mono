@@ -47,10 +47,12 @@ model Reviews {
   replies            Json?
   status             String     @default("Pending")
   published          Boolean    @default(false)
-  merchantApiKey     String?
-  remindersSent      Int        @default(0)
-  lastReminderAt     DateTime?
-  createdAt          DateTime   @default(now())
+  merchantApiKey       String?
+  remindersSent        Int        @default(0)
+  lastReminderAt       DateTime?
+  scheduledEmailAt     DateTime?
+  initialEmailSentAt   DateTime?
+  createdAt            DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   Merchants          Merchants? @relation(fields: [merchantId], references: [id])
 
@@ -64,6 +66,7 @@ model Configurations {
   emailContent         ConfigField[]
   reminderEmailContent ConfigField[]
   remindersFrequency   ConfigField[]
+  emailSchedule        ConfigField[]
   publish              ConfigField[]
   qrCode               ConfigField[]
   general              GeneralConfigs

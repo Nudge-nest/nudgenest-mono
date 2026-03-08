@@ -15,7 +15,7 @@ const LandingPage = () => {
             </p>
             <Link
                 to="/review/demo"
-                className="text-[color:var(--color-main)] font-normal underline italic mt-4 inline-block text-balance"
+                className="bg-[color:var(--color-main)] text-white font-semibold mt-6 inline-block px-6 py-3 rounded-full hover:opacity-90 transition-opacity"
             >
                 Try it out now!
             </Link>

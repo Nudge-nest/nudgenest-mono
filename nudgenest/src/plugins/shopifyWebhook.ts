@@ -13,6 +13,7 @@ import {
 } from '../utils/reviews';
 import { isRabbitReviewRequestMessageValid, sampleMessaging } from '../messagesSchema';
 import { convertObjectToBuffer, createMerchantEmailMessagingTemplate } from './merchant';
+import { enrichLineItemsWithImages, getShopifyAccessToken } from '../utils/shopify';
 
 dotenv.config();
 
@@ -83,16 +84,11 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
     const topic = request.headers['x-shopify-topic'];
 
     console.log('Webhook topic:', topic);
-    //console.log('Webhook payload keys:', Object.keys(payload));
 
-    // For draft orders, check if they've been completed (converted to order)
-    if (topic === 'draft_orders/create' || topic === 'draft_orders/update') {
-        const { order_id } = payload;
-        if (!order_id) {
-            console.log('Draft order not yet completed (no order_id), skipping');
-            return h.response({ message: 'Draft order not yet completed' }).code(200);
-        }
-        console.log('Draft order has been completed with order_id:', order_id);
+    // Only process orders/create — reject anything else gracefully
+    if (topic !== 'orders/create') {
+        console.log(`Ignoring unhandled topic: ${topic}`);
+        return h.response({ message: 'Topic not handled' }).code(200);
     }
 
     let { customer_locale, order_number } = payload;
@@ -113,14 +109,87 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         const reviewDataFromPayload = extractShopifyDataForRabbitMessaging(payload);
         console.log('Extracted review data:', reviewDataFromPayload);
 
+        // Detailed logging of line_items structure to verify image data
+        console.log('🔍 Examining line_items structure (before enrichment):');
+        if (reviewDataFromPayload.line_items && reviewDataFromPayload.line_items.length > 0) {
+            reviewDataFromPayload.line_items.forEach((item: any, index: number) => {
+                console.log(`  Item ${index + 1}:`, {
+                    name: item.name,
+                    price: item.price,
+                    product_id: item.product_id,
+                    hasImage: !!item.image,
+                    imageType: typeof item.image,
+                    imageKeys: item.image ? Object.keys(item.image) : 'N/A',
+                    imageSrc: item.image?.src || item.image || 'No image'
+                });
+            });
+        } else {
+            console.log('  ⚠️ No line_items found in payload');
+        }
+
         const merchantData = await getMerchantWithBusinessInfo(
             prisma,
             reviewDataFromPayload.merchant_business_entity_id
         );
         console.log('Found merchant:', merchantData.id);
 
+        // Enrich line items with product images from Shopify API
+        // Extract shop domain from headers (x-shopify-shop-domain)
+        const shopDomain = request.headers['x-shopify-shop-domain'] as string;
+
+        console.log(`🔍 Image enrichment check: shopDomain=${shopDomain}`);
+
+        if (shopDomain) {
+            // Enrich line items with images using Custom App Admin API token
+            reviewDataFromPayload.line_items = await enrichLineItemsWithImages(
+                reviewDataFromPayload.line_items,
+                shopDomain
+            );
+
+            // Log enriched line items
+            console.log('🔍 Line items after image enrichment:');
+            reviewDataFromPayload.line_items.forEach((item: any, index: number) => {
+                console.log(`  Item ${index + 1}:`, {
+                    name: item.name,
+                    hasImage: !!item.image,
+                    imageSrc: item.image?.src || 'No image'
+                });
+            });
+        } else {
+            console.log(`⚠️ Skipping image enrichment: shopDomain missing`);
+        }
+
         const createNewReviewToDb = await createNewReview(prisma, reviewDataFromPayload, merchantData.id, merchantData.apiKey);
         console.log('Created review:', createNewReviewToDb.id, 'with merchantApiKey:', !!createNewReviewToDb.merchantApiKey);
+
+        // -----------------------------------------------------------------------
+        // Delayed initial email: read merchant's emailSchedule config.
+        // If delayDays > 0, skip the customer email now — the reminderScheduler
+        // will send it once scheduledEmailAt has elapsed.
+        // The merchant notification is always sent immediately.
+        // -----------------------------------------------------------------------
+        const merchantConfig = await prisma.configurations.findFirst({
+            where: { merchantId: merchantData.id },
+        });
+        const emailScheduleField = merchantConfig?.emailSchedule?.find(
+            (f: any) => f.key === 'initialEmailDelayDays'
+        );
+        const delayDays = parseInt(emailScheduleField?.value ?? '7', 10);
+        const now = new Date();
+        const scheduledEmailAt = new Date(now.getTime() + delayDays * 24 * 60 * 60 * 1000);
+
+        // Persist scheduledEmailAt (and initialEmailSentAt if sending immediately)
+        await prisma.reviews.update({
+            where: { id: createNewReviewToDb.id },
+            data: {
+                scheduledEmailAt,
+                ...(delayDays === 0 ? { initialEmailSentAt: now } : {}),
+            },
+        });
+
+        console.log(`📅 Email delay: ${delayDays} day(s). Scheduled for: ${scheduledEmailAt.toISOString()}`);
+
+        // Build message payloads
         const reviewMessageContent = extractMessagingContentFromShopifyData(
             reviewDataFromPayload,
             createNewReviewToDb.id
@@ -137,14 +206,23 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         )
             throw new Error('Invalid messaging data to publish');
 
-        // Publish to Pub/Sub
-        const messageBuffer1 = convertObjectToBuffer(reviewToMessagingChannelJSON);
         const messageBuffer2 = convertObjectToBuffer(reviewMessageToMerchantJSON);
 
-        await Promise.all([
-            messagingTopic.publishMessage({ data: messageBuffer1 }),
-            messagingTopic.publishMessage({ data: messageBuffer2 })
-        ]);
+        if (delayDays === 0) {
+            // Send both messages immediately
+            const messageBuffer1 = convertObjectToBuffer(reviewToMessagingChannelJSON);
+            console.log('📤 Publishing both messages to Pub/Sub (no delay)...');
+            const publishResults = await Promise.all([
+                messagingTopic.publishMessage({ data: messageBuffer1 }),
+                messagingTopic.publishMessage({ data: messageBuffer2 }),
+            ]);
+            console.log('📤 Published message IDs:', publishResults);
+        } else {
+            // Only send merchant notification; customer email deferred to scheduler
+            console.log(`📤 Publishing merchant notification only (customer email deferred ${delayDays}d)...`);
+            const merchantMsgId = await messagingTopic.publishMessage({ data: messageBuffer2 });
+            console.log('📤 Merchant notification message ID:', merchantMsgId);
+        }
 
         console.log('✅ Review processed successfully, ID:', createNewReviewToDb.id);
         return h.response({ version: '1.0.0', message: 'New review processed successfully with id ' + createNewReviewToDb.id }).code(200);

@@ -1,5 +1,12 @@
+import productScreenshotStars from '../assets/product-screenshot-stars.png';
+import productScreenshotUpload from '../assets/product-screenshot-upload.png';
+import productScreenshotComment from '../assets/product-screenshot-comment.png';
 import { Button, LinkButton } from '../components/Button';
+import FAQSection from '../components/FAQSection';
+import HowItWorksSection from '../components/HowItWorksSection';
 import PageSection from '../components/PageSection';
+import PricingSection from '../components/PricingSection';
+import SocialProofSection from '../components/SocialProofSection';
 import {
     LargeHeaderTextBold,
     LargerHeaderTextBoldItalic,
@@ -14,7 +21,7 @@ const featuresUrl = `${import.meta.env.VITE_APP_FEATURES_URL}`;
 
 const LandingPage = () => {
     return (
-        <div>
+        <div className="grid grid-rows-4 md:grid-rows-[auto_auto_auto_auto]">
             <PageSection name="hero">
                 <div className={`col-span-full w-full md:w-4/5 mx-auto flex flex-col gap-y-8 justify-center py-24 md:py-32`}>
                     <LargerHeaderTextBoldItalic>
@@ -34,21 +41,36 @@ const LandingPage = () => {
                     </Button>
                 </div>
             </PageSection>
-            <PageSection name="media-video">
-                <div className="col-span-full md:w-4/5 mx-auto w-full py-8">
-                    <video
-                        className="w-full aspect-video rounded-xl"
-                        autoPlay
-                        muted
-                        playsInline
-                    >
-                        <source type="video/webm"
-                                src="https://nudge-nest-media.s3.eu-north-1.amazonaws.com/nudge_nest_landing_01_HD.webm"/>
-                    </video>
+            <PageSection name="product-preview">
+                <div className="col-span-full md:w-4/5 mx-auto flex flex-col md:flex-row gap-8 items-center py-16">
+                    <div className="flex-1 flex flex-col gap-y-4 text-left">
+                        <LargeHeaderTextBold>The review experience your customers will love</LargeHeaderTextBold>
+                        <MediumBodyText>
+                            Customers receive a beautifully simple, mobile-first review request after every fulfilled
+                            order — no account needed, no friction. Just tap a star, leave a comment, and submit.
+                        </MediumBodyText>
+                    </div>
+                    <div className="flex-shrink-0 flex gap-3 items-start justify-center">
+                        <img
+                            src={productScreenshotStars}
+                            alt="Nudgenest review form on mobile — star rating step"
+                            className="w-28 md:w-36 rounded-3xl shadow-xl border border-[color:var(--color-icons-border)]"
+                        />
+                        <img
+                            src={productScreenshotUpload}
+                            alt="Nudgenest review form on mobile — photo upload step"
+                            className="w-28 md:w-36 rounded-3xl shadow-xl border border-[color:var(--color-icons-border)] mt-6 md:mt-8"
+                        />
+                        <img
+                            src={productScreenshotComment}
+                            alt="Nudgenest review form on mobile — comment and submit step"
+                            className="w-28 md:w-36 rounded-3xl shadow-xl border border-[color:var(--color-icons-border)] mt-12 md:mt-16"
+                        />
+                    </div>
                 </div>
             </PageSection>
             <PageSection name="features">
-                <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 justify-center items-center py-16 md:py-20`}>
+                <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 justify-center items-center`}>
                     <LargeHeaderTextBold>Why Choose Nudge-Nest?</LargeHeaderTextBold>
                     <ul className="flex flex-col gap-y-4 md:flex-row md:gap-x-4">
                         <li className="w-full md:text-left md:w-4/5">
@@ -125,6 +147,10 @@ const LandingPage = () => {
                     </div>
                 </div>
             </PageSection>
+            <div id="how-it-works"><HowItWorksSection /></div>
+            <div id="social-proof"><SocialProofSection /></div>
+            <div id="pricing"><PricingSection /></div>
+            <div id="faq"><FAQSection /></div>
         </div>
     );
 };
