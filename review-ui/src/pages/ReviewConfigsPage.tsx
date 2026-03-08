@@ -1,10 +1,11 @@
-import { IconAbc, IconCalendarBolt, IconMailCode, IconQrcode, IconUserScreen } from '@tabler/icons-react';
+import { IconAbc, IconCalendarBolt, IconCalendarTime, IconMailCode, IconQrcode, IconUserScreen } from '@tabler/icons-react';
 import Tabs from '../components/TabComponent';
 import { useMemo } from 'react';
 import { useReviewConfig } from '../contexts/ReviewConfigContext.tsx';
 import ReviewPublishConfigsComponent from '../components/configs/ReviewPublishConfigsComponent.tsx';
 import ReviewEmailContentComponent from '../components/configs/ReviewEmailContentComponent.tsx';
 import ReviewEmailReminderComponent from '../components/configs/ReviewEmailReminderComponent.tsx';
+import ReviewEmailScheduleComponent from '../components/configs/ReviewEmailScheduleComponent.tsx';
 import ReviewQrCodeComponent from '../components/configs/ReviewQrCodeComponent.tsx';
 import ReviewGeneralSettingsComponent from '../components/configs/ReviewGeneralSettingsComponent.tsx';
 
@@ -26,6 +27,13 @@ const ReviewConfigsPage = () => {
                 icon: <IconMailCode />, // optional
                 disabled: false, // optional
                 content: <ReviewEmailContentComponent />,
+            },
+            {
+                id: 'schedule',
+                label: 'Email Schedule',
+                icon: <IconCalendarTime />, // optional
+                disabled: false, // optional
+                content: <ReviewEmailScheduleComponent />,
             },
             {
                 id: 'reminder',

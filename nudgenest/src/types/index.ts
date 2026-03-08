@@ -49,7 +49,7 @@ export interface IReviewMessagePayloadContent {
     userName: string;
     type: string;
     email: string;
-    line_items?: [];
+    line_items?: any[];
     order_number?: number;
     reviewId?: string;
     currency?: string;
@@ -63,7 +63,7 @@ export interface IDataFromShopifyPayload {
     order_status_url: string;
     customer_locale: string;
     order_number: number;
-    line_items: [];
+    line_items: any[];
     currency: string;
 }
 

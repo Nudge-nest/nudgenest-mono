@@ -3,10 +3,18 @@ import RegistrationPage from "./app.registration";
 import CustomerDashboard from "./app.dashboard";
 import {useLoaderData} from "@remix-run/react";
 import type { LoaderData} from "../utilities";
-import {checkMerchantRegistration, getMerchantDataFromShopify, registerMerchant, fetchReviewStats} from "../utilities";
+import {BASE_URL, checkMerchantRegistration, fetchWithErrorHandling, getMerchantDataFromShopify, registerMerchant, fetchReviewStats, fetchSubscriptionDetails} from "../utilities";
 import type {ActionFunctionArgs, LoaderFunctionArgs} from "@remix-run/node";
 import { json} from "@remix-run/node";
 import {authenticate} from "../shopify.server";
+import * as Sentry from "@sentry/remix";
+
+/** Parse a cookie header string and return the value for a given key */
+function parseCookie(cookieHeader: string | null, key: string): string | null {
+  if (!cookieHeader) return null;
+  const match = cookieHeader.split(";").find(c => c.trim().startsWith(`${key}=`));
+  return match ? decodeURIComponent(match.trim().slice(key.length + 1)) : null;
+}
 
 
 // ============================================================================
@@ -23,11 +31,34 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     // Check if merchant is already registered in Nudge-nest
     const registrationCheck = await checkMerchantRegistration(shopInfo.id);
 
-    // Fetch review stats if merchant is registered
+    // Fetch review stats and subscription details if merchant is registered
     let reviewStats = null;
+    let subscriptionDetails = null;
     if (registrationCheck.data?.id) {
-      reviewStats = await fetchReviewStats(registrationCheck.data.id);
+      const merchantApiKey = registrationCheck.data.apiKey;
+      reviewStats = await fetchReviewStats(registrationCheck.data.id, merchantApiKey);
+      subscriptionDetails = await fetchSubscriptionDetails(registrationCheck.data.id, merchantApiKey);
     }
+
+    // Fetch all plans from backend (used for registration and billing cards)
+    let allPlans = null;
+    let defaultPlan = null;
+    try {
+      const merchantApiKey = registrationCheck.data?.apiKey;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (merchantApiKey) headers['x-api-key'] = merchantApiKey;
+
+      const plansData = await fetchWithErrorHandling(`${BASE_URL}/plans`, { headers });
+      const allPlansFromAPI = plansData.data?.plans || [];
+      allPlans = allPlansFromAPI.filter((p: any) => p.tier !== 'ENTERPRISE');
+      defaultPlan = allPlans?.find((p: any) => p.tier === 'FREE') || null;
+    } catch (error) {
+      console.error('Failed to fetch plans:', error);
+    }
+
+    // Read and immediately clear the billing status cookie set by api.billing.callback
+    const cookieHeader = request.headers.get("Cookie");
+    const billingStatus = parseCookie(cookieHeader, "nudgenest_billing_status");
 
     const loaderData: LoaderData = {
       isRegistered: !!registrationCheck.data,
@@ -35,9 +66,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       businessInfo,
       merchantData: registrationCheck.data || null,
       reviewStats,
+      subscriptionDetails,
+      defaultPlan,
+      allPlans,
+      reviewUiBaseUrl: process.env.REVIEW_UI_BASE_URL,
+      billingStatus: billingStatus || null,
     };
 
-    return json(loaderData);
+    const responseHeaders: Record<string, string> = {};
+    if (billingStatus) {
+      // Clear the cookie now that we've read it
+      responseHeaders["Set-Cookie"] = "nudgenest_billing_status=; Path=/; Max-Age=0; SameSite=None; Secure";
+    }
+
+    return json(loaderData, { headers: responseHeaders });
   } catch (error) {
     console.error("Loader error:", error);
     return json({
@@ -45,6 +87,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       shopInfo: null,
       businessInfo: null,
       merchantData: null,
+      subscriptionDetails: null,
+      defaultPlan: null,
+      allPlans: null,
       error: error instanceof Error ? error.message : "Failed to load merchant data"
     } as LoaderData);
   }
@@ -158,17 +203,26 @@ export default function Index() {
     );
   }
 
+  // Set Sentry user context now that shop identity is confirmed
+  Sentry.setUser({ username: data.shopInfo.myshopifyDomain });
+  Sentry.setTag("shop", data.shopInfo.myshopifyDomain);
+
   // Conditional rendering based on registration status
   return data.isRegistered ? (
     <CustomerDashboard
       merchantData={data.merchantData}
       shopInfo={data.shopInfo}
       reviewStats={data.reviewStats}
+      subscriptionDetails={data.subscriptionDetails}
+      allPlans={data.allPlans}
+      reviewUiBaseUrl={data.reviewUiBaseUrl}
+      billingStatus={data.billingStatus}
     />
   ) : (
     <RegistrationPage
       shopInfo={data.shopInfo}
       businessInfo={data.businessInfo}
+      defaultPlan={data.defaultPlan}
     />
   );
 }

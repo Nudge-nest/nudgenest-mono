@@ -46,8 +46,13 @@ model Reviews {
   verified           Boolean    @default(true)
   replies            Json?
   status             String     @default("Pending")
-  merchantApiKey     String?
-  createdAt          DateTime   @default(now())
+  published          Boolean    @default(false)
+  merchantApiKey       String?
+  remindersSent        Int        @default(0)
+  lastReminderAt       DateTime?
+  scheduledEmailAt     DateTime?
+  initialEmailSentAt   DateTime?
+  createdAt            DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   Merchants          Merchants? @relation(fields: [merchantId], references: [id])
 
@@ -61,6 +66,7 @@ model Configurations {
   emailContent         ConfigField[]
   reminderEmailContent ConfigField[]
   remindersFrequency   ConfigField[]
+  emailSchedule        ConfigField[]
   publish              ConfigField[]
   qrCode               ConfigField[]
   general              GeneralConfigs
@@ -148,7 +154,7 @@ model Subscriptions {
   canceledAt      DateTime?
   trialStart      DateTime?
   trialEnd        DateTime?
-  shopifyChargeId String?            @unique
+  shopifyChargeId String?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   Merchants       Merchants          @relation(fields: [merchantId], references: [id])

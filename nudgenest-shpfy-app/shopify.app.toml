@@ -15,15 +15,29 @@ api_version = "2024-10"
 
   [[webhooks.subscriptions]]
   topics = [ "orders/create" ]
-  uri = "https://763a-81-197-254-117.ngrok-free.app/api/v1/shopify-webhook"
+  uri = "https://2a2f-81-197-250-129.ngrok-free.app/api/v1/shopify-webhook"
 
   [[webhooks.subscriptions]]
-  topics = [ "draft_orders/create" ]
-  uri = "https://763a-81-197-254-117.ngrok-free.app/api/v1/shopify-webhook"
+  topics = [ "app_subscriptions/update" ]
+  uri = "/webhooks/app/subscriptions/update"
+
+  # GDPR mandatory webhooks — required for Shopify App Store submission
+  # Note: compliance webhooks use `compliance_topics`, not `topics`
+  [[webhooks.subscriptions]]
+  compliance_topics = [ "customers/data_request" ]
+  uri = "/webhooks/customers/data-request"
+
+  [[webhooks.subscriptions]]
+  compliance_topics = [ "customers/redact" ]
+  uri = "/webhooks/customers/redact"
+
+  [[webhooks.subscriptions]]
+  compliance_topics = [ "shop/redact" ]
+  uri = "/webhooks/shop/redact"
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes https://nudgenest-backend-1094805904049.europe-west1.run.app
-scopes = "write_products, read_orders, read_draft_orders"
+# learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_products, read_orders, read_customers"
 
 [auth]
 redirect_urls = [

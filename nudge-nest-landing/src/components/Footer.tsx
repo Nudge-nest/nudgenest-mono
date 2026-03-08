@@ -1,35 +1,68 @@
 import { useState } from 'react';
-import { SmallBodyText, SmallBodyTextBold } from './Typography';
+import { Link } from 'react-router';
+import logo from '../assets/nudgenest_logo.svg?url';
 import { FooterButton } from './Button';
+import { SmallBodyText, SmallBodyTextBold } from './Typography';
 
 const Footer = () => {
     const [year] = useState<string>(`${new Date().getFullYear()}`);
+
     return (
-        <div
-            className="w-full h-80 max-h-80 px-4 grid grid-cols-12 bg-[color:var(--color-white)]"
+        <footer
+            className="w-full h-fit bg-[color:var(--color-white)] border-t border-[color:var(--color-icons-border)]"
             aria-label="footer-component"
         >
-            <div className="col-span-full md:w-4/5 mx-auto flex flex-col gap-y-2 justify-center items-center pb-4">
-                <SmallBodyTextBold className="text-[color:var(--color-dark)]">
-                    Subscribe to our newsletter
-                </SmallBodyTextBold>
-                <div>
-                    <input
-                        className="bg-[color:var(--color-bg)] px-4 py-3 rounded-s-3xl outline-none"
-                        placeholder="Enter your email"
-                    />
-                    <FooterButton>
-                        <SmallBodyText className={`!text-[color:var(--color-text)]`}>Subscribe</SmallBodyText>
-                    </FooterButton>
+            <div className="w-full px-6 md:w-4/5 mx-auto py-12 flex flex-col gap-y-8 items-center">
+
+                {/* Brand */}
+                <div className="flex flex-col items-center gap-y-2">
+                    <div className="flex items-center">
+                        <img src={logo} alt="Nudgenest logo" className="h-20 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
+                    </div>
+                    <SmallBodyText className="text-[color:var(--color-icons)] text-center">
+                        Collect more reviews. Grow faster.
+                    </SmallBodyText>
+                </div>
+
+                {/* Newsletter */}
+                <div className="flex flex-col items-center gap-y-3 w-full max-w-md">
+                    <SmallBodyTextBold className="text-[color:var(--color-dark)]">
+                        Subscribe to our newsletter
+                    </SmallBodyTextBold>
+                    <div className="flex w-full">
+                        <input
+                            className="flex-1 bg-[color:var(--color-bg)] px-4 py-3 rounded-s-3xl outline-none text-sm text-[color:var(--color-dark)] placeholder:text-[color:var(--color-icons)]"
+                            placeholder="Enter your email"
+                        />
+                        <FooterButton>
+                            <SmallBodyText className="!text-[color:var(--color-text)]">Subscribe</SmallBodyText>
+                        </FooterButton>
+                    </div>
+                </div>
+
+            </div>
+
+            {/* Bottom bar */}
+            <div className="border-t border-[color:var(--color-icons-border)]">
+                <div className="w-full px-6 md:w-4/5 mx-auto py-4 flex flex-col md:flex-row items-center justify-between gap-y-2">
+                    <SmallBodyText className="text-[color:var(--color-icons)]">
+                        &copy; {year} Nudgenest
+                    </SmallBodyText>
+                    <div className="flex items-center gap-x-4 text-sm text-[color:var(--color-icons)]">
+                        <Link
+                            to="/privacy"
+                            className="hover:text-[color:var(--color-dark)] transition-colors"
+                        >
+                            Privacy Policy
+                        </Link>
+                        <span aria-hidden="true">·</span>
+                        <span className="cursor-default">Terms</span>
+                        <span aria-hidden="true">·</span>
+                        <span className="cursor-default">Sitemap</span>
+                    </div>
                 </div>
             </div>
-            <div className="col-span-full md:w-4/5 mx-auto flex gap-x-3 justify-center items-end pb-4">
-                <SmallBodyText className="text-[color:var(--color-main)]">&copy; {year} Nudge-nest</SmallBodyText>
-                <SmallBodyText className="text-[color:var(--color-main)]">. Privacy</SmallBodyText>
-                <SmallBodyText className="text-[color:var(--color-main)]">. Terms</SmallBodyText>
-                <SmallBodyText className="text-[color:var(--color-main)]">. Sitemap</SmallBodyText>
-            </div>
-        </div>
+        </footer>
     );
 };
 

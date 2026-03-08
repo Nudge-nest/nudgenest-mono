@@ -30,3 +30,17 @@ model Session {
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
 }
+
+model BillingCharge {
+  id              String    @id
+  shop            String
+  chargeId        String    @unique
+  name            String
+  price           Float
+  status          String
+  test            Boolean   @default(true)
+  billingOn       DateTime?
+  trialEndsOn     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}

@@ -14,6 +14,7 @@ export interface IReviewConfiguration {
     emailContent: IConfigField[];
     reminderEmailContent: IConfigField[];
     remindersFrequency: IConfigField[];
+    emailSchedule: IConfigField[];
     publish: IConfigField[];
     qrCode: IConfigField[];
     general: IGeneralConfigs;
@@ -50,12 +51,18 @@ interface IGeneralConfigs {
     shopReviewQuestions: IConfigField[];
 }
 
+interface IEmailScheduleField extends IConfigField {
+    key: 'initialEmailDelayDays';
+    type: 'number';
+}
+
 // Stricter version of the main interface (optional)
 export interface IStrictReviewConfiguration {
     merchantId: string;
     emailContent: IEmailContentField[];
     reminderEmailContent: IReminderEmailContentField[];
     remindersFrequency: IRemindersFrequencyField[];
+    emailSchedule: IEmailScheduleField[];
     publish: IPublishField[];
     qrCode: IQrCodeField[];
     general: IGeneralConfigs;

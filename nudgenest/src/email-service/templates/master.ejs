@@ -9,8 +9,10 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background-color: #f5f5f5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         .wrapper {
             max-width: 600px;
@@ -18,87 +20,136 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
         .content {
-            padding: 40px 30px;
+            padding: 48px 40px;
         }
         .greeting {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 24px;
+            letter-spacing: -0.01em;
         }
         .message {
-            font-size: 15px;
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 30px;
+            font-size: 16px;
+            color: #4b5563;
+            line-height: 1.7;
+            margin-bottom: 32px;
+            letter-spacing: -0.01em;
         }
         .product-card {
-            background: #f9f9f9;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 28px 24px;
+            margin-bottom: 24px;
             text-align: center;
+            border: 1px solid #f3f4f6;
         }
         .product-image {
-            width: 200px;
-            height: 200px;
+            width: 220px;
+            height: 220px;
             object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            border-radius: 10px;
+            margin: 0 auto 20px;
+            display: block;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .product-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.02em;
+        }
+        .product-card p {
+            font-size: 16px;
+            font-weight: 500;
+            color: #6b7280;
+            margin: 0 0 20px 0;
         }
         .star-rating {
             margin: 15px 0;
+            text-align: center;
         }
         .star {
             display: inline-block;
-            font-size: 24px;
-            color: #FFC107;
+            font-size: 28px;
+            color: #fcc800;
             text-decoration: none;
             margin: 0 2px;
+            line-height: 1;
         }
         .action-buttons {
-            margin-top: 20px;
+            margin-top: 15px;
+            text-align: center;
         }
         .action-buttons a {
-            margin: 0 10px;
             color: #666;
             text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
         }
-        .action-buttons a:hover {
-            text-decoration: underline;
+        .action-buttons a:first-child {
+            margin-right: 120px;
         }
         .cta-button {
             display: inline-block;
             background: #e24861;
-            color: white;
-            padding: 14px 40px;
+            color: #ffffff !important;
+            padding: 16px 48px;
             border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
-            margin: 20px 0;
+            font-size: 16px;
+            margin: 24px 0;
+            transition: background 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px -1px rgba(226, 72, 97, 0.2), 0 2px 4px -1px rgba(226, 72, 97, 0.15);
+        }
+        .cta-button:hover {
+            background: #d63952;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(226, 72, 97, 0.25), 0 4px 6px -1px rgba(226, 72, 97, 0.2);
         }
         .incentive-box {
             background: linear-gradient(135deg, #e24861 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
+            padding: 24px;
+            border-radius: 10px;
+            margin: 24px 0;
             text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .incentive-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .incentive-box p {
+            margin: 0;
+            opacity: 0.95;
+            font-size: 15px;
         }
         .footer {
-            background: #f9f9f9;
-            padding: 30px;
+            background: #f9fafb;
+            padding: 32px 40px;
             text-align: center;
-            border-top: 1px solid #eee;
-            border-radius: 0 0 12px 12px;
-            font-size: 12px;
-            color: #999;
+            border-top: 1px solid #e5e7eb;
+            font-size: 13px;
+            color: #9ca3af;
+            line-height: 1.6;
+        }
+        .footer p {
+            margin: 8px 0;
         }
         .footer a {
-            color: #666;
+            color: #6b7280;
             text-decoration: none;
             margin: 0 10px;
+        }
+        .footer a:hover {
+            color: #111827;
         }
     </style>
 </head>
@@ -139,12 +190,12 @@
                     <% if (typeof showRating !== 'undefined' && showRating) { %>
                         <div class="star-rating">
                             <% for (var j = 1; j <= 5; j++) { %>
-                                <a href="<%= reviewBaseUrl %>/review/<%= reviewId %>" class="star">⭐</a>
+                                <a href="<%= reviewBaseUrl %>/review/<%= reviewId %>" class="star">★</a>
                             <% } %>
                         </div>
                         <div class="action-buttons">
                             <a href="<%= reviewBaseUrl %>/review/<%= reviewId %>">Dislike it</a>
-                            <a href="<%= reviewBaseUrl %>/review/<%= reviewId %>" style="font-weight: bold;">Love it!</a>
+                            <a href="<%= reviewBaseUrl %>/review/<%= reviewId %>">Love it!</a>
                         </div>
                     <% } %>
                 </div>
@@ -153,8 +204,8 @@
 
         <!-- CTA Button -->
         <% if (typeof ctaButton !== 'undefined' && ctaButton) { %>
-            <div style="text-align: center; color:#fff">
-                <a href="<%= ctaButton.link %>" class="cta-button">
+            <div style="text-align: center;">
+                <a href="<%= ctaButton.link %>" class="cta-button" style="color: #ffffff !important;">
                     <%= ctaButton.text %>
                 </a>
             </div>
@@ -162,10 +213,10 @@
 
         <!-- Secondary Buttons -->
         <% if (typeof secondaryButtons !== 'undefined' && secondaryButtons && secondaryButtons.length > 0) { %>
-            <div style="text-align: center; margin: 20px 0;">
+            <div style="text-align: center; margin: 24px 0;">
                 <% for (var k = 0; k < secondaryButtons.length; k++) { %>
                     <% var button = secondaryButtons[k]; %>
-                    <a href="<%= button.link %>" style="margin: 0 10px; color: #e24861;">
+                    <a href="<%= button.link %>" style="margin: 0 12px; color: #e24861; text-decoration: none; font-weight: 600; font-size: 15px;">
                         <%= button.text %>
                     </a>
                 <% } %>

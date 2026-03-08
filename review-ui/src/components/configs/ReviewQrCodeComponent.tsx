@@ -5,21 +5,23 @@ import { useReviewConfig } from '../../contexts/ReviewConfigContext.tsx';
 import HeaderTextComponent from './HeaderTextComponent.tsx';
 import ColumnHeaderComponent from './ColumnHeaderComponent.tsx';
 import QRCode from 'qrcode';
+import { IconCopy, IconCheck } from '@tabler/icons-react';
 
 const ReviewQrCodeComponent = () => {
-    const { reviewConfigs, reviewConfigFormHoook } = useReviewConfig();
+    const { reviewConfigs, reviewConfigFormHoook, merchantId } = useReviewConfig();
     const [qrCodeImage, setQrCodeImage] = useState<string>('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [hasGenerated, setHasGenerated] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
 
     // Find the current values
     const qrCodeUrl = reviewConfigs?.qrCode?.find((field) => field.key === 'qrCodeUrl')?.value || '';
     const qrCodeData = reviewConfigs?.qrCode?.find((field) => field.key === 'qrCodeData')?.value || '';
 
-    // Generate review URL
+    // Generate store review URL
     const generateReviewUrl = () => {
-        const baseUrl = 'https://your-domain.com';
-        return `${baseUrl}/review/68414ac959456a2575dd1aae`;
+        const baseUrl = 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
+        return `${baseUrl}/store/review/${merchantId}`;
     };
 
     // Generate QR code from URL
@@ -55,14 +57,29 @@ const ReviewQrCodeComponent = () => {
             // Only generate if we have merchantId and fields are truly empty
             if (!reviewConfigs?.qrCode || hasGenerated) return;
 
-            // If data already exists, don't regenerate
-            if (qrCodeUrl && qrCodeData) {
+            // If QR code data already exists, just display it
+            if (qrCodeData) {
                 setQrCodeImage(qrCodeData);
                 setHasGenerated(true);
                 return;
             }
 
-            // Only generate for empty fields
+            // If we have a URL but no QR code data, generate the QR code
+            if (qrCodeUrl && !qrCodeData) {
+                setIsGenerating(true);
+
+                const newQrCode = await generateQRCode(qrCodeUrl);
+                if (newQrCode) {
+                    reviewConfigFormHoook.handleFieldChange('qrCodeData', newQrCode, 'qrCode');
+                    setQrCodeImage(newQrCode);
+                    setHasGenerated(true);
+                }
+
+                setIsGenerating(false);
+                return;
+            }
+
+            // Only generate URL and QR code if both are empty
             if (!qrCodeUrl && !qrCodeData) {
                 setIsGenerating(true);
 
@@ -97,6 +114,19 @@ const ReviewQrCodeComponent = () => {
                 setQrCodeImage(newQrCode);
             }
             setIsGenerating(false);
+        }
+    };
+
+    // Handle copy to clipboard
+    const handleCopyUrl = async () => {
+        if (!qrCodeUrl) return;
+
+        try {
+            await navigator.clipboard.writeText(qrCodeUrl);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
+        } catch (error) {
+            console.error('Failed to copy URL:', error);
         }
     };
 
@@ -155,15 +185,40 @@ const ReviewQrCodeComponent = () => {
                             </div>
 
                             {qrCodeImage && (
-                                <div className="mt-4 flex justify-end">
+                                <div className="mt-4 flex justify-between items-center gap-3">
+                                    {/* QR Code URL with Copy Button */}
+                                    <div className="flex-1 flex items-center gap-2 bg-[color:var(--color-bg)] px-3 py-2 rounded-md border border-[color:var(--color-border)]">
+                                        <span className="text-[color:var(--color-text)] text-sm truncate flex-1">
+                                            {qrCodeUrl}
+                                        </span>
+                                        <button
+                                            onClick={handleCopyUrl}
+                                            className="flex items-center gap-1 px-3 py-1.5 text-[color:var(--color-main)] hover:bg-[color:var(--color-main)] hover:text-white rounded transition-all text-sm font-medium border border-[color:var(--color-main)]"
+                                            title={isCopied ? 'Copied!' : 'Copy URL'}
+                                        >
+                                            {isCopied ? (
+                                                <>
+                                                    <IconCheck size={16} />
+                                                    <span>Copied</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <IconCopy size={16} />
+                                                    <span>Copy</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    {/* Download Button */}
                                     <button
                                         onClick={() => {
                                             const link = document.createElement('a');
-                                            link.download = `review-qr-68414ac959456a2575dd1aae.png`;
+                                            link.download = `store-review-qr-${merchantId}.png`;
                                             link.href = qrCodeImage;
                                             link.click();
                                         }}
-                                        className="px-4 py-2 bg-[color:var(--color-main)] text-white rounded-md hover:opacity-90 transition-all text-sm font-medium"
+                                        className="px-4 py-2 bg-[color:var(--color-main)] text-white rounded-md hover:opacity-90 transition-all text-sm font-medium whitespace-nowrap"
                                     >
                                         Download QR Code
                                     </button>

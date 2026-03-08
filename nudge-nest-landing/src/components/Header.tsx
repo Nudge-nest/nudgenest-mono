@@ -1,31 +1,47 @@
-import logo from '../assets/nudge-nest-icon2-v1.webp';
-import { SmallBodyText, SmallBodyTextBold } from './Typography';
+import logo from '../assets/nudgenest_logo.svg?url';
 
-const homeUrl = `${import.meta.env.VITE_APP_HOST}`;
 const contactUrl = `${import.meta.env.VITE_APP_CONTACT_URL}`;
-const listBaseStyle = 'mx-4 cursor-pointer';
+const signupUrl = `${import.meta.env.VITE_APP_SIGNUP_URL}`;
+
+const navLinkStyle =
+    'text-sm text-[color:var(--color-dark)] hover:text-[color:var(--color-main)] transition-colors duration-150 cursor-pointer';
 
 const Header = () => {
     return (
-        <div className="w-full h-fit flex justify-between items-center px-4 pt-6 mx-auto" aria-label="header-component">
-            <a href={homeUrl} className="w-1/2 h-fit flex items-center" target="_blank" rel="noopener noreferrer">
-                <img src={logo} alt="logo" className="w-9 h-9 mr-1" />
-                <SmallBodyTextBold>Nudge-nest</SmallBodyTextBold>
-            </a>
-            <ul className="w-1/2 hidden md:flex justify-center items-center">
-                <li className={listBaseStyle}>
-                    <SmallBodyText>Home</SmallBodyText>
-                </li>
-                <li className={listBaseStyle}>
-                    <SmallBodyText>About</SmallBodyText>
-                </li>
-                <li className={listBaseStyle}>
-                    <a href={contactUrl} className="w-fit h-fit" target="_blank" rel="noopener noreferrer">
-                        <SmallBodyText>Contact</SmallBodyText>
+        <header
+            className="sticky top-0 z-50 w-full border-b border-[color:var(--color-icons-border)] bg-[color:var(--color-white)]/90 backdrop-blur-md"
+            aria-label="header-component"
+        >
+            <div className="w-full px-6 h-16 flex items-center justify-between gap-x-4">
+                {/* Logo + brand name */}
+                <a
+                    href="/"
+                    className="flex items-center"
+                >
+                    <img src={logo} alt="Nudgenest logo" className="h-16 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
+                </a>
+
+                {/* Nav links — hidden on mobile */}
+                <nav className="hidden md:flex items-center gap-x-8 flex-1 justify-center">
+                    <a href="#how-it-works" className={navLinkStyle}>How It Works</a>
+                    <a href="#pricing" className={navLinkStyle}>Pricing</a>
+                    <a href="#faq" className={navLinkStyle}>FAQ</a>
+                    <a href={contactUrl} className={navLinkStyle} target="_blank" rel="noopener noreferrer">
+                        Contact
                     </a>
-                </li>
-            </ul>
-        </div>
+                </nav>
+
+                {/* CTA */}
+                <a
+                    href={signupUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 bg-[color:var(--color-main)] text-white text-sm font-semibold px-5 py-2 rounded-full hover:opacity-90 transition-opacity"
+                >
+                    Get Started
+                </a>
+            </div>
+        </header>
     );
 };
 

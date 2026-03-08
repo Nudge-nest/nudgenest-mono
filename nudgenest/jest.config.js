@@ -25,6 +25,5 @@ module.exports = {
     transformIgnorePatterns: ['node_modules/(?!(@hapi)/)'],
     setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
     clearMocks: true,
-    resetMocks: true,
     restoreMocks: true,
 };

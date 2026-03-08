@@ -5,18 +5,28 @@ import { useEffect } from 'react';
 import { IconX } from '@tabler/icons-react';
 import { REVIEW_FORM_BASE_URL } from '../../constants';
 import Loading from '../Loading.tsx';
+import { nudgeNestApi } from '../../redux/nudgenest.ts';
+import { useDispatch } from 'react-redux';
 
 const ReviewFormModal: FC<ReviewFormModalProps> = ({ isOpen, onClose, merchantId }) => {
     const [isLoading, setIsLoading] = useState(true);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
-            if (event.origin !== 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app') return;
+            // Accept messages from localhost (dev) or production
+            const allowedOrigins = [
+                'http://localhost:3001',
+                'https://nudgenest-review-ui-1094805904049.europe-west1.run.app'
+            ];
+
+            if (!allowedOrigins.includes(event.origin)) return;
 
             switch (event.data.type) {
                 case 'review_submitted':
+                    // Invalidate reviews cache to trigger refetch
+                    dispatch(nudgeNestApi.util.invalidateTags(['review']));
                     onClose();
-                    window.location.reload();
                     break;
                 case 'form_closed':
                     onClose();
@@ -37,7 +47,7 @@ const ReviewFormModal: FC<ReviewFormModalProps> = ({ isOpen, onClose, merchantId
             window.removeEventListener('message', handleMessage);
             document.body.style.overflow = '';
         };
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, dispatch]);
 
     if (!isOpen) return null;
 

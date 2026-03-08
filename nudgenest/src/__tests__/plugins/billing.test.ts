@@ -20,28 +20,43 @@ describe('Billing Plugin', () => {
             expect(route).toBeDefined();
         });
 
-        it('should register GET /api/v1/subscriptions/{merchantId} route', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/subscriptions/{merchantId}' && r.method === 'get');
+        it('should register GET /api/v1/billing/subscription route', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/subscription' && r.method === 'get');
             expect(route).toBeDefined();
         });
 
-        it('should register POST /api/v1/subscriptions route', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/subscriptions' && r.method === 'post');
+        it('should register GET /api/v1/billing/subscription/{merchantId} route', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/subscription/{merchantId}' && r.method === 'get');
             expect(route).toBeDefined();
         });
 
-        it('should register PUT /api/v1/subscriptions/{id} route', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/subscriptions/{id}' && r.method === 'put');
+        it('should register POST /api/v1/billing/subscription route', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/subscription' && r.method === 'post');
             expect(route).toBeDefined();
         });
 
-        it('should register DELETE /api/v1/subscriptions/{id} route', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/subscriptions/{id}' && r.method === 'delete');
+        it('should register PUT /api/v1/billing/subscription route', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/subscription' && r.method === 'put');
             expect(route).toBeDefined();
         });
 
-        it('should register GET /api/v1/usage/{merchantId} route', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/usage/{merchantId}' && r.method === 'get');
+        it('should register DELETE /api/v1/billing/subscription route', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/subscription' && r.method === 'delete');
+            expect(route).toBeDefined();
+        });
+
+        it('should register GET /api/v1/billing/usage route', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/usage' && r.method === 'get');
+            expect(route).toBeDefined();
+        });
+
+        it('should register POST /api/v1/billing/usage route', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/usage' && r.method === 'post');
+            expect(route).toBeDefined();
+        });
+
+        it('should register POST /api/v1/billing/sync-shopify route', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/sync-shopify' && r.method === 'post');
             expect(route).toBeDefined();
         });
     });
@@ -52,29 +67,29 @@ describe('Billing Plugin', () => {
             expect(route?.settings.auth).toBe(false);
         });
 
-        it('GET /api/v1/subscriptions/{merchantId} should require apikey auth', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/subscriptions/{merchantId}' && r.method === 'get');
-            expect(route?.settings.auth).toEqual({ strategy: 'apikey' });
+        it('GET /api/v1/billing/subscription should require apikey auth', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/subscription' && r.method === 'get');
+            expect(route?.settings.auth).toMatchObject({ strategies: ['apikey'] });
         });
 
-        it('POST /api/v1/subscriptions should require apikey auth', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/subscriptions' && r.method === 'post');
-            expect(route?.settings.auth).toEqual({ strategy: 'apikey' });
+        it('POST /api/v1/billing/subscription should require apikey auth', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/subscription' && r.method === 'post');
+            expect(route?.settings.auth).toMatchObject({ strategies: ['apikey'] });
         });
 
-        it('PUT /api/v1/subscriptions/{id} should require apikey auth', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/subscriptions/{id}' && r.method === 'put');
-            expect(route?.settings.auth).toEqual({ strategy: 'apikey' });
+        it('PUT /api/v1/billing/subscription should require apikey auth', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/subscription' && r.method === 'put');
+            expect(route?.settings.auth).toMatchObject({ strategies: ['apikey'] });
         });
 
-        it('DELETE /api/v1/subscriptions/{id} should require apikey auth', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/subscriptions/{id}' && r.method === 'delete');
-            expect(route?.settings.auth).toEqual({ strategy: 'apikey' });
+        it('DELETE /api/v1/billing/subscription should require apikey auth', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/subscription' && r.method === 'delete');
+            expect(route?.settings.auth).toMatchObject({ strategies: ['apikey'] });
         });
 
-        it('GET /api/v1/usage/{merchantId} should require apikey auth', () => {
-            const route = server.table().find((r) => r.path === '/api/v1/usage/{merchantId}' && r.method === 'get');
-            expect(route?.settings.auth).toEqual({ strategy: 'apikey' });
+        it('GET /api/v1/billing/usage should require apikey auth', () => {
+            const route = server.table().find((r) => r.path === '/api/v1/billing/usage' && r.method === 'get');
+            expect(route?.settings.auth).toMatchObject({ strategies: ['apikey'] });
         });
     });
 });

@@ -28,6 +28,14 @@ const merchantsPlugin: Hapi.Plugin<null> = {
                 },
             },
             {
+                method: 'GET',
+                path: '/api/v1/merchants/{merchantId}',
+                handler: getMerchantHandler,
+                options: {
+                    auth: false,
+                },
+            },
+            {
                 method: 'POST',
                 path: '/api/v1/merchants',
                 handler: createMerchantHandler,
@@ -90,8 +98,8 @@ export const defaultConfigs = {
         },
         {
             key: 'remindersPeriod',
-            value: 'BIMONTHLY',
-            description: 'Frequency of reminder emails',
+            value: 'WEEKLY',
+            description: 'Frequency of reminder emails (WEEKLY, BIWEEKLY, MONTHLY, BIMONTHLY)',
             type: 'select',
         },
     ],
@@ -129,6 +137,45 @@ export const defaultConfigs = {
     },
 };
 
+const getMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+    const { merchantId } = request.params as { merchantId: string };
+    const { prisma } = request.server.app;
+    try {
+        const merchant = await prisma.merchants.findUnique({
+            where: {
+                id: merchantId,
+            },
+            select: {
+                id: true,
+                shopId: true,
+                domains: true,
+                email: true,
+                name: true,
+                businessInfo: true,
+                apiKey: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+
+        if (!merchant) {
+            return h.response({
+                version: '1.0.0',
+                error: 'Merchant not found'
+            }).code(404);
+        }
+
+        return h.response({ version: '1.0.0', data: merchant }).code(200);
+    } catch (error: any) {
+        return h
+            .response({
+                version: '1.0.0',
+                error: error.message,
+            })
+            .code(500);
+    }
+};
+
 const verifyMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const { merchantPlatformId } = request.params as { merchantPlatformId: string };
     const { prisma } = request.server.app;
@@ -147,6 +194,7 @@ const verifyMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
                 email: true,
                 name: true,
                 businessInfo: true,
+                apiKey: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -239,24 +287,38 @@ const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         const merchant = await prisma.merchants.create({
             data: { ...(merchantData || {}), apiKey } as any,
         });
+
+        // Generate store review QR code URL from env
+        const reviewUiBaseUrl = process.env.REVIEW_UI_BASE_URL || 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
+        const storeReviewUrl = `${reviewUiBaseUrl}/store/review/${merchant.id}`;
+
+        // Update qrCode config with generated URL
+        const configsWithQrUrl = {
+            ...defaultConfigs,
+            qrCode: defaultConfigs.qrCode.map(field =>
+                field.key === 'qrCodeUrl' ? { ...field, value: storeReviewUrl } : field
+            ),
+            merchantId: merchant.id
+        };
+
         const reviewConfigs = await prisma.configurations.create({
-            data: { ...defaultConfigs, merchantId: merchant.id } as any,
+            data: configsWithQrUrl as any,
         });
 
-        // Auto-assign free plan with 14-day trial
+        // Auto-assign FREE plan (no trial - it's free forever)
         const freePlan = await prisma.plans.findUnique({ where: { name: 'free' } });
         if (freePlan) {
             const now = new Date();
-            const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+            const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
             await prisma.subscriptions.create({
                 data: {
                     merchantId: merchant.id,
                     planId: freePlan.id,
-                    status: 'TRIALING',
+                    status: 'ACTIVE',
                     currentPeriodStart: now,
-                    currentPeriodEnd: trialEnd,
-                    trialStart: now,
-                    trialEnd: trialEnd,
+                    currentPeriodEnd: periodEnd,
+                    trialStart: null,
+                    trialEnd: null,
                 },
             });
         }

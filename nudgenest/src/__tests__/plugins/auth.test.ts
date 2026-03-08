@@ -1,44 +1,38 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { createServer } from '../../server-factory';
 import type { Server } from '@hapi/hapi';
-import { PrismaClient } from '../../../generated/prisma/prisma/client';
-
-const prisma = new PrismaClient();
+import { prismaMock } from '../mocks/prisma';
 
 describe('Auth Plugin', () => {
     let server: Server;
-    let testApiKey: string;
+    const testApiKey = `test-auth-key-${Date.now()}`;
+    const testMerchant = {
+        id: 'test-auth-merchant-id',
+        shopId: `test-auth-${Date.now()}`,
+        domains: 'test-auth-shop.example.com',
+        currencyCode: 'USD',
+        name: 'Test Auth Shop',
+        businessInfo: 'Test Auth Business',
+        email: `test-auth-${Date.now()}@example.com`,
+        apiKey: testApiKey,
+        address: {
+            address1: '123 Test St',
+            address2: '',
+            city: 'Test City',
+            country: 'US',
+            zip: '12345',
+            formatted: [],
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
 
     beforeAll(async () => {
         server = await createServer();
         await server.initialize();
-
-        const merchant = await prisma.merchants.create({
-            data: {
-                shopId: `test-auth-${Date.now()}`,
-                domains: 'test-auth-shop.example.com',
-                currencyCode: 'USD',
-                name: 'Test Auth Shop',
-                businessInfo: 'Test Auth Business',
-                email: `test-auth-${Date.now()}@example.com`,
-                address: {
-                    address1: '123 Test St',
-                    address2: '',
-                    city: 'Test City',
-                    country: 'US',
-                    zip: '12345',
-                    formatted: [],
-                },
-                apiKey: `test-auth-key-${Date.now()}`,
-            },
-        });
-        testApiKey = merchant.apiKey!;
     });
 
     afterAll(async () => {
-        await prisma.merchants.deleteMany({
-            where: { name: { contains: 'Test Auth Shop' } },
-        });
         await server.stop();
     });
 
@@ -46,16 +40,18 @@ describe('Auth Plugin', () => {
         it('should reject requests without x-api-key header', async () => {
             const response = await server.inject({
                 method: 'GET',
-                url: '/api/v1/subscriptions/test-merchant-id',
+                url: '/api/v1/billing/subscription',
             });
 
             expect(response.statusCode).toBe(401);
         });
 
         it('should reject requests with invalid x-api-key', async () => {
+            prismaMock.merchants.findFirst.mockResolvedValue(null as any);
+
             const response = await server.inject({
                 method: 'GET',
-                url: '/api/v1/subscriptions/test-merchant-id',
+                url: '/api/v1/billing/subscription',
                 headers: {
                     'x-api-key': 'invalid-key',
                 },
@@ -65,9 +61,12 @@ describe('Auth Plugin', () => {
         });
 
         it('should accept requests with valid x-api-key', async () => {
+            prismaMock.merchants.findFirst.mockResolvedValue(testMerchant as any);
+            prismaMock.subscriptions.findFirst.mockResolvedValue(null as any);
+
             const response = await server.inject({
                 method: 'GET',
-                url: `/api/v1/subscriptions/${testApiKey}`,
+                url: '/api/v1/billing/subscription',
                 headers: {
                     'x-api-key': testApiKey,
                 },

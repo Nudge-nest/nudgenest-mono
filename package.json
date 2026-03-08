@@ -15,7 +15,8 @@
     "frontend:dev": "cd review-ui && pnpm dev",
     "shopify:dev": "cd nudgenest-shpfy-app && pnpm dev",
     "landing:dev": "cd nudge-nest-landing && pnpm dev",
-    "clean": "pnpm -r run clean"
+    "clean": "pnpm -r run clean",
+    "sentry:test": "bash scripts/test-sentry.sh"
   },
   "keywords": [
     "shopify",
