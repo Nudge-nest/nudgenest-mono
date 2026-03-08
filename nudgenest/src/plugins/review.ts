@@ -32,6 +32,7 @@ const getReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => 
                 shopId: true,
                 merchantBusinessId: true,
                 verified: true,
+                published: true,
                 replies: true,
                 customerName: true,
                 items: true,
@@ -117,6 +118,23 @@ export const createReviewEmailMessagingTemplate = (
     } as IRabbitDataObject<IReviewMessagePayloadContent>;
 };
 
+// Maps autoPublish config value → minimum star rating for public visibility
+const AUTO_PUBLISH_THRESHOLDS: Record<string, number> = {
+    THREESTARS: 3,
+    FOURSTARS: 4,
+    FIVESTARS: 5,
+};
+
+// Average star rating across all reviewed items (each item has a numeric `value`)
+const getAverageRating = (result: any[]): number => {
+    if (!Array.isArray(result) || result.length === 0) return 0;
+    const ratings = result
+        .map((r: any) => Number(r.value))
+        .filter((v: number) => !isNaN(v) && v > 0);
+    if (ratings.length === 0) return 0;
+    return Math.floor(ratings.reduce((sum, v) => sum + v, 0) / ratings.length);
+};
+
 const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const { reviewId } = request.params;
     const reviewUpdate = request.payload as any;
@@ -126,12 +144,40 @@ const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) 
         if (Object.keys(reviewUpdate).length === 0) throw Error('Update data missing');
     }
     try {
+        // Determine auto-publish before saving — only when completing a review
+        if (reviewUpdate.status === 'Completed' && reviewUpdate.result) {
+            const existingReview = await prisma.reviews.findUnique({
+                where: { id: reviewId as string },
+                select: { merchantId: true },
+            });
+
+            if (existingReview) {
+                const config = await prisma.configurations.findFirst({
+                    where: { merchantId: existingReview.merchantId },
+                    select: { publish: true },
+                });
+
+                const publishField = config?.publish?.find((f: any) => f.key === 'autoPublish');
+                const autoPublishValue = publishField?.value ?? 'THREESTARS';
+                const minRating = AUTO_PUBLISH_THRESHOLDS[autoPublishValue] ?? 3;
+                const avgRating = getAverageRating(
+                    Array.isArray(reviewUpdate.result) ? reviewUpdate.result : []
+                );
+
+                reviewUpdate.published = avgRating >= minRating;
+
+                request.logger.info(
+                    { reviewId, avgRating, minRating, autoPublishValue, published: reviewUpdate.published },
+                    'Auto-publish decision'
+                );
+            }
+        }
+
         const updatedReview = await prisma.reviews.update({
-            where: {
-                id: reviewId as string,
-            },
+            where: { id: reviewId as string },
             data: { ...reviewUpdate },
         });
+
         if (reviewUpdate.status === 'Completed' && reviewUpdate.result) {
             const merchant = await getMerchantWithBusinessInfo(prisma, updatedReview.merchantBusinessId);
             const completedReviewMessageToReviewee = createMerchantEmailMessagingTemplate(
@@ -150,7 +196,8 @@ const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) 
             )
                 throw new Error('Invalid messaging data to publish');
 
-            // Publish to Pub/Sub
+            // Always send thank-you emails — completed is completed regardless of rating.
+            // The `published` flag on the review controls public visibility.
             const messageBuffer1 = convertObjectToBuffer(completedReviewMessageToReviewer);
             const messageBuffer2 = convertObjectToBuffer(completedReviewMessageToReviewee);
 
@@ -159,8 +206,9 @@ const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) 
                 messagingTopic.publishMessage({ data: messageBuffer2 })
             ]);
         } else {
-            return;
+            return h.response({ version: '1.0.0', data: updatedReview }).code(200);
         }
+
         return h.response({ version: '1.0.0', data: updatedReview }).code(200);
     } catch (error: any) {
         return h
@@ -175,7 +223,7 @@ const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) 
 //test merchant id MTY3NTgwMjk3MzU0
 
 const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
-    const { shopid, merchantid } = request.query as any;
+    const { shopid, merchantid, published } = request.query as any;
     const { prisma } = request.server.app;
 
     try {
@@ -192,16 +240,25 @@ const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseTo
             }).code(400);
         }
 
+        // ?published=true  → only published reviews (public widget / storefront)
+        // ?published=false → only unpublished reviews (merchant moderation queue)
+        // omitted          → all reviews (merchant dashboard — sees everything)
+        if (published === 'true') {
+            whereClause.published = true;
+        } else if (published === 'false') {
+            whereClause.published = false;
+        }
+
         const reviews = await prisma.reviews.findMany({
             where: whereClause,
             select: {
-                // Explicitly select fields (excludes otpSecret)
                 id: true,
                 merchantId: true,
                 merchantApiKey: true,
                 shopId: true,
                 merchantBusinessId: true,
                 verified: true,
+                published: true,
                 replies: true,
                 customerName: true,
                 items: true,

@@ -3,21 +3,40 @@ import {
   ApiVersion,
   AppDistribution,
   shopifyApp,
+  BillingInterval,
 } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-10";
 import prisma from "./db.server";
+
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
   apiVersion: ApiVersion.October24,
   scopes: process.env.SCOPES?.split(","),
-  appUrl: process.env.SHOPIFY_APP_URL || "",
+  appUrl: process.env.SHOPIFY_APP_URL ?? "",
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
   restResources,
+  billing: {
+    "Starter Plan": {
+      amount: 4.99,
+      currencyCode: "USD",
+      interval: BillingInterval.Every30Days as any,
+    },
+    "Growth Plan": {
+      amount: 12.99,
+      currencyCode: "USD",
+      interval: BillingInterval.Every30Days as any,
+    },
+    "Pro Plan": {
+      amount: 29.99,
+      currencyCode: "USD",
+      interval: BillingInterval.Every30Days as any,
+    },
+  },
   future: {
     unstable_newEmbeddedAuthStrategy: true,
   },
