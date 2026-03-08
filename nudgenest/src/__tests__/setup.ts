@@ -9,6 +9,7 @@ process.env.APP_AWS_BUCKET_NAME = 'test-bucket';
 process.env.APP_AWS_REGION = 'us-east-1';
 process.env.APP_AWS_ACCESS_KEY = 'test-key';
 process.env.APP_AWS_SECRET_KEY = 'test-secret';
+process.env.SHOPIFY_API_SECRET = 'test-shopify-secret';
 
 // Global test timeout
 jest.setTimeout(10000);
@@ -24,4 +25,28 @@ jest.mock('@aws-sdk/client-s3');
 jest.mock('twilio');
 
 // Mock Google Cloud Pub/Sub
-jest.mock('@google-cloud/pubsub');
+// getTopics() / createTopic() return tuples. The auto-mock returns undefined,
+// making `const [topics] = await pubsubClient.getTopics()` throw
+// "not iterable". Use mockImplementation + Promise.resolve so TypeScript's
+// strict "never" constraints don't block the factory.
+jest.mock('@google-cloud/pubsub', () => {
+    const mockTopic = {
+        name: 'projects/nudgenest-test/topics/nudgenest-messaging',
+        publish: jest.fn().mockImplementation(() => Promise.resolve('mock-message-id')),
+        publishMessage: jest.fn().mockImplementation(() => Promise.resolve('mock-message-id')),
+    };
+    return {
+        PubSub: jest.fn().mockImplementation(() => ({
+            getTopics: jest.fn().mockImplementation(() => Promise.resolve([[mockTopic]])),
+            createTopic: jest.fn().mockImplementation(() => Promise.resolve([mockTopic])),
+            topic: jest.fn().mockImplementation(() => mockTopic),
+            subscription: jest.fn().mockImplementation(() => ({
+                exists: jest.fn().mockImplementation(() => Promise.resolve([false])),
+                on: jest.fn(),
+                setOptions: jest.fn(),
+            })),
+            close: jest.fn().mockImplementation(() => Promise.resolve()),
+        })),
+        Topic: jest.fn(),
+    };
+});

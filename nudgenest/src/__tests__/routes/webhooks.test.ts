@@ -2,6 +2,13 @@
 import { createServer } from '../../server-factory';
 import { Server, ServerInjectResponse } from '@hapi/hapi';
 import { prismaMock } from '../mocks/prisma';
+import crypto from 'crypto';
+
+const SHOPIFY_SECRET = 'test-shopify-secret'; // matches process.env.SHOPIFY_API_SECRET in setup.ts
+
+function computeHmac(body: string): string {
+    return crypto.createHmac('sha256', SHOPIFY_SECRET).update(body, 'utf8').digest('base64');
+}
 
 // Mock the validation and schema functions
 jest.mock('@/messagesSchema', () => ({
@@ -30,6 +37,7 @@ jest.mock('plugins/merchant', () => ({
     },
     convertObjectToBuffer: jest.fn(),
     createMerchantEmailMessagingTemplate: jest.fn(),
+    defaultConfigs: {},
 }));
 
 // After mocking, we can access the mocked functions
@@ -84,7 +92,9 @@ describe('Shopify Webhook route', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        // Set up all the mock return values
+        // Re-apply mock implementations after clearAllMocks
+        mockTopic.publishMessage.mockResolvedValue('message-id');
+
         extractShopifyDataForRabbitMessaging.mockReturnValue({
             mocked: 'shopifyData',
             merchant_business_entity_id: 'merchant-123',
@@ -93,16 +103,19 @@ describe('Shopify Webhook route', () => {
             id: 'merchant-id-456',
             name: 'Test Merchant',
             email: 'merchant@example.com',
+            apiKey: 'test-api-key',
         });
-        createNewReview.mockResolvedValue({ id: 'review-123' });
+        createNewReview.mockResolvedValue({ id: 'review-123', merchantApiKey: 'test-api-key' });
         extractMessagingContentFromShopifyData.mockReturnValue({ mocked: 'messagingContent' });
         buildPublishJson.mockReturnValue({ mocked: 'publishJson' });
         createMerchantEmailMessagingTemplate.mockReturnValue({ mocked: 'merchantEmailJson' });
         isRabbitReviewRequestMessageValid.mockReturnValue(true);
         convertObjectToBuffer.mockImplementation((obj: any) => Buffer.from(JSON.stringify(obj)));
+        // reviews.update is called to persist scheduledEmailAt
+        prismaMock.reviews.update.mockResolvedValue({ id: 'review-123' } as any);
     });
 
-    const validPayload = {
+    const validPayloadObj = {
         customer_locale: 'en',
         order_number: '12345',
         id: 'order-123',
@@ -120,62 +133,79 @@ describe('Shopify Webhook route', () => {
         line_items: [],
     };
 
+    function makeWebhookHeaders(payloadStr: string) {
+        return {
+            'content-type': 'application/json',
+            'x-shopify-hmac-sha256': computeHmac(payloadStr),
+            'x-shopify-topic': 'orders/create',
+        };
+    }
+
     test('POST /api/v1/shopify-webhook returns 200 when webhook is processed successfully', async () => {
+        const payloadStr = JSON.stringify(validPayloadObj);
         const res: ServerInjectResponse<{ version: string; message: string }> = await server.inject({
             method: 'POST',
             url: '/api/v1/shopify-webhook',
-            payload: validPayload,
+            payload: payloadStr,
+            headers: makeWebhookHeaders(payloadStr),
         });
 
         expect(res.statusCode).toBe(200);
         expect(res.result).toHaveProperty('version', '1.0.0');
         expect(res.result?.message).toContain('New review processed successfully');
 
-        // Should publish twice - once for review, once for merchant
-        expect(mockTopic.publishMessage).toHaveBeenCalledTimes(2);
+        // Handler sends merchant notification immediately; customer email is deferred (default 7-day delay)
+        expect(mockTopic.publishMessage).toHaveBeenCalledTimes(1);
 
         expect(getMerchantWithBusinessInfo).toHaveBeenCalledWith(prismaMock, 'merchant-123');
         expect(createNewReview).toHaveBeenCalledWith(
             prismaMock,
             { mocked: 'shopifyData', merchant_business_entity_id: 'merchant-123' },
-            'merchant-id-456'
+            'merchant-id-456',
+            'test-api-key'
         );
     });
 
-    test('POST /api/v1/shopify-webhook returns null when order_number is missing', async () => {
-        const invalidPayload = { ...validPayload, order_number: undefined };
-
+    test('POST /api/v1/shopify-webhook returns 200 when order_number is missing', async () => {
+        const payloadObj = { ...validPayloadObj, order_number: undefined };
+        const payloadStr = JSON.stringify(payloadObj);
         const res = await server.inject({
             method: 'POST',
             url: '/api/v1/shopify-webhook',
-            payload: invalidPayload,
+            payload: payloadStr,
+            headers: makeWebhookHeaders(payloadStr),
         });
 
-        expect(res.statusCode).toBe(204);
+        // Handler returns 200 with "Missing order_number" message (not 204)
+        expect(res.statusCode).toBe(200);
         expect(mockTopic.publishMessage).not.toHaveBeenCalled();
         expect(createNewReview).not.toHaveBeenCalled();
     });
 
-    test('POST /api/v1/shopify-webhook returns null when customer_locale is missing', async () => {
-        const invalidPayload = { ...validPayload, customer_locale: undefined };
-
+    test('POST /api/v1/shopify-webhook processes order when customer_locale is missing (defaults to en)', async () => {
+        const payloadObj = { ...validPayloadObj, customer_locale: undefined };
+        const payloadStr = JSON.stringify(payloadObj);
         const res = await server.inject({
             method: 'POST',
             url: '/api/v1/shopify-webhook',
-            payload: invalidPayload,
+            payload: payloadStr,
+            headers: makeWebhookHeaders(payloadStr),
         });
 
-        expect(res.statusCode).toBe(204);
-        expect(mockTopic.publishMessage).not.toHaveBeenCalled();
+        // Handler defaults customer_locale to 'en' and continues processing
+        expect(res.statusCode).toBe(200);
+        expect(res.result).toHaveProperty('version', '1.0.0');
     });
 
     test('POST /api/v1/shopify-webhook returns 500 when review creation fails', async () => {
         createNewReview.mockRejectedValue(new Error('Database error'));
 
+        const payloadStr = JSON.stringify(validPayloadObj);
         const res: ServerInjectResponse<{ version: string; error: string }> = await server.inject({
             method: 'POST',
             url: '/api/v1/shopify-webhook',
-            payload: validPayload,
+            payload: payloadStr,
+            headers: makeWebhookHeaders(payloadStr),
         });
 
         expect(res.statusCode).toBe(500);
@@ -186,10 +216,12 @@ describe('Shopify Webhook route', () => {
     test('POST /api/v1/shopify-webhook returns 500 when publishing fails', async () => {
         mockTopic.publishMessage.mockRejectedValueOnce(new Error('Failed to publish to Pub/Sub'));
 
+        const payloadStr = JSON.stringify(validPayloadObj);
         const res: ServerInjectResponse<{ version: string; error: string }> = await server.inject({
             method: 'POST',
             url: '/api/v1/shopify-webhook',
-            payload: validPayload,
+            payload: payloadStr,
+            headers: makeWebhookHeaders(payloadStr),
         });
 
         expect(res.statusCode).toBe(500);
