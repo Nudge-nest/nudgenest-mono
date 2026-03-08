@@ -7,6 +7,7 @@ const secrets = {
     // Core Backend Secrets
     DATABASE_URL: config.get("BACKEND_DATABASE_URL"),
     RESEND_API_KEY: config.get("BACKEND_RESEND_API_KEY"),
+    RESEND_FROM_EMAIL: config.get("BACKEND_RESEND_FROM_EMAIL"),
     SHOPIFY_API_SECRET: config.get("BACKEND_SHOPIFY_API_SECRET"),
     NODE_ENV: config.get("NODE_ENV") || "production",
 

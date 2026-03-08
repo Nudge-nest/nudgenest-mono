@@ -16,6 +16,7 @@ steps:
       secretEnv:
           - 'DATABASE_URL'
           - 'RESEND_API_KEY'
+          - 'RESEND_FROM_EMAIL'
           - 'SHOPIFY_API_SECRET'
           - 'NODE_ENV'
           - 'GOOGLE_CLOUD_PROJECT_ID'
@@ -43,7 +44,7 @@ steps:
           - '--region=$_DEPLOY_REGION'
           - '--quiet'
           - '--set-secrets'
-          - 'DATABASE_URL=projects/1094805904049/secrets/DATABASE_URL:latest,RESEND_API_KEY=projects/1094805904049/secrets/RESEND_API_KEY:latest,SHOPIFY_API_SECRET=projects/1094805904049/secrets/SHOPIFY_API_SECRET:latest,NODE_ENV=projects/1094805904049/secrets/NODE_ENV:latest,GOOGLE_CLOUD_PROJECT_ID=projects/1094805904049/secrets/GOOGLE_CLOUD_PROJECT_ID:latest,GCS_BUCKET_NAME=projects/1094805904049/secrets/GCS_BUCKET_NAME:latest,REVIEW_UI_BASE_URL=projects/1094805904049/secrets/REVIEW_UI_BASE_URL:latest,SENTRY_BACKEND_DSN=projects/1094805904049/secrets/SENTRY_BACKEND_DSN:latest'
+          - 'DATABASE_URL=projects/1094805904049/secrets/DATABASE_URL:latest,RESEND_API_KEY=projects/1094805904049/secrets/RESEND_API_KEY:latest,RESEND_FROM_EMAIL=projects/1094805904049/secrets/RESEND_FROM_EMAIL:latest,SHOPIFY_API_SECRET=projects/1094805904049/secrets/SHOPIFY_API_SECRET:latest,NODE_ENV=projects/1094805904049/secrets/NODE_ENV:latest,GOOGLE_CLOUD_PROJECT_ID=projects/1094805904049/secrets/GOOGLE_CLOUD_PROJECT_ID:latest,GCS_BUCKET_NAME=projects/1094805904049/secrets/GCS_BUCKET_NAME:latest,REVIEW_UI_BASE_URL=projects/1094805904049/secrets/REVIEW_UI_BASE_URL:latest,SENTRY_BACKEND_DSN=projects/1094805904049/secrets/SENTRY_BACKEND_DSN:latest'
       id: Deploy
       secretEnv:
           - 'DATABASE_URL'
@@ -76,6 +77,8 @@ availableSecrets:
           env: 'DATABASE_URL'
         - versionName: 'projects/$PROJECT_ID/secrets/RESEND_API_KEY/versions/latest'
           env: 'RESEND_API_KEY'
+        - versionName: 'projects/$PROJECT_ID/secrets/RESEND_FROM_EMAIL/versions/latest'
+          env: 'RESEND_FROM_EMAIL'
         - versionName: 'projects/$PROJECT_ID/secrets/SHOPIFY_API_SECRET/versions/latest'
           env: 'SHOPIFY_API_SECRET'
         - versionName: 'projects/$PROJECT_ID/secrets/NODE_ENV/versions/latest'
