@@ -1,4 +1,4 @@
-import logo from '../assets/nudgenest_no_bg.svg?url';
+import logo from '../assets/nudgenest_logo.svg?url';
 
 const homeUrl = `${import.meta.env.VITE_APP_HOST}`;
 const contactUrl = `${import.meta.env.VITE_APP_CONTACT_URL}`;
