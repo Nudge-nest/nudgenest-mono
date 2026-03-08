@@ -9,7 +9,7 @@ const navLinkStyle =
 const Header = () => {
     return (
         <header
-            className="sticky top-0 z-50 w-full border-b border-[color:var(--color-icons-border)] bg-[color:var(--color-white)]/90 backdrop-blur-md"
+            className="sticky top-0 z-50 w-full border-b border-[color:var(--color-icons-border)] bg-white/90 dark:bg-[#2e3235]/90 backdrop-blur-md [-webkit-backdrop-filter:blur(12px)]"
             aria-label="header-component"
         >
             <div className="w-full px-6 h-16 flex items-center justify-between gap-x-4">
