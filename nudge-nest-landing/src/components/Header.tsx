@@ -1,7 +1,6 @@
 import logo from '../assets/nudgenest_logo.svg?url';
 
 const contactUrl = `${import.meta.env.VITE_APP_CONTACT_URL}`;
-const signupUrl = `${import.meta.env.VITE_APP_SIGNUP_URL}`;
 
 const navLinkStyle =
     'text-sm text-[color:var(--color-dark)] hover:text-[color:var(--color-main)] transition-colors duration-150 cursor-pointer';
@@ -31,15 +30,6 @@ const Header = () => {
                     </a>
                 </nav>
 
-                {/* CTA */}
-                <a
-                    href={signupUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-shrink-0 bg-[color:var(--color-main)] text-white text-sm font-semibold px-5 py-2 rounded-full hover:opacity-90 transition-opacity"
-                >
-                    Get Started
-                </a>
             </div>
         </header>
     );

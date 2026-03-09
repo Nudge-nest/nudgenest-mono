@@ -54,19 +54,19 @@
 
 | # | Action | Expected Result | Status |
 |---|--------|----------------|--------|
-| L1 | Open in Chrome | Page loads, no console errors | ⬜ |
-| L2 | Open in Safari | Page loads, no console errors | ⬜ |
-| L3 | Toggle dark mode (system or browser) | Logo, text, all sections render correctly; logo is vivid coral, not washed-out | ⬜ |
-| L4 | Resize to 375px width (mobile) | No horizontal scrollbar; hero text readable; all sections visible | ⬜ |
-| L5 | Check header logo | Correct size (~36px tall); clicking navigates to home | ⬜ |
-| L6 | Click each nav link (How It Works, Pricing, FAQ, Contact) | Each scrolls to section or navigates correctly | ⬜ |
-| L7 | Click "Sign Up for Early Access" (hero CTA) | Opens signup URL in new tab | ⬜ |
-| L8 | Scroll to bottom of page | All sections visible: hero, screenshots/product, features, value proposition, footer | ⬜ |
-| L9 | Check footer logo | Renders at correct size; copyright year is current | ⬜ |
-| L10 | Click "Privacy Policy" in footer | Navigates to `/privacy` page | ⬜ |
+| L1 | Open in Chrome | Page loads, no console errors | ✅ |
+| L2 | Open in Safari | Page loads, no console errors | ✅ |
+| L3 | Toggle dark mode (system or browser) | Logo, text, all sections render correctly; logo is vivid coral, not washed-out | ✅ |
+| L4 | Resize to 375px width (mobile) | No horizontal scrollbar; hero text readable; all sections visible | ✅ |
+| L5 | Check header logo | Correct size (~36px tall); clicking navigates to home | ✅ |
+| L6 | Click each nav link (How It Works, Pricing, FAQ, Contact) | Each scrolls to section or navigates correctly | ✅ |
+| L7 | Click "Get Started" (hero CTA) | Opens signup URL in new tab | ✅ |
+| L8 | Scroll to bottom of page | All sections visible: hero, screenshots/product, features, value proposition, footer | ✅ |
+| L9 | Check footer logo | Renders at correct size; copyright year is current | ✅ |
+| L10 | Click "Privacy Policy" in footer | Navigates to `/privacy` page | ✅ |
 | L11 | Newsletter input | Accepts text input; Subscribe button is clickable; no JS crash | ⬜ |
-| L12 | Pricing section loads | Plan cards visible with correct prices; no "unavailable" error | ⬜ |
-| L13 | Header glass/blur in Safari | Header has visible background when scrolling; not transparent | ⬜ |
+| L12 | Pricing section loads | Plan cards visible with correct prices; no "unavailable" error | ✅ |
+| L13 | Header glass/blur in Safari | Header has visible background when scrolling; not transparent | ✅ |
 
 ---
 
