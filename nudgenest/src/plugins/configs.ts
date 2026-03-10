@@ -88,11 +88,13 @@ const updateReviewConfigsHandler = async (request: Hapi.Request, h: Hapi.Respons
     const configs = request.payload as any;
     const { prisma } = request.server.app;
     try {
+        // Strip Prisma-managed fields that cannot appear in updateMany data
+        const { id, merchantId: _merchantId, createdAt, updatedAt, ...updateData } = configs;
         const result = await prisma.configurations.updateMany({
             where: {
                 merchantId: merchantId as string,
             },
-            data: configs as any,
+            data: updateData,
         });
         // Fetch the updated configuration
         const updatedConfig = await prisma.configurations.findFirst({
