@@ -15,7 +15,7 @@ api_version = "2024-10"
 
   [[webhooks.subscriptions]]
   topics = [ "orders/create" ]
-  uri = "https://2a2f-81-197-250-129.ngrok-free.app/api/v1/shopify-webhook"
+  uri = "https://api-staging.nudgenest.io/api/v1/shopify-webhook"
 
   [[webhooks.subscriptions]]
   topics = [ "app_subscriptions/update" ]

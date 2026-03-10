@@ -43,6 +43,7 @@ const Footer = () => {
                         <FooterButton onClick={() => {
                             const body = `Please add me to the Nudgenest newsletter: ${email}`;
                             window.open(`mailto:${NEWSLETTER_EMAIL}?subject=Newsletter+Subscription&body=${encodeURIComponent(body)}`);
+                            setEmail('');
                         }}>
                             <SmallBodyText className="!text-[color:var(--color-text)]">Subscribe</SmallBodyText>
                         </FooterButton>
