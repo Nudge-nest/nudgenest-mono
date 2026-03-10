@@ -174,7 +174,7 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         const emailScheduleField = merchantConfig?.emailSchedule?.find(
             (f: any) => f.key === 'initialEmailDelayDays'
         );
-        const delayDays = parseInt(emailScheduleField?.value ?? '7', 10);
+        const delayDays = parseInt(emailScheduleField?.value ?? '0', 10);
         const now = new Date();
         const scheduledEmailAt = new Date(now.getTime() + delayDays * 24 * 60 * 60 * 1000);
 
