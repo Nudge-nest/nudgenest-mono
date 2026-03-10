@@ -154,8 +154,8 @@ describe('Shopify Webhook route', () => {
         expect(res.result).toHaveProperty('version', '1.0.0');
         expect(res.result?.message).toContain('New review processed successfully');
 
-        // Handler sends merchant notification immediately; customer email is deferred (default 7-day delay)
-        expect(mockTopic.publishMessage).toHaveBeenCalledTimes(1);
+        // Handler sends both messages immediately (default 0-day delay)
+        expect(mockTopic.publishMessage).toHaveBeenCalledTimes(2);
 
         expect(getMerchantWithBusinessInfo).toHaveBeenCalledWith(prismaMock, 'merchant-123');
         expect(createNewReview).toHaveBeenCalledWith(

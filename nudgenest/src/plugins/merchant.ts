@@ -111,6 +111,14 @@ export const defaultConfigs = {
             type: 'select',
         },
     ],
+    emailSchedule: [
+        {
+            key: 'initialEmailDelayDays',
+            value: '0',
+            description: 'Days to wait after order before sending the review request email (0 = send immediately)',
+            type: 'number',
+        },
+    ],
     qrCode: [
         {
             key: 'qrCodeUrl',
