@@ -10,6 +10,7 @@ process.env.APP_AWS_REGION = 'us-east-1';
 process.env.APP_AWS_ACCESS_KEY = 'test-key';
 process.env.APP_AWS_SECRET_KEY = 'test-secret';
 process.env.SHOPIFY_API_SECRET = 'test-shopify-secret';
+process.env.RESEND_FROM_EMAIL = 'reviews@mail.nudgenest.io';
 
 // Global test timeout
 jest.setTimeout(10000);
