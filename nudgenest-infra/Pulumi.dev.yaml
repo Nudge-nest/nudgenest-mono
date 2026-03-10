@@ -34,4 +34,4 @@ config:
   nudgenest-infra:VITE_APP_SENTRY_FE_DSN:
     secure: AAABACVkMKjmi3o025VQbg4W66vajULVX8x9+t829EpREou5L/pJFvGJafZ6OPBUJ7XKAju5TRSvBQDV4dvCAAQNwdK+xlcF1RsYG7z82xOsuUGjUvD8073B95CYW9D259DMNLv3QirwrHQxpLdgdlmXHtHox1AqwxZA+0uWoQ==
   nudgenest-infra:BACKEND_RESEND_FROM_EMAIL:
-    secure: AAABADw8sysnwgR7lRb1nqHMVrcbAS2MaxcyjY5hlHFWm2oh20yvWsNsBVQgxpkoPxmMX9Q=
+    secure: AAABAP2wmeTklqvY3rY6R1b+gd6v6hJnaPACHsfU0rHBJinFWU7iLJiyRP8Fzq35kDGZhe1KbJ+O
