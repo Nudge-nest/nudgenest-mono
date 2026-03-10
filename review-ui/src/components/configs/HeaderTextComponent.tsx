@@ -40,18 +40,39 @@ export const HeaderTextComponent: FC<IHeaderTextComponentProps> = ({ title, subT
                 )}
             </header>
 
-            {/* Save Button */}
-            <div className="mt-8 flex justify-end">
+            {/* Save Button + feedback */}
+            <div className="mt-8 flex flex-col items-end gap-2">
                 <button
                     onClick={reviewConfigFormHoook.handleUpdateReviewConfig}
-                    className={reviewConfigFormHoook.isEditing ? activeStyle : disabledStyle}
-                    disabled={!reviewConfigFormHoook.isEditing}
+                    className={reviewConfigFormHoook.isEditing && !reviewConfigFormHoook.isSubmitting ? activeStyle : disabledStyle}
+                    disabled={!reviewConfigFormHoook.isEditing || !!reviewConfigFormHoook.isSubmitting}
                     aria-label={reviewConfigFormHoook.isEditing ? "Save configuration changes" : "Save configuration (disabled - no changes)"}
                     data-testid="save-config-button"
                     type="button"
                 >
-                    Save Configuration
+                    {reviewConfigFormHoook.isSubmitting ? 'Saving…' : 'Save Configuration'}
                 </button>
+
+                {reviewConfigFormHoook.saveSuccess && (
+                    <p
+                        className="text-sm text-green-600 font-medium"
+                        role="status"
+                        aria-live="polite"
+                        data-testid="save-success-message"
+                    >
+                        ✓ Configuration saved successfully
+                    </p>
+                )}
+
+                {reviewConfigFormHoook.error && (
+                    <p
+                        className="text-sm text-red-500 font-medium"
+                        role="alert"
+                        data-testid="save-error-message"
+                    >
+                        {reviewConfigFormHoook.error}
+                    </p>
+                )}
             </div>
 
             {/* Screen reader announcement for save state */}
