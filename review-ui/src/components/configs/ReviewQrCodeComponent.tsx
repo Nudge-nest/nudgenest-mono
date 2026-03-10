@@ -18,10 +18,9 @@ const ReviewQrCodeComponent = () => {
     const qrCodeUrl = reviewConfigs?.qrCode?.find((field) => field.key === 'qrCodeUrl')?.value || '';
     const qrCodeData = reviewConfigs?.qrCode?.find((field) => field.key === 'qrCodeData')?.value || '';
 
-    // Generate store review URL
+    // Generate store review URL — use current origin so it works in every environment
     const generateReviewUrl = () => {
-        const baseUrl = 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
-        return `${baseUrl}/store/review/${merchantId}`;
+        return `${window.location.origin}/store/review/${merchantId}`;
     };
 
     // Generate QR code from URL
