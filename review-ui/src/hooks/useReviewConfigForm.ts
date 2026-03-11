@@ -16,7 +16,7 @@ interface UseReviewConfigFormReturn {
     handleUpdateReviewConfig: () => Promise<void>; // ORIGINAL NAME
     handleSubmitDemo: () => void; // ORIGINAL NAME
     error: string | null;
-    handleFieldChange: (key: string, value: string, propName: keyof Omit<IReviewConfiguration, 'merchantId'>) => void;
+    handleFieldChange: (key: string, value: string | number | boolean, propName: string) => void;
 }
 
 export const useReviewConfigForm = (initialData: IReviewConfiguration): UseReviewConfigFormReturn => {
@@ -60,17 +60,34 @@ export const useReviewConfigForm = (initialData: IReviewConfiguration): UseRevie
     }, [reviewConfigs, updateReviewConfigs, setIsSubmitting, setError]);
 
     const handleFieldChange = useCallback(
-        (key: string, value: string | number | boolean, propName: keyof Omit<IReviewConfiguration, 'merchantId'>) => {
+        (key: string, value: string | number | boolean, propName: string) => {
             setIsEditing(true);
             setReviewConfigs((prev: any) => {
-                if (!prev || !prev[propName]) return prev;
+                if (!prev) return prev;
 
+                // Support dot-notation paths e.g. "general.shopReviewQuestions"
+                const parts = propName.split('.');
+                if (parts.length === 2) {
+                    const [topProp, nestedProp] = parts;
+                    const arr = prev[topProp]?.[nestedProp];
+                    if (!Array.isArray(arr)) return prev;
+                    return {
+                        ...prev,
+                        [topProp]: {
+                            ...prev[topProp],
+                            [nestedProp]: arr.map((field: IConfigField) =>
+                                field.key === key ? { ...field, value: String(value) } : field
+                            ),
+                        },
+                    };
+                }
+
+                // Original flat-array path
+                if (!prev[propName] || !Array.isArray(prev[propName])) return prev;
                 return {
                     ...prev,
                     [propName]: prev[propName].map((field: IConfigField) =>
-                        field.key === key
-                            ? { ...field, value: String(value) } // Convert to string since your interface expects string
-                            : field
+                        field.key === key ? { ...field, value: String(value) } : field
                     ),
                 };
             });
