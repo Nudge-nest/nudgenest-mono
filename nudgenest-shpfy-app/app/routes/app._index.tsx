@@ -100,7 +100,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 // ============================================================================
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { admin } = await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
   const formData = await request.formData();
   const actionType = formData.get("_action");
 
@@ -123,6 +123,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           formatted: shopInfo.billingAddress.formatted ?? [],
           zip:       shopInfo.billingAddress.zip       ?? '',
         },
+        shopifyAccessToken: session.accessToken,
       };
 
       const result = await registerMerchant(merchantData);

@@ -39,7 +39,8 @@ export const buildPublishJson = (content: any, sampleMessage: any) => ({
 
 export const extractMessagingContentFromShopifyData = (
     shopifyOrderData: IDataFromShopifyPayload,
-    reviewId: string
+    reviewId: string,
+    merchantId: string
 ): IReviewMessagePayloadContent => {
     const { customer, line_items, order_number, currency } = shopifyOrderData;
     return {
@@ -50,6 +51,7 @@ export const extractMessagingContentFromShopifyData = (
         order_number: order_number,
         reviewId: reviewId,
         currency: currency,
+        merchantId: merchantId,
     };
 };
 

@@ -23,7 +23,7 @@ const ReviewGeneralSettingsComponent = () => {
                                 key={field.key}
                                 field={field}
                                 onFieldChange={reviewConfigFormHoook.handleFieldChange}
-                                objPropName="general"
+                                objPropName="general.shopReviewQuestions"
                             />
                         );
                     })

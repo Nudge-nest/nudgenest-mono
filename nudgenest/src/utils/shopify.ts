@@ -120,16 +120,17 @@ export async function fetchProductImage(
  */
 export async function enrichLineItemsWithImages(
     lineItems: any[],
-    shopDomain: string
+    shopDomain: string,
+    accessToken?: string | null
 ): Promise<any[]> {
     if (!lineItems || lineItems.length === 0) {
         return lineItems;
     }
 
-    // Get access token from environment
-    const accessToken = getShopifyAccessToken();
-    if (!accessToken) {
-        console.error('⚠️ Skipping image enrichment: no access token available');
+    // Use provided per-merchant token, fall back to env var
+    const token = accessToken || getShopifyAccessToken();
+    if (!token) {
+        console.warn('⚠️ Skipping image enrichment: no access token available');
         return lineItems;
     }
 
@@ -150,7 +151,7 @@ export async function enrichLineItemsWithImages(
             }
 
             // Fetch image from Shopify
-            const imageSrc = await fetchProductImage(shopDomain, item.product_id, accessToken);
+            const imageSrc = await fetchProductImage(shopDomain, item.product_id, token);
 
             // Return item with image
             return {
