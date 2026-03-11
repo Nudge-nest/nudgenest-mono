@@ -93,7 +93,8 @@ describe('Config route', () => {
     test('PATCH /api/v1/config/{merchantId} updates review configuration and returns 200 status', async () => {
         const merchantId = '68415f4bc99be1ae3f921dc0';
         prismaMock.merchants.findFirst.mockResolvedValue(testMerchant);
-        prismaMock.configurations.update.mockResolvedValue(mockConfig);
+        prismaMock.configurations.updateMany.mockResolvedValue({ count: 1 });
+        prismaMock.configurations.findFirst.mockResolvedValue(mockConfig);
         const res: ServerInjectResponse<{ version: string; data: responseType }> = await server.inject({
             method: 'PATCH',
             url: '/api/v1/config/' + merchantId,
@@ -107,17 +108,16 @@ describe('Config route', () => {
     });
     test('PATCH /api/v1/config/{merchantId} return 500 when config data is malformed during update', async () => {
         prismaMock.merchants.findFirst.mockResolvedValue(testMerchant);
-        prismaMock.configurations.update.mockRejectedValue({ version: '1.0.0', data: undefined });
+        prismaMock.configurations.updateMany.mockRejectedValue(new Error('Database update failed'));
 
-        const res: ServerInjectResponse<{ version: string; data: responseType }> = await server.inject({
+        const res: ServerInjectResponse<{ version: string; error: responseType }> = await server.inject({
             method: 'PATCH',
             url: '/api/v1/config/nonexistent',
             headers: { 'x-api-key': testApiKey },
         });
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(500);
         expect(res.result).toHaveProperty('version');
-        expect(res.result).toHaveProperty('data');
+        expect(res.result).toHaveProperty('error');
         expect(res.result?.version).toMatch('1.0.0');
-        expect(res.result?.data).toBe(undefined);
     });
 });

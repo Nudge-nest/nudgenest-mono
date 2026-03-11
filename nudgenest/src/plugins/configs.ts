@@ -89,7 +89,7 @@ const updateReviewConfigsHandler = async (request: Hapi.Request, h: Hapi.Respons
     const { prisma } = request.server.app;
     try {
         // Strip Prisma-managed fields that cannot appear in updateMany data
-        const { id, merchantId: _merchantId, createdAt, updatedAt, ...updateData } = configs;
+        const { id, merchantId: _merchantId, createdAt, updatedAt, ...updateData } = (configs ?? {}) as any;
         const result = await prisma.configurations.updateMany({
             where: {
                 merchantId: merchantId as string,

@@ -60,7 +60,7 @@ describe('EmailService', () => {
                 })
             );
             expect(mockResendSend).toHaveBeenCalledWith({
-                from: 'onboarding@resend.dev',
+                from: 'reviews@mail.nudgenest.io',
                 to: 'john@example.com',
                 subject: 'John Doe, how was your recent purchase?',
                 html: '<html>Rendered Email for John Doe</html>',
