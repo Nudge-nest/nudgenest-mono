@@ -69,7 +69,7 @@ function CustomerDashboard({ merchantData, shopInfo, reviewStats, subscriptionDe
   const openConfigModal = useCallback(() => {
     const shopDomain = merchantData?.domains || shopInfo.myshopifyDomain;
     const merchantId = merchantData?.id || merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
-    const configUrl = `${reviewUiBaseUrl}/configs/${merchantId}`;
+    const configUrl = `${reviewUiBaseUrl}/configs/${merchantId}?apiKey=${merchantData?.apiKey ?? ''}`;
 
     const overlayHTML = `
       <div id="nudgenest-overlay" style="

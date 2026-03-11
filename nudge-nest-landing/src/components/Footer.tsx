@@ -4,8 +4,11 @@ import logo from '../assets/nudgenest_logo.svg?url';
 import { FooterButton } from './Button';
 import { SmallBodyText, SmallBodyTextBold } from './Typography';
 
+const NEWSLETTER_EMAIL = 'bytemindsfi@gmail.com';
+
 const Footer = () => {
     const [year] = useState<string>(`${new Date().getFullYear()}`);
+    const [email, setEmail] = useState('');
 
     return (
         <footer
@@ -31,10 +34,17 @@ const Footer = () => {
                     </SmallBodyTextBold>
                     <div className="flex w-full">
                         <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className="flex-1 bg-[color:var(--color-bg)] px-4 py-3 rounded-s-3xl outline-none text-sm text-[color:var(--color-dark)] placeholder:text-[color:var(--color-icons)]"
                             placeholder="Enter your email"
                         />
-                        <FooterButton>
+                        <FooterButton onClick={() => {
+                            const body = `Please add me to the Nudgenest newsletter: ${email}`;
+                            window.open(`mailto:${NEWSLETTER_EMAIL}?subject=Newsletter+Subscription&body=${encodeURIComponent(body)}`);
+                            setEmail('');
+                        }}>
                             <SmallBodyText className="!text-[color:var(--color-text)]">Subscribe</SmallBodyText>
                         </FooterButton>
                     </div>

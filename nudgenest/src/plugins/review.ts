@@ -42,6 +42,11 @@ const getReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => 
                 updatedAt: true,
             },
         });
+
+        if (!review) {
+            return h.response({ version: '1.0.0', error: 'Review not found' }).code(404);
+        }
+
         return h.response({ version: '1.0.0', data: review }).code(200);
     } catch (error: any) {
         return h

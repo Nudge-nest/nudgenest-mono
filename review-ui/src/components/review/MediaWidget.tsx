@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { IconPlus } from '@tabler/icons-react';
 
@@ -10,6 +10,7 @@ import PreviewComponent from './MediaPreviewComponent.tsx';
 const MediaWidget = memo(() => {
     const { merchantId, reviewFormHook, review, reviewId, reviewStatus } = useReview();
     const [uploadReviewMedia] = useUploadReviewMediaMutation();
+    const [rejectionError, setRejectionError] = useState<string | null>(null);
 
     const onDrop = useCallback(
         async (acceptedFiles: File[]) => {
@@ -37,8 +38,14 @@ const MediaWidget = memo(() => {
         [reviewFormHook, reviewId, merchantId, uploadReviewMedia]
     );
 
+    const onDropRejected = useCallback(() => {
+        setRejectionError('Only images and videos are accepted.');
+        setTimeout(() => setRejectionError(null), 3000);
+    }, []);
+
     const { getRootProps, getInputProps } = useDropzone({
         onDrop,
+        onDropRejected,
         accept: {
             'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'],
             'video/*': ['.mp4', '.mov', '.webm', '.ogg', '.avi', '.mkv']
@@ -105,6 +112,16 @@ const MediaWidget = memo(() => {
                     </div>
                 )}
             </div>
+
+            {rejectionError && (
+                <p
+                    role="alert"
+                    className="text-red-500 text-sm mt-2 text-center"
+                    data-testid="media-rejection-error"
+                >
+                    {rejectionError}
+                </p>
+            )}
         </section>
     );
 });

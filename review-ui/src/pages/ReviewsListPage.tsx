@@ -17,8 +17,8 @@ import { useParams } from 'react-router';
 import { useConstrainedView } from '../hooks/useConstrainedView.ts';
 import { IconStar } from '@tabler/icons-react';
 
-const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456a2575dd1aae' }) => {
-    const { id } = useParams<{ id: string }>();
+const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp }) => {
+    const { shopId } = useParams<{ shopId: string }>();
     const [reviews, setReviews] = useState<IReview[]>([]);
     const [currentSort, setCurrentSort] = useState<SortType>('newest');
     const [mediaModalOpen, setMediaModalOpen] = useState(false);
@@ -26,7 +26,8 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
     const [selectedMedia, setSelectedMedia] = useState<IUploadedMediaObject[]>([]);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
-    const { data: reviewsData, isError, isFetching } = useListReviewsQuery(id ? id : '67580297354');
+    const { data: reviewsData, isError, isFetching } = useListReviewsQuery(shopId ?? '');
+    const merchantId = merchantIdProp ?? reviewsData?.[0]?.merchantId;
 
     // Auto-detect if we're in an iframe (Shopify embedding)
     const isIframe = useConstrainedView();
@@ -157,24 +158,28 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId = '68414ac959456
                     >
                         Be the first to share your experience! Your feedback helps others make informed decisions.
                     </p>
-                    <button
-                        onClick={() => setReviewFormOpen(true)}
-                        className="px-6 py-3 bg-[color:var(--color-main)] text-white rounded-lg
-                        hover:opacity-90 transition-all duration-200 font-medium shadow-sm"
-                        aria-label="Write the first review"
-                        data-testid="empty-state-add-review"
-                    >
-                        Write a Review
-                    </button>
+                    {merchantId && (
+                        <button
+                            onClick={() => setReviewFormOpen(true)}
+                            className="px-6 py-3 bg-[color:var(--color-main)] text-white rounded-lg
+                            hover:opacity-90 transition-all duration-200 font-medium shadow-sm"
+                            aria-label="Write the first review"
+                            data-testid="empty-state-add-review"
+                        >
+                            Write a Review
+                        </button>
+                    )}
                 </div>
 
-                <ReviewFormModal
-                    isOpen={reviewFormOpen}
-                    onClose={() => setReviewFormOpen(false)}
-                    merchantId={merchantId}
-                    aria-label="Add review modal"
-                    data-testid="review-form-modal"
-                />
+                {merchantId && (
+                    <ReviewFormModal
+                        isOpen={reviewFormOpen}
+                        onClose={() => setReviewFormOpen(false)}
+                        merchantId={merchantId}
+                        aria-label="Add review modal"
+                        data-testid="review-form-modal"
+                    />
+                )}
             </main>
         );
     }

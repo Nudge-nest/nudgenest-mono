@@ -11,6 +11,7 @@ process.env.APP_AWS_ACCESS_KEY = 'test-key';
 process.env.APP_AWS_SECRET_KEY = 'test-secret';
 process.env.SHOPIFY_API_SECRET = 'test-shopify-secret';
 process.env.RESEND_FROM_EMAIL = 'reviews@mail.nudgenest.io';
+process.env.REVIEW_UI_BASE_URL = 'https://review-staging.nudgenest.io';
 
 // Global test timeout
 jest.setTimeout(10000);

@@ -28,14 +28,14 @@ const LandingPage = () => {
                         Boost Trust. Grow Your Brand. Simplify Reviews.
                     </LargerHeaderTextBoldItalic>
                     <MediumBodyText>
-                        Discover Nudge-Nest — the seamless solution for gathering, showcasing, and analyzing customer
+                        Discover Nudgenest — the seamless solution for gathering, showcasing, and analyzing customer
                         reviews. Empower your e-commerce store to build credibility, increase conversions, and connect
                         authentically with your audience.
                     </MediumBodyText>
                     <Button>
                         <a href={signupUrl} target="_blank" rel="noopener noreferrer">
                             <SmallBodyTextBold className={`!text-[color:var(--color-text)]`}>
-                                Sign Up for Early Access
+                                Get Started
                             </SmallBodyTextBold>
                         </a>
                     </Button>
@@ -71,7 +71,7 @@ const LandingPage = () => {
             </PageSection>
             <PageSection name="features">
                 <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 justify-center items-center`}>
-                    <LargeHeaderTextBold>Why Choose Nudge-Nest?</LargeHeaderTextBold>
+                    <LargeHeaderTextBold>Why Choose Nudgenest?</LargeHeaderTextBold>
                     <ul className="flex flex-col gap-y-4 md:flex-row md:gap-x-4">
                         <li className="w-full md:text-left md:w-4/5">
                             <SmallBodyTextBold>Seamless Integration:</SmallBodyTextBold>
@@ -112,7 +112,7 @@ const LandingPage = () => {
                                     Turn Customer Feedback into Your Competitive Advantage.
                                 </MediumHeaderTextBold>
                                 <MediumBodyText>
-                                    At Nudge-Nest, we believe every great product deserves authentic recognition. Our
+                                    At Nudgenest, we believe every great product deserves authentic recognition. Our
                                     platform helps you capture the voice of your customers and transform it into
                                     compelling stories that drive trust, loyalty, and sales.
                                 </MediumBodyText>
@@ -128,7 +128,7 @@ const LandingPage = () => {
                                 <MediumHeaderTextBold>Feature Request Section</MediumHeaderTextBold>
                                 <MediumBodyText>
                                     Already using a competitor but considering switching? Tell us what features you need
-                                    to make Nudge-Nest perfect for you.
+                                    to make Nudgenest perfect for you.
                                 </MediumBodyText>
                                 <LinkButton>
                                     <a

@@ -28,10 +28,10 @@ config:
   nudgenest-infra:NODE_ENV: production
   nudgenest-infra:GOOGLE_CLOUD_PROJECT_ID: nudgenest
   nudgenest-infra:GCS_BUCKET_NAME: nudgenest-media
-  nudgenest-infra:REVIEW_UI_BASE_URL: https://nudgenest-review-ui-1094805904049.europe-west1.run.app
+  nudgenest-infra:REVIEW_UI_BASE_URL: https://review-staging.nudgenest.io
   nudgenest-infra:SENTRY_BACKEND_DSN:
     secure: AAABABOq+FioeZX8JwGNjl4+yEen6bjSlhcHR3GwFhzzQSyTYEb/DlEJV2HHrZ8hnlKdaZGNTAh/rauJf15hCxByuvLH7KKI6NB6S2WR+94UtcTYSuAfqiwqJX2rTWy09jW8MH09Kyt/Z6o/wAlRovhXaJPWBQleMK7r4EiNNQ==
   nudgenest-infra:VITE_APP_SENTRY_FE_DSN:
     secure: AAABACVkMKjmi3o025VQbg4W66vajULVX8x9+t829EpREou5L/pJFvGJafZ6OPBUJ7XKAju5TRSvBQDV4dvCAAQNwdK+xlcF1RsYG7z82xOsuUGjUvD8073B95CYW9D259DMNLv3QirwrHQxpLdgdlmXHtHox1AqwxZA+0uWoQ==
   nudgenest-infra:BACKEND_RESEND_FROM_EMAIL:
-    secure: AAABAP2wmeTklqvY3rY6R1b+gd6v6hJnaPACHsfU0rHBJinFWU7iLJiyRP8Fzq35kDGZhe1KbJ+O
+    secure: AAABAExnSg80dJwJfnGzclPJX0KUc369YF8qK664rd8Cjo1aSvmbYFW+SekH+DoioeRNyneXr4Z6
