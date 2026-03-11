@@ -7,7 +7,7 @@ import MediaWidget from '../components/review/MediaWidget.tsx';
 import CommentWidget from '../components/review/CommentWidget.tsx';
 
 const ReviewPage = () => {
-    const { review, sliderHook, isFetching, isError } = useReview();
+    const { review, sliderHook, isFetching, isError, reviewFormHook } = useReview();
     const [items, setItems] = useState<IReviewItem[]>([]);
     const [result, setResult] = useState<IReviewResult[] | undefined>(undefined);
 
@@ -187,6 +187,17 @@ const ReviewPage = () => {
                     </div>
                 </article>
             </section>
+
+            {/* Form validation error */}
+            {reviewFormHook?.error && (
+                <p
+                    role="alert"
+                    className="text-red-500 text-sm text-center px-4 py-1"
+                    data-testid="form-validation-error"
+                >
+                    {reviewFormHook.error}
+                </p>
+            )}
 
             {/* Navigation dots */}
             {sliderHook.loaded && sliderHook.instanceRef.current && (

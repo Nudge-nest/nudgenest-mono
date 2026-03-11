@@ -90,7 +90,6 @@ export const ReviewProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
     // Extract and store merchantApiKey from review data
     useEffect(() => {
-        console.log('Review', review)
         if (review?.merchantApiKey) {
             // Only store if it doesn't exist to avoid overwriting
             const existingKey = localStorage.getItem('nn-apiKey');
@@ -101,7 +100,7 @@ export const ReviewProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }, [review]);
 
     // Error state
-    if (isError) return <ErrorComponent message="Nothing to see here!" />;
+    if (isError) return <ErrorComponent message="This review link is invalid or has expired." />;
 
     return (
         <ReviewContext.Provider
