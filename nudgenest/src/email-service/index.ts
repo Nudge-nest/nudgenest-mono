@@ -76,7 +76,7 @@ class EmailService {
     // Load and cache template
     private async loadTemplate(templateName: string): Promise<string> {
         if (!this.templateCache.has(templateName)) {
-            const templatePath = path.join('src/email-service/templates/', `${templateName}.ejs`);
+            const templatePath = path.join(__dirname, 'templates', `${templateName}.ejs`);
             const template = await fs.readFile(templatePath, 'utf-8');
             this.templateCache.set(templateName, template);
         }
