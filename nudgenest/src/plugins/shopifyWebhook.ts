@@ -140,10 +140,11 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         console.log(`🔍 Image enrichment check: shopDomain=${shopDomain}`);
 
         if (shopDomain) {
-            // Enrich line items with images using Custom App Admin API token
+            // Enrich line items with images using per-merchant access token (falls back to env var)
             reviewDataFromPayload.line_items = await enrichLineItemsWithImages(
                 reviewDataFromPayload.line_items,
-                shopDomain
+                shopDomain,
+                merchantData.shopifyAccessToken ?? null
             );
 
             // Log enriched line items
@@ -192,7 +193,8 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         // Build message payloads
         const reviewMessageContent = extractMessagingContentFromShopifyData(
             reviewDataFromPayload,
-            createNewReviewToDb.id
+            createNewReviewToDb.id,
+            merchantData.id
         );
         const reviewToMessagingChannelJSON = buildPublishJson(reviewMessageContent, sampleMessaging);
         const reviewMessageToMerchantJSON = createMerchantEmailMessagingTemplate(

@@ -128,7 +128,7 @@ export const defaultConfigs = {
     general: {
         shopReviewQuestions: [
             {
-                key: 'default',
+                key: 'reviewQuestion',
                 value: 'how did we do?',
                 description: 'Shop review default question',
                 type: 'text',
@@ -230,6 +230,7 @@ export const createMerchantEmailMessagingTemplate = (
                 type: eventType,
                 email: merchant.email,
                 order_number: undefined,
+                merchantId: merchant.id,
             },
             context: { ...sampleMessaging.payload.context, receiver: ['reviewee'] },
         },
@@ -251,6 +252,7 @@ const createRegistrationEmailMessaging = (
                 type: 'merchant-welcome',
                 email: merchant.email,
                 order_number: undefined,
+                merchantId: merchant.id,
             },
             context: { ...sampleMessaging.payload.context, receiver: ['reviewee'] },
         },
@@ -272,6 +274,7 @@ const createVerificationEmailMessaging = (
                 type: 'merchant-verification',
                 email: merchant.email,
                 order_number: undefined,
+                merchantId: merchant.id,
             },
             context: { ...sampleMessaging.payload.context, receiver: ['reviewee'] },
         },
