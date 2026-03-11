@@ -115,7 +115,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         email: shopInfo.email,
         name: shopInfo.name,
         businessInfo: businessInfo.id,
-        address: shopInfo.billingAddress,
+        address: {
+          address1:  shopInfo.billingAddress.address1  ?? '',
+          address2:  shopInfo.billingAddress.address2  ?? '',
+          city:      shopInfo.billingAddress.city      ?? '',
+          country:   shopInfo.billingAddress.country   ?? '',
+          formatted: shopInfo.billingAddress.formatted ?? [],
+          zip:       shopInfo.billingAddress.zip       ?? '',
+        },
       };
 
       const result = await registerMerchant(merchantData);

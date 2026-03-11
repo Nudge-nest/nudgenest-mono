@@ -9,7 +9,7 @@ import { useSlider } from '../hooks/useSlider.ts';
 const StoreReviewPage = () => {
     const { merchantId } = useParams<{ merchantId: string }>();
     const { data: merchantConfigs, isLoading: configsLoading } = useGetReviewConfigsQuery(merchantId as string);
-    const { data: merchantData, isLoading: merchantLoading } = useGetMerchantQuery(merchantId as string);
+    const { data: merchantData, isLoading: merchantLoading, isError: merchantError } = useGetMerchantQuery(merchantId as string);
     const [createReview] = useCreateReviewMutation();
 
     const isLoading = configsLoading || merchantLoading;
@@ -83,6 +83,16 @@ const StoreReviewPage = () => {
     };
 
     if (isLoading) return <Loading />;
+
+    if (merchantError || (!merchantLoading && !merchantData)) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center p-4 text-center gap-3">
+                <p className="text-[color:var(--color-text)] opacity-75 text-base">
+                    This store review page could not be found.
+                </p>
+            </div>
+        );
+    }
 
     if (submitSuccess) {
         return (

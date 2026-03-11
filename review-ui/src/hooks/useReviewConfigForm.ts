@@ -10,6 +10,7 @@ interface UseReviewConfigFormReturn {
     setIsSubmitting: (value: boolean | undefined | ((prev: boolean | undefined) => boolean | undefined)) => void;
     isEditing: boolean;
     setIsEditing: (value: boolean | ((prev: boolean) => boolean)) => void;
+    saveSuccess: boolean;
 
     // Actions - ORIGINAL FUNCTION NAMES
     handleUpdateReviewConfig: () => Promise<void>; // ORIGINAL NAME
@@ -25,6 +26,7 @@ export const useReviewConfigForm = (initialData: IReviewConfiguration): UseRevie
     // UI state
     const [isSubmitting, setIsSubmitting] = useState<boolean | undefined>(undefined);
     const [error, setError] = useState<string | null>(null);
+    const [saveSuccess, setSaveSuccess] = useState(false);
     const { updateReviewConfigs } = useReviewConfigData(reviewConfigs ? reviewConfigs.merchantId : '');
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -38,9 +40,17 @@ export const useReviewConfigForm = (initialData: IReviewConfiguration): UseRevie
         if (!reviewConfigs) return;
         setIsSubmitting(true);
         setError(null);
+        setSaveSuccess(false);
 
         try {
-            updateReviewConfigs({ reviewConfigs: reviewConfigs, merchantId: reviewConfigs.merchantId });
+            const result = await updateReviewConfigs({ reviewConfigs: reviewConfigs, merchantId: reviewConfigs.merchantId });
+            if ('error' in result) {
+                setError('Failed to save configuration. Please try again.');
+            } else {
+                setIsEditing(false);
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 3000);
+            }
         } catch (error: any) {
             setError(error.message || 'Failed to submit review');
             console.error('Submit review error:', error);
@@ -78,6 +88,7 @@ export const useReviewConfigForm = (initialData: IReviewConfiguration): UseRevie
         isSubmitting,
         isEditing,
         setIsEditing,
+        saveSuccess,
 
         // Actions - KEEP ORIGINAL FUNCTION NAMES
         setIsSubmitting,

@@ -297,7 +297,8 @@ const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         });
 
         // Generate store review QR code URL from env
-        const reviewUiBaseUrl = process.env.REVIEW_UI_BASE_URL || 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
+        const reviewUiBaseUrl = process.env.REVIEW_UI_BASE_URL;
+        if (!reviewUiBaseUrl) throw new Error('Missing required env var: REVIEW_UI_BASE_URL');
         const storeReviewUrl = `${reviewUiBaseUrl}/store/review/${merchant.id}`;
 
         // Update qrCode config with generated URL
