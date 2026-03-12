@@ -45,7 +45,7 @@
         const iframe = document.createElement('iframe');
         iframe.src = iframeUrl;
         iframe.style.cssText = `
-          width: 1200px;
+          width: 100%;
           height: 600px;
           border: none;
           border-radius: 8px;
@@ -56,12 +56,12 @@
 
         gridEl.appendChild(iframe);
 
-        function handleReviewFormMessage(event) {
-          // Handle iframe communication if needed
-        }
-
-        // Handle iframe communication (optional)
-        window.addEventListener('message', handleReviewFormMessage);
+        // Auto-resize iframe height based on content reported via postMessage
+        window.addEventListener('message', function(event) {
+          if (event.data && event.data.type === 'nudgenest_resize') {
+            iframe.style.height = event.data.height + 'px';
+          }
+        });
 
       }
       // Initialize on page load
@@ -75,10 +75,9 @@
     --card-count: {{ reviews_limit }};
   }
   .business-reviews-container {
-    max-width: 1200px;
+    width: 100%;
     height: fit-content;
     margin: 0 auto;
-    max-height: 1000px;
   }
 
   .business-reviews__grid {

@@ -68,6 +68,19 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp 
         }
     }, [isFetching, isError, reviews, reviewsData, setReviews, sortReviews]);
 
+    // Report page height to Shopify parent when embedded in iframe
+    useEffect(() => {
+        if (typeof window === 'undefined' || window.self === window.top) return;
+        const el = document.documentElement;
+        const sendHeight = () => {
+            window.parent.postMessage({ type: 'nudgenest_resize', height: el.scrollHeight }, '*');
+        };
+        const observer = new ResizeObserver(sendHeight);
+        observer.observe(el);
+        sendHeight();
+        return () => observer.disconnect();
+    }, []);
+
     const handleSortChange = (sortType: SortType) => {
         setCurrentSort(sortType);
         setReviews((prevReviews) => sortReviews(prevReviews, sortType));

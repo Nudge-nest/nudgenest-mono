@@ -32,13 +32,14 @@ export const nudgeNestApi = createApi({
                     // Support both old string format and new object format
                     if (typeof params === 'string') {
                         return {
-                            url: `reviews/list?shopid=${params}`,
+                            url: `reviews/list?shopid=${params}&published=true`,
                             method: 'GET',
                         };
                     }
                     const queryParams = new URLSearchParams();
                     if (params.shopId) queryParams.append('shopid', params.shopId);
                     if (params.merchantId) queryParams.append('merchantid', params.merchantId);
+                    queryParams.append('published', 'true');
                     return {
                         url: `reviews/list?${queryParams.toString()}`,
                         method: 'GET',
