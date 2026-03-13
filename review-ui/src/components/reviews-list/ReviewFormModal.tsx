@@ -3,7 +3,6 @@ import { ReviewFormModalProps } from '../../types/review.ts';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { IconX } from '@tabler/icons-react';
-import { REVIEW_FORM_BASE_URL } from '../../constants';
 import Loading from '../Loading.tsx';
 import { nudgeNestApi } from '../../redux/nudgenest.ts';
 import { useDispatch } from 'react-redux';
@@ -15,10 +14,7 @@ const ReviewFormModal: FC<ReviewFormModalProps> = ({ isOpen, onClose, merchantId
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
             // Accept messages from localhost (dev) or production
-            const allowedOrigins = [
-                'http://localhost:3001',
-                'https://nudgenest-review-ui-1094805904049.europe-west1.run.app'
-            ];
+            const allowedOrigins = [window.location.origin];
 
             if (!allowedOrigins.includes(event.origin)) return;
 
@@ -77,7 +73,7 @@ const ReviewFormModal: FC<ReviewFormModalProps> = ({ isOpen, onClose, merchantId
                 )}
 
                 <iframe
-                    src={`${REVIEW_FORM_BASE_URL}${merchantId}`}
+                    src={`${window.location.origin}/store/review/${merchantId}`}
                     className="w-full h-full border-0"
                     title="Add New Review"
                     onLoad={() => setIsLoading(false)}

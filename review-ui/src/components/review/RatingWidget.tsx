@@ -43,7 +43,10 @@ RatingWithProduct.displayName = 'RatingWithProduct';
 
 const RatingWidget: FC<RatingWidgetProps> = memo(({ product, result, isCompleted }) => {
     const [selectedRating, setSelectedRating] = useState<number>(0);
-    const { name, image, id } = product;
+    const { name, image: rawImage, id } = product;
+    const image = typeof rawImage === 'object' && rawImage !== null
+        ? (rawImage as { src: string }).src
+        : rawImage as string | undefined;
     const { reviewFormHook } = useReview();
 
     useEffect(() => {

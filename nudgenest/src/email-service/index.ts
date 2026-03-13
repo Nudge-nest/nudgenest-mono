@@ -166,10 +166,6 @@ class EmailService {
                               description: 'Use code THANKYOU10 for 10% off your next purchase',
                           }
                         : undefined,
-                    ctaButton: {
-                        text: 'Shop Again',
-                        link: data.storeUrl || '#',
-                    },
                 };
 
             case EmailType.NEW_REVIEW_MERCHANT:
@@ -178,10 +174,6 @@ class EmailService {
                     mainMessage: `Great news! we have just sent a new review request on your behalf. Check your dashboard to read the full review.`,
                     showRating: false,
                     showItems: true,
-                    ctaButton: {
-                        text: 'View Review',
-                        link: `${process.env.MERCHANT_DASHBOARD_URL}/reviews/${data.reviewId}`,
-                    },
                     additionalMessage: ``,
                 };
 
@@ -191,10 +183,6 @@ class EmailService {
                     mainMessage: `Great news! a client just left a review. Check your dashboard to read the full review.`,
                     showRating: false,
                     showItems: true,
-                    ctaButton: {
-                        text: 'View Review',
-                        link: `${process.env.MERCHANT_DASHBOARD_URL}/reviews/${data.reviewId}`,
-                    },
                     additionalMessage: ``,
                 };
 

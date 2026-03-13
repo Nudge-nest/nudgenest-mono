@@ -88,7 +88,7 @@ const sendEmailMessageToReviewer = async (
             email,
             reviewId,
             items: extractedItems,
-            order_number: `${order_number}`,
+            order_number: order_number != null ? `${order_number}` : undefined,
             currency,
             ...configOverrides,
         });
@@ -101,7 +101,7 @@ const sendEmailMessageToReviewer = async (
             email,
             reviewId,
             items: extractedItems,
-            order_number: `${order_number}`,
+            order_number: order_number != null ? `${order_number}` : undefined,
             currency,
             ...configOverrides,
         });
@@ -118,7 +118,7 @@ const sendEmailMessageToMerchant = async (messageContent: any, templateId: event
             email,
             reviewId,
             items: extractParamsFromLineItems(line_items),
-            order_number: `${order_number}`,
+            order_number: order_number != null ? `${order_number}` : undefined,
             currency,
         });
     if (templateId === 'merchant-verification')
@@ -127,7 +127,7 @@ const sendEmailMessageToMerchant = async (messageContent: any, templateId: event
             email,
             reviewId,
             items: extractParamsFromLineItems(line_items),
-            order_number: `${order_number}`,
+            order_number: order_number != null ? `${order_number}` : undefined,
             currency,
         });
     if (templateId === 'merchant-deletion')
@@ -136,7 +136,7 @@ const sendEmailMessageToMerchant = async (messageContent: any, templateId: event
             email,
             reviewId,
             items: extractParamsFromLineItems(line_items),
-            order_number: `${order_number}`,
+            order_number: order_number != null ? `${order_number}` : undefined,
             currency,
         });
     if (templateId === 'completed-review')
@@ -145,7 +145,7 @@ const sendEmailMessageToMerchant = async (messageContent: any, templateId: event
             email,
             reviewId,
             items: extractParamsFromLineItems(line_items),
-            order_number: `${order_number}`,
+            order_number: order_number != null ? `${order_number}` : undefined,
             currency,
         });
     if (templateId === 'new-review-merchant')
@@ -154,7 +154,7 @@ const sendEmailMessageToMerchant = async (messageContent: any, templateId: event
             email,
             reviewId,
             items: extractParamsFromLineItems(line_items),
-            order_number: `${order_number}`,
+            order_number: order_number != null ? `${order_number}` : undefined,
             currency,
         });
     if (templateId === 'completed-review-merchant')
@@ -163,7 +163,7 @@ const sendEmailMessageToMerchant = async (messageContent: any, templateId: event
             email,
             reviewId,
             items: extractParamsFromLineItems(line_items),
-            order_number: `${order_number}`,
+            order_number: order_number != null ? `${order_number}` : undefined,
             currency,
         });
 };

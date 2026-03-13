@@ -233,10 +233,7 @@
 
     <!-- Footer -->
     <div class="footer">
-        <% if (typeof order_number === 'undefined') { %>
-            <p></p>
-        <% } %>
-        <% if (order_number && typeof order_number !== 'undefined') { %>
+        <% if (order_number && order_number !== 'undefined') { %>
             <p>Order #<%= order_number %></p>
         <% } %>
         <p>© <%= currentYear %>  Powered by Nudge-nest </p>

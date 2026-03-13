@@ -156,7 +156,7 @@ export async function enrichLineItemsWithImages(
             // Return item with image
             return {
                 ...item,
-                image: imageSrc ? { src: imageSrc } : null,
+                image: imageSrc || null,
             };
         })
     );
