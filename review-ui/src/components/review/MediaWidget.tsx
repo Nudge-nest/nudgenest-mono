@@ -75,7 +75,7 @@ const MediaWidget = memo(() => {
             </header>
 
             <div
-                className="w-full h-fit grid grid-cols-5 gap-1.5 p-2 border-1 border-[color:var(--color-text)] rounded-lg"
+                className="w-full h-fit grid grid-cols-3 sm:grid-cols-4 gap-2 p-2 border border-[color:var(--color-text)] rounded-lg"
                 role="region"
                 aria-label="Media uploads"
                 data-testid="media-container"
@@ -92,7 +92,7 @@ const MediaWidget = memo(() => {
                 {!isCompleted && (
                     <div
                         {...getRootProps()}
-                        className="h-20 max-w-20 w-20 bg-[color:var(--color-main)] rounded-lg flex
+                        className="w-full aspect-square bg-[color:var(--color-main)] rounded-lg flex
                         items-center justify-center cursor-pointer hover:opacity-90 transition-all duration-200 shadow-sm"
                         role="button"
                         tabIndex={0}

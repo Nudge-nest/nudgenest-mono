@@ -20,7 +20,7 @@ export const RatingWithProduct: FC<{ itemName: string; image?: string; productId
             {image && (
                 <img
                     src={image}
-                    className="h-15 w-15 rounded mb-4 block mx-auto object-cover"
+                    className="h-24 w-24 rounded-lg mb-4 block mx-auto object-cover"
                     alt={`Product image for ${itemName}`}
                     loading="lazy"
                     data-testid={`image-${itemName}`}
@@ -51,7 +51,7 @@ const RatingWidget: FC<RatingWidgetProps> = memo(({ product, result, isCompleted
 
     useEffect(() => {
         if (isCompleted && result) {
-            const itemReview = result.find((res) => res.value);
+            const itemReview = result.find((res) => res.id === id);
             if (itemReview) {
                 setSelectedRating(Number(itemReview.value));
             }
