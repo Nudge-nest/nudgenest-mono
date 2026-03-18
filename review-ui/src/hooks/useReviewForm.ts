@@ -138,7 +138,7 @@ export const useReviewForm = (initialData: IReview): UseReviewFormReturn => {
     const addMedia = useCallback((files: IUploadedMediaObject[]) => {
         if (!files || files.length === 0) return;
 
-        const MAX_FILES = 5;
+        const MAX_FILES = 12;
         setMedia((prev) => {
             const newTotal = prev.length + files.length;
             if (newTotal > MAX_FILES) {
