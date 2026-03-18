@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 import Busboy from 'busboy';
 import { Storage } from '@google-cloud/storage';
 import crypto from 'crypto';
+import sharp from 'sharp';
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ interface UploadedFile {
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_FILES_PER_REQUEST = 5;
+const MAX_FILES_PER_REQUEST = 12;
 
 declare module '@hapi/hapi' {
     interface ServerApplicationState {
@@ -112,12 +113,31 @@ const uploadMediaToGCSHandler = async (request: Hapi.Request, h: Hapi.ResponseTo
                     const file = files[i];
                     const timestamp = Date.now();
                     const randomId = crypto.randomBytes(4).toString('hex');
-                    const fileName = `${merchantId}/${timestamp}_${randomId}_${i}.jpg`;
+
+                    const isImage = file.contentType.startsWith('image/');
+                    let uploadBuffer = file.buffer;
+                    let fileName: string;
+                    let uploadContentType = file.contentType;
+
+                    if (isImage) {
+                        // Convert all images to WebP for smaller file sizes
+                        uploadBuffer = await sharp(file.buffer)
+                            .webp({ quality: 85 })
+                            .toBuffer();
+                        fileName = `${merchantId}/${timestamp}_${randomId}_${i}.webp`;
+                        uploadContentType = 'image/webp';
+                    } else {
+                        // Videos pass through unchanged
+                        const ext = file.contentType.split('/')[1] || 'bin';
+                        fileName = `${merchantId}/${timestamp}_${randomId}_${i}.${ext}`;
+                    }
+
+                    console.log(`📦 ${file.filename}: ${file.buffer.length} → ${uploadBuffer.length} bytes (${uploadContentType})`);
 
                     // Upload to GCS
                     const gcsFile = bucket.file(fileName);
-                    await gcsFile.save(file.buffer, {
-                        contentType: file.contentType,
+                    await gcsFile.save(uploadBuffer, {
+                        contentType: uploadContentType,
                         metadata: {
                             cacheControl: 'public, max-age=31536000',
                         },
@@ -130,8 +150,8 @@ const uploadMediaToGCSHandler = async (request: Hapi.Request, h: Hapi.ResponseTo
                         id: crypto.randomUUID(),
                         url: publicUrl,
                         filename: file.filename,
-                        size: file.buffer.length,
-                        type: file.contentType,
+                        size: uploadBuffer.length,
+                        type: uploadContentType,
                     });
                 }
 
