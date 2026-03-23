@@ -158,7 +158,7 @@ const ReviewQrCodeComponent = () => {
 
                         {/* QR Code Preview */}
                         <div className="mt-6 p-6 border border-[color:var(--color-border)] rounded-lg bg-[color:var(--color-lighter)]">
-                            <div className="flex items-start gap-6">
+                            <div className="flex flex-col sm:flex-row items-start gap-6">
                                 <div className="flex-1">
                                     <h3 className="text-[color:var(--color-text)] font-medium text-sm mb-2">QR Code Preview</h3>
                                     <p className="text-[color:var(--color-text)] opacity-75 text-sm">
@@ -184,9 +184,9 @@ const ReviewQrCodeComponent = () => {
                             </div>
 
                             {qrCodeImage && (
-                                <div className="mt-4 flex justify-between items-center gap-3">
+                                <div className="mt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                                     {/* QR Code URL with Copy Button */}
-                                    <div className="flex-1 flex items-center gap-2 bg-[color:var(--color-bg)] px-3 py-2 rounded-md border border-[color:var(--color-border)]">
+                                    <div className="flex-1 min-w-0 flex items-center gap-2 bg-[color:var(--color-bg)] px-3 py-2 rounded-md border border-[color:var(--color-border)]">
                                         <span className="text-[color:var(--color-text)] text-sm truncate flex-1">
                                             {qrCodeUrl}
                                         </span>
@@ -217,7 +217,7 @@ const ReviewQrCodeComponent = () => {
                                             link.href = qrCodeImage;
                                             link.click();
                                         }}
-                                        className="px-4 py-2 bg-[color:var(--color-main)] text-white rounded-md hover:opacity-90 transition-all text-sm font-medium whitespace-nowrap"
+                                        className="w-full sm:w-auto px-4 py-2 bg-[color:var(--color-main)] text-white rounded-md hover:opacity-90 transition-all text-sm font-medium whitespace-nowrap"
                                     >
                                         Download QR Code
                                     </button>
