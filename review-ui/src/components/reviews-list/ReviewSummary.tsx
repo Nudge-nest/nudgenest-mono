@@ -27,6 +27,7 @@ const ReviewSummary: FC<ReviewSummaryProps> = ({ reviews }) => {
                     </button>
                 }
                 width="350px"
+                position="right"
             >
                 <RatingDistribution reviews={reviews} />
             </Dropdown>

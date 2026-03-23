@@ -12,6 +12,9 @@ const StoreReviewPage = lazy(() => import('./pages/StoreReviewPage.tsx'));
 const ReviewConfigsPage = lazy(() => import('./pages/ReviewConfigsPage.tsx'));
 const ReviewsListPage = lazy(() => import('./pages/ReviewsListPage.tsx'));
 const BillingPage = lazy(() => import('./pages/billing/BillingPage.tsx'));
+// DEV-only: Vite drops these chunks from prod builds via dead-code elimination
+const IframePreviewPage = lazy(() => import('./pages/dev/IframePreviewPage.tsx'));
+const ConfigsPreviewPage = lazy(() => import('./pages/dev/ConfigsPreviewPage.tsx'));
 
 //ShopId = MTY3NTgwMjk3MzU0
 //merchantId = 68414ac959456a2575dd1aae
@@ -36,6 +39,8 @@ const App = () => {
                     <Route path="reviews/:shopId" element={<ReviewsListPage />} />
                 </Route>
                 <Route path="/billing" element={<BillingPage />} />
+                <Route path="/dev/preview" element={<IframePreviewPage />} />
+                <Route path="/dev/configs-preview" element={<ConfigsPreviewPage />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
         </Suspense>
