@@ -6,6 +6,7 @@ import { FC } from 'react';
 const Dropdown: FC<DropdownProps> = ({ trigger, children, position = 'left', width = '200px' }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const navRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -27,6 +28,22 @@ const Dropdown: FC<DropdownProps> = ({ trigger, children, position = 'left', wid
                 document.removeEventListener('click', handleClickOutside);
                 document.removeEventListener('keydown', handleEscapeKey);
             };
+        }
+    }, [isOpen]);
+
+    // After the nav renders, nudge it back into the viewport if it overflows either edge
+    useEffect(() => {
+        if (!isOpen || !navRef.current) return;
+        const nav = navRef.current;
+        nav.style.removeProperty('transform');
+        const rect = nav.getBoundingClientRect();
+        const margin = 16; // 1rem breathing room from each edge
+        if (rect.left < margin) {
+            // Overflows left edge — shift right
+            nav.style.transform = `translateX(${margin - rect.left}px)`;
+        } else if (rect.right > window.innerWidth - margin) {
+            // Overflows right edge — shift left
+            nav.style.transform = `translateX(-${rect.right - (window.innerWidth - margin)}px)`;
         }
     }, [isOpen]);
 
@@ -59,12 +76,13 @@ const Dropdown: FC<DropdownProps> = ({ trigger, children, position = 'left', wid
             {isOpen && (
                 <nav
                     id="dropdown-menu"
-                    className={`absolute mt-1 bg-[color:var(--color-white)] border border-[color:var(--color-border)] 
+                    ref={navRef}
+                    className={`absolute mt-1 bg-[color:var(--color-white)] border border-[color:var(--color-border)]
                     rounded shadow-lg z-50 ${
                         position === 'right' ? 'right-0' : 'left-0'
                     }`}
                     data-testid="dropdown-container"
-                    style={{ width }}
+                    style={{ width, maxWidth: 'calc(100vw - 2rem)' }}
                     onClick={(e) => e.stopPropagation()}
                     role="menu"
                     aria-orientation="vertical"

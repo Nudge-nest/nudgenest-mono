@@ -14,23 +14,49 @@ import MediaModal from '../components/reviews-list/MediaModal.tsx';
 import ReviewFormModal from '../components/reviews-list/ReviewFormModal.tsx';
 import { useListReviewsQuery } from '../redux/nudgenest.ts';
 import { useParams } from 'react-router';
-import { useConstrainedView } from '../hooks/useConstrainedView.ts';
-import { IconStar } from '@tabler/icons-react';
+import { IconStar, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+
+/** Returns items-per-page that matches the grid column count at each breakpoint:
+ *  mobile  < 640px  → 1 col  → 1 per page
+ *  tablet  640–1279 → 2 cols → 2 per page
+ *  desktop ≥ 1280px → 4 cols → 4 per page
+ */
+const useItemsPerPage = (): number => {
+    const get = () => {
+        if (window.innerWidth >= 1280) return 4;
+        if (window.innerWidth >= 640) return 2;
+        return 1;
+    };
+    const [itemsPerPage, setItemsPerPage] = useState<number>(get);
+
+    useEffect(() => {
+        const handleResize = () => setItemsPerPage(get());
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    return itemsPerPage;
+};
 
 const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp }) => {
     const { shopId } = useParams<{ shopId: string }>();
     const [reviews, setReviews] = useState<IReview[]>([]);
     const [currentSort, setCurrentSort] = useState<SortType>('newest');
+    const [currentPage, setCurrentPage] = useState(1);
     const [mediaModalOpen, setMediaModalOpen] = useState(false);
     const [reviewFormOpen, setReviewFormOpen] = useState(false);
     const [selectedMedia, setSelectedMedia] = useState<IUploadedMediaObject[]>([]);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
+    const itemsPerPage = useItemsPerPage();
+    const totalPages = Math.max(1, Math.ceil(reviews.length / itemsPerPage));
+    const paginatedReviews = reviews.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage,
+    );
+
     const { data: reviewsData, isError, isFetching } = useListReviewsQuery(shopId ?? '');
     const merchantId = merchantIdProp ?? reviewsData?.[0]?.merchantId;
-
-    // Auto-detect if we're in an iframe (Shopify embedding)
-    const isIframe = useConstrainedView();
 
     const sortReviews = useCallback((reviewsToSort: IReview[], sortType: SortType): IReview[] => {
         const sorted = [...reviewsToSort];
@@ -60,13 +86,16 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp 
         }
     }, []);
 
-
     useEffect(() => {
         if (!isFetching && !isError && reviews.length === 0 && reviewsData) {
-            // Sort by newest first (default sort)
             setReviews(sortReviews(reviewsData, 'newest'));
         }
     }, [isFetching, isError, reviews, reviewsData, setReviews, sortReviews]);
+
+    // Reset to page 1 when sort order or viewport breakpoint changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [currentSort, itemsPerPage]);
 
     // Report page height to Shopify parent when embedded in iframe
     useEffect(() => {
@@ -124,10 +153,10 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp 
 
                 <section className="w-full" aria-label="Loading reviews" role="status">
                     <div
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
                         data-testid="reviews-skeleton-grid"
                     >
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                        {[1, 2, 3, 4].map((i) => (
                             <ReviewItemSkeleton key={i} />
                         ))}
                     </div>
@@ -209,7 +238,6 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp 
                 paddingRight: 'max(1rem, env(safe-area-inset-right))'
             }}
         >
-
             <header
                 className="flex flex-col md:flex-row md:justify-between mb-8 gap-4"
                 data-testid="reviews-header"
@@ -227,64 +255,66 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp 
                 aria-label="Reviews list"
                 data-testid="reviews-container"
             >
-                {isIframe ? (
-                    /* Horizontal scroll mode for iframe (Shopify) */
-                    <div className="relative">
-                        {/* Review count indicator */}
-                        <div className="mb-4 text-sm text-[color:var(--color-text)] opacity-75">
-                            Showing {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
-                        </div>
-
-                        {/* Horizontal scrollable container */}
-                        <div
-                            className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth
-                            scrollbar-thin scrollbar-thumb-[color:var(--color-main)] scrollbar-track-gray-200"
-                            role="list"
-                            aria-label={`${reviews.length} customer reviews`}
-                            data-testid="reviews-horizontal-scroll"
-                            style={{
-                                scrollbarWidth: 'thin',
-                                scrollbarColor: 'var(--color-main) #e5e7eb'
-                            }}
+                <div
+                    className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
+                    role="list"
+                    aria-label={`${reviews.length} customer reviews`}
+                    data-testid="reviews-grid-container"
+                >
+                    {paginatedReviews.map((review, index) => (
+                        <article
+                            key={review.id || review.createdAt}
+                            role="listitem"
+                            aria-label={`Review ${(currentPage - 1) * itemsPerPage + index + 1} of ${reviews.length}`}
+                            data-testid={`review-item-${index}`}
                         >
-                            {reviews.map((review, index) => (
-                                <article
-                                    key={review.id || review.createdAt}
-                                    className="flex-shrink-0 w-80 snap-start"
-                                    role="listitem"
-                                    aria-label={`Review ${index + 1} of ${reviews.length}`}
-                                    data-testid={`review-item-${index}`}
-                                >
-                                    <ReviewItem
-                                        review={review}
-                                        onMediaClick={handleMediaClick}
-                                    />
-                                </article>
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    /* Grid mode for standalone/larger views */
-                    <div
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-                        role="list"
-                        aria-label={`${reviews.length} customer reviews`}
-                        data-testid="reviews-grid-container"
+                            <ReviewItem
+                                review={review}
+                                onMediaClick={handleMediaClick}
+                            />
+                        </article>
+                    ))}
+                </div>
+
+                {/* Pagination controls */}
+                {totalPages > 1 && (
+                    <nav
+                        className="flex items-center justify-center gap-3 mt-8"
+                        aria-label="Reviews pagination"
+                        data-testid="pagination-controls"
                     >
-                        {reviews.map((review, index) => (
-                            <article
-                                key={review.id || review.createdAt}
-                                role="listitem"
-                                aria-label={`Review ${index + 1} of ${reviews.length}`}
-                                data-testid={`review-item-${index}`}
-                            >
-                                <ReviewItem
-                                    review={review}
-                                    onMediaClick={handleMediaClick}
-                                />
-                            </article>
-                        ))}
-                    </div>
+                        <button
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="flex items-center justify-center w-10 h-10 rounded-lg border
+                                border-[color:var(--color-border)] text-[color:var(--color-text)]
+                                hover:bg-[color:var(--color-main-light)] transition-colors
+                                disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                            aria-label="Previous page"
+                        >
+                            <IconChevronLeft size={18} />
+                        </button>
+
+                        <span
+                            className="text-sm text-[color:var(--color-text)] min-w-[6rem] text-center"
+                            aria-live="polite"
+                            aria-atomic="true"
+                        >
+                            {currentPage} of {totalPages}
+                        </span>
+
+                        <button
+                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="flex items-center justify-center w-10 h-10 rounded-lg border
+                                border-[color:var(--color-border)] text-[color:var(--color-text)]
+                                hover:bg-[color:var(--color-main-light)] transition-colors
+                                disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                            aria-label="Next page"
+                        >
+                            <IconChevronRight size={18} />
+                        </button>
+                    </nav>
                 )}
             </section>
 

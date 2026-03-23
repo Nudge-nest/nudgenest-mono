@@ -29,13 +29,14 @@ const Tabs: React.FC<TabsProps> = ({
 }) => {
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
 
+    const activeTabItem = tabs.find((tab) => tab.id === activeTab);
+    const activeContent = activeTabItem?.content;
+
     const handleTabClick = (tabId: string, disabled?: boolean) => {
         if (disabled) return;
         setActiveTab(tabId);
         onTabChange?.(tabId);
     };
-
-    const activeContent = tabs.find((tab) => tab.id === activeTab)?.content;
 
     // Size variants
     const sizeClasses = {
@@ -74,21 +75,24 @@ const Tabs: React.FC<TabsProps> = ({
     };
 
     const containerClasses = orientation === 'vertical' ? 'flex gap-6' : 'flex flex-col';
-
-    const tabListClasses =
-        orientation === 'vertical' ? 'flex flex-col gap-2 min-w-[200px]' : 'flex gap-2 border-b border-gray-200 mb-6';
-
     const contentClasses = orientation === 'vertical' ? 'flex-1 pl-6 border-l border-gray-200' : 'min-h-[200px]';
 
     return (
         <div className={`w-full ${containerClasses} ${className}`}>
-            {/* Tab List */}
-            <div className={tabListClasses}>
+
+                {/* Tab row — vertical stack on mobile, horizontal row on sm+ */}
+            <div
+                className={
+                    orientation === 'vertical'
+                        ? 'flex flex-col gap-2 min-w-[200px]'
+                        : 'flex flex-col lg:flex-row gap-2 border-b border-[color:var(--color-border)] mb-6'
+                }
+            >
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => handleTabClick(tab.id, tab.disabled)}
-                        className={getTabClasses(tab, activeTab === tab.id)}
+                        className={`w-full lg:w-auto flex-shrink-0 whitespace-nowrap ${getTabClasses(tab, activeTab === tab.id)}`}
                         disabled={tab.disabled}
                         role="tab"
                         aria-selected={activeTab === tab.id}
@@ -103,7 +107,12 @@ const Tabs: React.FC<TabsProps> = ({
             </div>
 
             {/* Tab Content */}
-            <div className={contentClasses} role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={activeTab}>
+            <div
+                className={contentClasses}
+                role="tabpanel"
+                id={`panel-${activeTab}`}
+                aria-labelledby={activeTab}
+            >
                 <div className="animate-fadeIn">{activeContent}</div>
             </div>
         </div>
