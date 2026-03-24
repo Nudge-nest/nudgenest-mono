@@ -71,6 +71,12 @@ const createReview = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
             }).code(400);
         }
 
+        // Resolve auto-publish when review is created as Completed (e.g. store reviews)
+        let published = false;
+        if (reviewData.status === 'Completed' && reviewData.result) {
+            published = await resolvePublished(prisma, reviewData.merchantId, reviewData.result);
+        }
+
         // Create the review
         const newReview = await prisma.reviews.create({
             data: {
@@ -86,6 +92,7 @@ const createReview = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
                 replies: reviewData.replies || null,
                 status: reviewData.status,
                 merchantApiKey: reviewData.merchantApiKey || null,
+                published,
             },
         });
 
@@ -140,6 +147,19 @@ const getAverageRating = (result: any[]): number => {
     return Math.floor(ratings.reduce((sum, v) => sum + v, 0) / ratings.length);
 };
 
+// Shared auto-publish resolution — used by both create and update paths
+const resolvePublished = async (prisma: any, merchantId: string, result: any[]): Promise<boolean> => {
+    const config = await prisma.configurations.findFirst({
+        where: { merchantId },
+        select: { publish: true },
+    });
+    const publishField = config?.publish?.find((f: any) => f.key === 'autoPublish');
+    const autoPublishValue = publishField?.value ?? 'THREESTARS';
+    const minRating = AUTO_PUBLISH_THRESHOLDS[autoPublishValue] ?? 3;
+    const avgRating = getAverageRating(Array.isArray(result) ? result : []);
+    return avgRating >= minRating;
+};
+
 const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const { reviewId } = request.params;
     const reviewUpdate = request.payload as any;
@@ -157,22 +177,9 @@ const updateReviewById = async (request: Hapi.Request, h: Hapi.ResponseToolkit) 
             });
 
             if (existingReview) {
-                const config = await prisma.configurations.findFirst({
-                    where: { merchantId: existingReview.merchantId },
-                    select: { publish: true },
-                });
-
-                const publishField = config?.publish?.find((f: any) => f.key === 'autoPublish');
-                const autoPublishValue = publishField?.value ?? 'THREESTARS';
-                const minRating = AUTO_PUBLISH_THRESHOLDS[autoPublishValue] ?? 3;
-                const avgRating = getAverageRating(
-                    Array.isArray(reviewUpdate.result) ? reviewUpdate.result : []
-                );
-
-                reviewUpdate.published = avgRating >= minRating;
-
+                reviewUpdate.published = await resolvePublished(prisma, existingReview.merchantId, reviewUpdate.result);
                 request.logger.info(
-                    { reviewId, avgRating, minRating, autoPublishValue, published: reviewUpdate.published },
+                    { reviewId, published: reviewUpdate.published },
                     'Auto-publish decision'
                 );
             }
