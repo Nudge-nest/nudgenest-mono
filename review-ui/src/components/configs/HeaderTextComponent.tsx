@@ -4,6 +4,7 @@ import { useReviewConfig } from '../../contexts/ReviewConfigContext.tsx';
 interface IHeaderTextComponentProps {
     title?: string;
     subTitle?: string;
+    hideSaveButton?: boolean;
 }
 
 const disabledStyle = `px-6 py-3 cursor-wait bg-[color:var(--color-disabled)] hover:bg-[color:var(--color-disabled)]
@@ -11,7 +12,7 @@ const disabledStyle = `px-6 py-3 cursor-wait bg-[color:var(--color-disabled)] ho
 const activeStyle = `px-6 py-3 cursor-pointer bg-[color:var(--color-main)] hover:bg-[color:var(--color-main)]
                     text-[color:var(--color-white)] font-medium rounded-lg transition-colors focus:outline-none focus:none`;
 
-export const HeaderTextComponent: FC<IHeaderTextComponentProps> = ({ title, subTitle }) => {
+export const HeaderTextComponent: FC<IHeaderTextComponentProps> = ({ title, subTitle, hideSaveButton = false }) => {
     const { reviewConfigFormHoook } = useReviewConfig();
 
     return (
@@ -41,7 +42,7 @@ export const HeaderTextComponent: FC<IHeaderTextComponentProps> = ({ title, subT
             </header>
 
             {/* Save Button + feedback */}
-            <div className="mt-8 flex flex-col items-end gap-2">
+            {!hideSaveButton && <div className="mt-8 flex flex-col items-end gap-2">
                 <button
                     onClick={reviewConfigFormHoook.handleUpdateReviewConfig}
                     className={reviewConfigFormHoook.isEditing && !reviewConfigFormHoook.isSubmitting ? activeStyle : disabledStyle}
@@ -73,7 +74,7 @@ export const HeaderTextComponent: FC<IHeaderTextComponentProps> = ({ title, subT
                         {reviewConfigFormHoook.error}
                     </p>
                 )}
-            </div>
+            </div>}
 
             {/* Screen reader announcement for save state */}
             <div

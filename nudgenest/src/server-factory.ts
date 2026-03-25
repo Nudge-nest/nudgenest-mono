@@ -19,6 +19,7 @@ import reviewStatsPlugin from './plugins/reviewStats';
 import reminderSchedulerPlugin from './plugins/reminderScheduler';
 import gdprPlugin from './plugins/gdpr';
 import sentryTestPlugin from './plugins/sentryTest';
+import importExportPlugin from './plugins/importExport';
 
 dotenv.config();
 
@@ -31,7 +32,7 @@ export const createServer = async () => {
             log: { collect: true },
             cors: {
                 origin: ['*'],
-                credentials: true,
+                credentials: false,
                 additionalHeaders: ['x-api-key'],
                 additionalExposedHeaders: ['x-api-key'],
             },
@@ -55,6 +56,7 @@ export const createServer = async () => {
         reminderSchedulerPlugin,
         gdprPlugin,
         sentryTestPlugin,
+        importExportPlugin,
     ]);
 
     if (process.env.SENTRY_BACKEND_DSN) {

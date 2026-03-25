@@ -147,7 +147,7 @@ const ReviewQrCodeComponent = () => {
 
     return (
         <div>
-            <HeaderTextComponent title="QR Code" subTitle="Configure QR code for live store reviews" />
+            <HeaderTextComponent title="QR Code" subTitle="Configure QR code for live store reviews" hideSaveButton />
 
             <ColumnHeaderComponent columns={['Setting', 'Value', 'Description']} />
 
