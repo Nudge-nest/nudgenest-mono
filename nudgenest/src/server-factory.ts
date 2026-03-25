@@ -32,7 +32,7 @@ export const createServer = async () => {
             log: { collect: true },
             cors: {
                 origin: ['*'],
-                credentials: true,
+                credentials: false,
                 additionalHeaders: ['x-api-key'],
                 additionalExposedHeaders: ['x-api-key'],
             },

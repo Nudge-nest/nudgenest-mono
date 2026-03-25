@@ -28,6 +28,7 @@ const ReviewImportExportComponent = () => {
     const [allRows, setAllRows] = useState<Record<string, string>[]>([]);
     const [result, setResult] = useState<{ imported: number; skipped: number } | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [dropError, setDropError] = useState<string | null>(null);
     const [isExporting, setIsExporting] = useState(false);
 
     // ── Export ───────────────────────────────────────────────
@@ -36,7 +37,7 @@ const ReviewImportExportComponent = () => {
         setIsExporting(true);
         try {
             const apiKey = localStorage.getItem('nn-apiKey') || '';
-            const baseUrl = import.meta.env.VITE_APP_BACKEND_HOST_LOCAL;
+            const baseUrl = import.meta.env.VITE_APP_BACKEND_HOST_LOCAL || import.meta.env.VITE_APP_BACKEND_HOST;
 
             const res = await fetch(`${baseUrl}reviews/export?merchantId=${merchantId}`, {
                 headers: { 'x-api-key': apiKey },
@@ -80,9 +81,19 @@ const ReviewImportExportComponent = () => {
         }
     }, [merchantId, importPreview]);
 
+    const onDropRejected = useCallback((rejectedFiles: any[]) => {
+        const isSizeError = rejectedFiles.some(f =>
+            f.errors?.some((e: any) => e.code === 'file-too-large')
+        );
+        setDropError(isSizeError ? 'File exceeds 5MB limit.' : 'Only CSV files are accepted.');
+        setTimeout(() => setDropError(null), 3000);
+    }, []);
+
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
+        onDropRejected,
         accept: { 'text/csv': ['.csv'], 'application/vnd.ms-excel': ['.csv'] },
+        maxSize: 5 * 1024 * 1024,
         multiple: false,
         noClick: false,
     });
@@ -114,7 +125,7 @@ const ReviewImportExportComponent = () => {
     // ── Render ───────────────────────────────────────────────
     return (
         <div className="w-full space-y-6">
-            <HeaderTextComponent title="Import / Export Reviews" />
+            <HeaderTextComponent title="Import / Export Reviews" hideSaveButton />
 
             {error && (
                 <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -152,7 +163,7 @@ const ReviewImportExportComponent = () => {
                             Import Reviews
                         </div>
                         <p className="text-sm text-[color:var(--color-disabled)]">
-                            Accepts CSV from Judge.me, Yotpo, Stamped.io, or any review platform.
+                            Accepts CSV from Judge.me, Yotpo, Loox, Stamped.io, or any review platform.
                         </p>
                         <div
                             {...getRootProps()}
@@ -167,12 +178,19 @@ const ReviewImportExportComponent = () => {
                             <input {...getInputProps()} />
                             {view === 'loading' ? (
                                 <p className="text-sm text-[color:var(--color-disabled)]">Processing CSV…</p>
+                            ) : dropError ? (
+                                <p className="text-sm text-red-500">{dropError}</p>
                             ) : isDragActive ? (
                                 <p className="text-sm text-[color:var(--color-main)]">Drop the CSV here</p>
                             ) : (
-                                <p className="text-sm text-[color:var(--color-disabled)]">
-                                    Drop a CSV file here, or click to select
-                                </p>
+                                <>
+                                    <p className="text-sm text-[color:var(--color-disabled)]">
+                                        Drop a CSV file here, or click to select
+                                    </p>
+                                    <p className="text-xs text-[color:var(--color-disabled)] mt-1">
+                                        CSV only · max 5MB
+                                    </p>
+                                </>
                             )}
                         </div>
                     </div>
