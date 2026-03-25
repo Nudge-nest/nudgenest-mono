@@ -40,7 +40,7 @@ const ReviewImportExportComponent = () => {
                 ? import.meta.env.VITE_APP_BACKEND_HOST
                 : import.meta.env.VITE_APP_BACKEND_HOST_LOCAL;
 
-            const res = await fetch(`${baseUrl}api/v1/reviews/export?merchantId=${merchantId}`, {
+            const res = await fetch(`${baseUrl}reviews/export?merchantId=${merchantId}`, {
                 headers: { 'x-api-key': apiKey },
             });
 

@@ -166,7 +166,7 @@ export const nudgeNestApi = createApi({
                 FormData
             >({
                 query: (formData) => ({
-                    url: 'api/v1/reviews/import/preview',
+                    url: 'reviews/import/preview',
                     method: 'POST',
                     body: formData,
                 }),
@@ -176,7 +176,7 @@ export const nudgeNestApi = createApi({
                 { merchantId: string; mapping: Record<string, string>; rows: Record<string, string>[] }
             >({
                 query: (payload) => ({
-                    url: 'api/v1/reviews/import/confirm',
+                    url: 'reviews/import/confirm',
                     method: 'POST',
                     body: payload,
                 }),
