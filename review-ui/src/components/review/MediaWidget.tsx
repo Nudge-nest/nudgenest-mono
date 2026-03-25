@@ -38,19 +38,27 @@ const MediaWidget = memo(() => {
         [reviewFormHook, reviewId, merchantId, uploadReviewMedia]
     );
 
-    const onDropRejected = useCallback(() => {
-        setRejectionError('Only images and videos are accepted.');
+    const onDropRejected = useCallback((rejectedFiles: any[]) => {
+        const isSizeError = rejectedFiles.some(f =>
+            f.errors?.some((e: any) => e.code === 'file-too-large')
+        );
+        setRejectionError(isSizeError
+            ? 'File exceeds 10MB limit. Please choose a smaller file.'
+            : 'Only images and videos are accepted.'
+        );
         setTimeout(() => setRejectionError(null), 3000);
     }, []);
 
-    const { getRootProps, getInputProps } = useDropzone({
+    const { getRootProps, getInputProps, open } = useDropzone({
         onDrop,
         onDropRejected,
         accept: {
             'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'],
             'video/*': ['.mp4', '.mov', '.webm', '.ogg', '.avi', '.mkv']
         },
-        multiple: true
+        maxSize: 10 * 1024 * 1024,
+        multiple: true,
+        noClick: true,
     });
 
     const isCompleted = review?.status === 'Completed' || reviewStatus === 'Completed';
@@ -81,11 +89,14 @@ const MediaWidget = memo(() => {
             </header>
 
             <div
+                {...(!isCompleted ? getRootProps() : {})}
                 className="w-full h-fit grid grid-cols-3 sm:grid-cols-4 gap-2 p-2 border border-[color:var(--color-text)] rounded-lg"
                 role="region"
                 aria-label="Media uploads"
                 data-testid="media-container"
             >
+                {!isCompleted && <input {...getInputProps()} aria-label="File input for media upload" data-testid="file-input" />}
+
                 {reviewFormHook.media.map((media: IUploadedMediaObject, idx: number) => (
                     <PreviewComponent
                         media={media}
@@ -97,7 +108,7 @@ const MediaWidget = memo(() => {
 
                 {!isCompleted && (
                     <div
-                        {...getRootProps()}
+                        onClick={open}
                         className="w-full aspect-square bg-[color:var(--color-main)] rounded-lg flex
                         items-center justify-center cursor-pointer hover:opacity-90 transition-all duration-200 shadow-sm"
                         role="button"
@@ -106,11 +117,6 @@ const MediaWidget = memo(() => {
                         aria-describedby="upload-instructions"
                         data-testid="upload-button"
                     >
-                        <input
-                            {...getInputProps()}
-                            aria-label="File input for media upload"
-                            data-testid="file-input"
-                        />
                         <IconPlus aria-hidden="true" className="text-white" stroke={2.5} size={32} />
                         <span id="upload-instructions" className="sr-only">
                             Click to select files or drag and drop images and videos here
