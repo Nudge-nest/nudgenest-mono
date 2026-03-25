@@ -41,7 +41,7 @@ describe('ReviewFormModal', () => {
         act(() => {
             window.dispatchEvent(new MessageEvent('message', {
                 data: { type: 'review_submitted' },
-                origin: 'http://localhost:3001',
+                origin: window.location.origin,
             }));
         });
 
@@ -55,7 +55,7 @@ describe('ReviewFormModal', () => {
         act(() => {
             window.dispatchEvent(new MessageEvent('message', {
                 data: { type: 'form_closed' },
-                origin: 'http://localhost:3001',
+                origin: window.location.origin,
             }));
         });
 
