@@ -16,6 +16,13 @@ const ReviewPage = () => {
         return sliderHook.instanceRef.current?.track.details.slides.length || 3; // Default to 3 slides
     }, [sliderHook.loaded]); // Depend on loaded state, not ref
 
+    // True when every product has been given a star rating
+    const allRated = useMemo(() => {
+        return items.length > 0 &&
+            reviewFormHook.ratings.length === items.length &&
+            reviewFormHook.ratings.every((r: IReviewResult) => (r.value || 0) >= 1);
+    }, [items, reviewFormHook.ratings]);
+
     // Update state when review changes
     useEffect(() => {
         if (review) {
@@ -36,6 +43,14 @@ const ReviewPage = () => {
     const navigateToSlide = useCallback((idx: number) => {
         sliderHook.instanceRef.current?.moveToIdx(idx);
     }, []); // Refs don't need to be in dependencies
+
+    // Auto-advance from rating slide once all products are rated
+    useEffect(() => {
+        if (allRated && sliderHook.currentSlide === 0) {
+            const timer = setTimeout(() => navigateToSlide(1), 600);
+            return () => clearTimeout(timer);
+        }
+    }, [allRated, sliderHook.currentSlide]);
 
     // Get slide label for accessibility
     const getSlideLabel = useCallback((index: number): string => {
@@ -207,6 +222,11 @@ const ReviewPage = () => {
                     aria-label="Review sections navigation"
                     data-testid="slider-navigation"
                 >
+                    {/* Visible step counter */}
+                    <p className="text-center text-xs text-[color:var(--color-disabled)] mb-2">
+                        Step {sliderHook.currentSlide + 1} of {slideCount}
+                    </p>
+
                     <ul className="dots flex justify-center gap-2 list-none">
                         {[...Array(slideCount).keys()].map((idx) => {
                             const isCurrent = idx === sliderHook.currentSlide;
@@ -242,6 +262,25 @@ const ReviewPage = () => {
                             );
                         })}
                     </ul>
+
+                    {/* Next button — shown on rating and media slides */}
+                    {sliderHook.currentSlide < slideCount - 1 && (
+                        <div className="mt-3 flex justify-center">
+                            <button
+                                onClick={() => navigateToSlide(sliderHook.currentSlide + 1)}
+                                disabled={sliderHook.currentSlide === 0 && !allRated}
+                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200
+                                    ${sliderHook.currentSlide === 0 && !allRated
+                                        ? 'bg-[color:var(--color-disabled)] text-white opacity-50 cursor-not-allowed'
+                                        : 'bg-[color:var(--color-main)] text-white hover:opacity-90'
+                                    }`}
+                                aria-label={sliderHook.currentSlide === 0 ? 'Next: Upload media' : 'Next: Add comment'}
+                                data-testid="next-button"
+                            >
+                                Next →
+                            </button>
+                        </div>
+                    )}
 
                     {/* Progress indicator for screen readers */}
                     <div
