@@ -14,6 +14,7 @@ const MediaWidget = memo(() => {
 
     const onDrop = useCallback(
         async (acceptedFiles: File[]) => {
+            if (acceptedFiles.length === 0) return;
             if (reviewId === 'demo') {
                 reviewFormHook.addMedia([
                     {
