@@ -114,7 +114,7 @@ const ReviewPage = () => {
 
     return (
         <div
-            className="h-screen px-4 text-center grid grid-rows-[95%_auto] safe-area-inset"
+            className="h-screen px-4 text-center grid grid-rows-[1fr_auto] safe-area-inset"
             data-testid="review-page"
             style={{
                 paddingTop: 'max(1rem, env(safe-area-inset-top))',
