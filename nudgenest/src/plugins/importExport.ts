@@ -32,12 +32,20 @@ const exportReviews = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => 
         rows.push(headers);
 
         for (const review of reviews) {
-            const result: any[] = Array.isArray(review.result) ? review.result : [];
-            const ratings = result.map((r: any) => Number(r.value)).filter((v: number) => !isNaN(v) && v > 0);
+            const result: any[] = Array.isArray(review.result) ? (review.result as any[]) : [];
+            const ratings = result.map((r: any) => Number(r?.value)).filter((v: number) => !isNaN(v) && v > 0);
             const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((s: number, v: number) => s + v, 0) / ratings.length) : '';
-            const comment = result.map((r: any) => r.comment).filter(Boolean).join(' | ');
-            const items: any[] = Array.isArray(review.items) ? review.items : [];
+            const comment = result.map((r: any) => r?.comment).filter(Boolean).join(' | ');
+            const items: any[] = Array.isArray(review.items) ? (review.items as any[]) : [];
             const productName = items[0]?.name || '';
+            let createdAtStr = '';
+            try {
+                if (review.createdAt) {
+                    createdAtStr = new Date(review.createdAt as any).toISOString();
+                }
+            } catch {
+                createdAtStr = String(review.createdAt);
+            }
 
             rows.push([
                 review.id,
@@ -49,7 +57,7 @@ const exportReviews = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => 
                 review.status || '',
                 String(review.published ?? false),
                 String(review.verified ?? false),
-                review.createdAt ? review.createdAt.toISOString() : '',
+                createdAtStr,
             ]);
         }
 
