@@ -30,6 +30,9 @@ const secrets = {
     // source-map upload credentials — not required for error reporting (DSNs above
     // handle that). Add via `pulumi config set --secret` when source map upload is needed.
 
+    // AI Features
+    ANTHROPIC_API_KEY: config.get("BACKEND_ANTHROPIC_API_KEY"),
+
     // Deprecated - kept for backward compatibility during migration
     // RABBITMQ_URL_AWS: Migrated to Pub/Sub
     // SENDGRID_API_KEY: Migrated to Resend
@@ -238,6 +241,7 @@ const monorepo_connection_repo = new gcp.cloudbuildv2.Repository('monorepo-conne
 const backend_connection_trigger = new gcp.cloudbuild.Trigger("backend_build_trigger", {
     location: config.get("region"),
     name: 'nudgenest-backend-trigger',
+    description: "Deploys Hapi.js backend (Cloud Run) on push to test branch",
     filename: "nudgenest/cloudbuild.yaml", // Path in monorepo
     project: "nudgenest",
     repositoryEventConfig: {
@@ -254,6 +258,7 @@ const backend_connection_trigger = new gcp.cloudbuild.Trigger("backend_build_tri
 const fe_connection_trigger = new gcp.cloudbuild.Trigger("frontend_build_trigger", {
     location: config.get("region"),
     name: 'nudgenest-fe-trigger',
+    description: "Deploys Review UI (React/Vite, Cloud Run) on push to test branch",
     filename: "review-ui/cloudbuild.yaml", // Path in monorepo
     project: "nudgenest",
     repositoryEventConfig: {
@@ -270,6 +275,7 @@ const fe_connection_trigger = new gcp.cloudbuild.Trigger("frontend_build_trigger
 const landing_connection_trigger = new gcp.cloudbuild.Trigger("landing_build_trigger", {
     location: config.get("region"),
     name: 'nudgenest-landing-trigger',
+    description: "Deploys landing page (nginx static, Cloud Run) on push to test branch",
     filename: "nudge-nest-landing/cloudbuild.yaml", // Path in monorepo
     project: "nudgenest",
     repositoryEventConfig: {
