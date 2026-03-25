@@ -72,6 +72,12 @@ const MediaWidget = memo(() => {
                 <p className="font-normal text-base" data-testid="media-widget-subtitle">
                     Snap it, share it, show it off!
                 </p>
+                <p className="text-xs text-[color:var(--color-disabled)] mt-1">
+                    Uploading is optional — tap Next to skip
+                </p>
+                <p className="text-xs text-[color:var(--color-disabled)]">
+                    Max 12 files · 10MB per file
+                </p>
             </header>
 
             <div
