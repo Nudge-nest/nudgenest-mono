@@ -1,4 +1,4 @@
-import { IconAbc, IconCalendarBolt, IconCalendarTime, IconMailCode, IconQrcode, IconUserScreen } from '@tabler/icons-react';
+import { IconAbc, IconCalendarBolt, IconCalendarTime, IconFileImport, IconMailCode, IconQrcode, IconUserScreen } from '@tabler/icons-react';
 import Tabs from '../components/TabComponent';
 import { useMemo } from 'react';
 import { useReviewConfig } from '../contexts/ReviewConfigContext.tsx';
@@ -8,6 +8,7 @@ import ReviewEmailReminderComponent from '../components/configs/ReviewEmailRemin
 import ReviewEmailScheduleComponent from '../components/configs/ReviewEmailScheduleComponent.tsx';
 import ReviewQrCodeComponent from '../components/configs/ReviewQrCodeComponent.tsx';
 import ReviewGeneralSettingsComponent from '../components/configs/ReviewGeneralSettingsComponent.tsx';
+import ReviewImportExportComponent from '../components/configs/ReviewImportExportComponent.tsx';
 
 const ReviewConfigsPage = () => {
     const { reviewConfigFormHoook } = useReviewConfig();
@@ -55,6 +56,13 @@ const ReviewConfigsPage = () => {
                 icon: <IconAbc />, // optional
                 disabled: false, // optional
                 content: <ReviewGeneralSettingsComponent />,
+            },
+            {
+                id: 'import-export',
+                label: 'Import / Export',
+                icon: <IconFileImport />, // optional
+                disabled: false, // optional
+                content: <ReviewImportExportComponent />,
             },
         ];
     }, [reviewConfigFormHoook.reviewConfigs]);

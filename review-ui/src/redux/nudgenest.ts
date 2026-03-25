@@ -160,6 +160,28 @@ export const nudgeNestApi = createApi({
                 transformResponse: (response: { data: any }) => response.data,
                 providesTags: ['billing'],
             }),
+            // Import / Export endpoints
+            importReviewsPreview: builder.mutation<
+                { mapping: Record<string, string>; preview: Record<string, string>[]; allRows: Record<string, string>[] },
+                FormData
+            >({
+                query: (formData) => ({
+                    url: 'api/v1/reviews/import/preview',
+                    method: 'POST',
+                    body: formData,
+                }),
+            }),
+            importReviewsConfirm: builder.mutation<
+                { imported: number; skipped: number },
+                { merchantId: string; mapping: Record<string, string>; rows: Record<string, string>[] }
+            >({
+                query: (payload) => ({
+                    url: 'api/v1/reviews/import/confirm',
+                    method: 'POST',
+                    body: payload,
+                }),
+                invalidatesTags: ['review'],
+            }),
         };
     },
 });
@@ -180,6 +202,8 @@ export const {
     useChangeSubscriptionMutation,
     useCancelSubscriptionMutation,
     useGetUsageStatsQuery,
+    useImportReviewsPreviewMutation,
+    useImportReviewsConfirmMutation,
 } = nudgeNestApi;
 
 export const { endpoints, reducerPath, reducer, middleware } = nudgeNestApi;
