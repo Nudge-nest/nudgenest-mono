@@ -36,9 +36,7 @@ const ReviewImportExportComponent = () => {
         setIsExporting(true);
         try {
             const apiKey = localStorage.getItem('nn-apiKey') || '';
-            const baseUrl = import.meta.env.PROD
-                ? import.meta.env.VITE_APP_BACKEND_HOST
-                : import.meta.env.VITE_APP_BACKEND_HOST_LOCAL;
+            const baseUrl = import.meta.env.VITE_APP_BACKEND_HOST;
 
             const res = await fetch(`${baseUrl}reviews/export?merchantId=${merchantId}`, {
                 headers: { 'x-api-key': apiKey },
