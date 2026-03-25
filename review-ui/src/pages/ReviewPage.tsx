@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useReview } from '../contexts/ReviewContext';
 import Loading from '../components/Loading.tsx';
 import { IReviewItem, IReviewResult } from '../types/review.ts';
@@ -44,10 +44,14 @@ const ReviewPage = () => {
         sliderHook.instanceRef.current?.moveToIdx(idx);
     }, []); // Refs don't need to be in dependencies
 
-    // Auto-advance from rating slide once all products are rated
+    // Auto-advance from rating slide once all products are rated — fires only once
+    const hasAutoAdvanced = useRef(false);
     useEffect(() => {
-        if (allRated && sliderHook.currentSlide === 0) {
-            const timer = setTimeout(() => navigateToSlide(1), 600);
+        if (allRated && sliderHook.currentSlide === 0 && !hasAutoAdvanced.current) {
+            const timer = setTimeout(() => {
+                hasAutoAdvanced.current = true;
+                navigateToSlide(1);
+            }, 600);
             return () => clearTimeout(timer);
         }
     }, [allRated, sliderHook.currentSlide]);
