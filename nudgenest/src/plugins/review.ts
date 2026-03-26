@@ -242,7 +242,17 @@ const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseTo
         // Build where clause to support filtering by either shopId or merchantId
         const whereClause: any = {};
         if (shopid) {
-            whereClause.shopId = shopid as string;
+            // Resolve to the current active merchant for this shopId so that reviews
+            // from a previous (deleted/uninstalled) merchant registration never surface
+            // in the public storefront widget.
+            const merchant = await prisma.merchants.findFirst({
+                where: { shopId: shopid as string, deleted: { not: true } },
+                select: { id: true },
+            });
+            if (!merchant) {
+                return h.response({ version: '1.0.0', data: [] }).code(200);
+            }
+            whereClause.merchantId = merchant.id;
         } else if (merchantid) {
             whereClause.merchantId = merchantid as string;
         } else {
