@@ -12,6 +12,22 @@ declare module '@hapi/hapi' {
 
 const NUDGENEST_FIELDS = ['customerName', 'customerEmail', 'rating', 'comment', 'productName', 'createdAt', 'published'];
 
+const AUTO_PUBLISH_THRESHOLDS: Record<string, number> = {
+    THREESTARS: 3,
+    FOURSTARS: 4,
+    FIVESTARS: 5,
+};
+
+const resolveMinRating = async (prisma: any, merchantId: string): Promise<number> => {
+    const config = await prisma.configurations.findFirst({
+        where: { merchantId },
+        select: { publish: true },
+    });
+    const publishField = config?.publish?.find((f: any) => f.key === 'autoPublish');
+    const autoPublishValue = publishField?.value ?? 'THREESTARS';
+    return AUTO_PUBLISH_THRESHOLDS[autoPublishValue] ?? 3;
+};
+
 // ============================================================
 // Export
 // ============================================================
@@ -168,6 +184,9 @@ const importConfirm = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => 
         fieldToCol[field] = col;
     }
 
+    // Fetch merchant's autoPublish threshold once — avoids N DB calls inside the loop
+    const minRating = await resolveMinRating(prisma, merchantId);
+
     let imported = 0;
     let skipped = 0;
 
@@ -184,8 +203,7 @@ const importConfirm = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => 
         const customerEmail = row[fieldToCol['customerEmail']] || '';
         const comment = row[fieldToCol['comment']] || '';
         const productName = row[fieldToCol['productName']] || '';
-        const publishedRaw = row[fieldToCol['published']];
-        const published = publishedRaw === 'true' || publishedRaw === '1';
+        const published = rating >= minRating;
         const createdAtRaw = row[fieldToCol['createdAt']];
         const createdAt = createdAtRaw ? new Date(createdAtRaw) : new Date();
 
