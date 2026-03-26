@@ -105,7 +105,7 @@ class EmailService {
                     mainMessage: data.reminderBodyOverride || `We noticed you haven't had a chance to review your recent purchase yet. We'd love to hear what you think!`,
                     showRating: true,
                     showItems: true,
-                    additionalMessage: `<strong>⏰ Limited time:</strong> Leave a review in the next 48 hours and receive 10% off your next purchase!`,
+                    additionalMessage: `<strong>📦 Haven't received your items yet?</strong> No worries — just come back to this email once your order arrives and leave your review then.`,
                     ctaButton: {
                         text: data.reminderButtonTextOverride || 'Review Now',
                         link: `${reviewBaseUrl}/review/${data.reviewId}`,
