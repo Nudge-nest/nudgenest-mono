@@ -1,14 +1,17 @@
 import { IconAbc, IconCalendarBolt, IconCalendarTime, IconFileImport, IconMailCode, IconQrcode, IconUserScreen } from '@tabler/icons-react';
 import Tabs from '../components/TabComponent';
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { useReviewConfig } from '../contexts/ReviewConfigContext.tsx';
-import ReviewPublishConfigsComponent from '../components/configs/ReviewPublishConfigsComponent.tsx';
-import ReviewEmailContentComponent from '../components/configs/ReviewEmailContentComponent.tsx';
-import ReviewEmailReminderComponent from '../components/configs/ReviewEmailReminderComponent.tsx';
-import ReviewEmailScheduleComponent from '../components/configs/ReviewEmailScheduleComponent.tsx';
-import ReviewQrCodeComponent from '../components/configs/ReviewQrCodeComponent.tsx';
-import ReviewGeneralSettingsComponent from '../components/configs/ReviewGeneralSettingsComponent.tsx';
-import ReviewImportExportComponent from '../components/configs/ReviewImportExportComponent.tsx';
+
+const ReviewPublishConfigsComponent = lazy(() => import('../components/configs/ReviewPublishConfigsComponent.tsx'));
+const ReviewEmailContentComponent = lazy(() => import('../components/configs/ReviewEmailContentComponent.tsx'));
+const ReviewEmailReminderComponent = lazy(() => import('../components/configs/ReviewEmailReminderComponent.tsx'));
+const ReviewEmailScheduleComponent = lazy(() => import('../components/configs/ReviewEmailScheduleComponent.tsx'));
+const ReviewQrCodeComponent = lazy(() => import('../components/configs/ReviewQrCodeComponent.tsx'));
+const ReviewGeneralSettingsComponent = lazy(() => import('../components/configs/ReviewGeneralSettingsComponent.tsx'));
+const ReviewImportExportComponent = lazy(() => import('../components/configs/ReviewImportExportComponent.tsx'));
+
+const TabFallback = () => <div className="p-6 text-sm text-[color:var(--color-disabled)]">Loading...</div>;
 
 const ReviewConfigsPage = () => {
     const { reviewConfigFormHoook } = useReviewConfig();
@@ -20,49 +23,49 @@ const ReviewConfigsPage = () => {
                 label: 'Review Publishing',
                 icon: <IconUserScreen />, // optional
                 disabled: false, // optional
-                content: <ReviewPublishConfigsComponent />,
+                content: <Suspense fallback={<TabFallback />}><ReviewPublishConfigsComponent /></Suspense>,
             },
             {
                 id: 'email',
                 label: 'Email Content',
-                icon: <IconMailCode />, // optional
-                disabled: false, // optional
-                content: <ReviewEmailContentComponent />,
+                icon: <IconMailCode />,
+                disabled: false,
+                content: <Suspense fallback={<TabFallback />}><ReviewEmailContentComponent /></Suspense>,
             },
             {
                 id: 'schedule',
                 label: 'Email Schedule',
-                icon: <IconCalendarTime />, // optional
-                disabled: false, // optional
-                content: <ReviewEmailScheduleComponent />,
+                icon: <IconCalendarTime />,
+                disabled: false,
+                content: <Suspense fallback={<TabFallback />}><ReviewEmailScheduleComponent /></Suspense>,
             },
             {
                 id: 'reminder',
                 label: 'Reminder Settings',
-                icon: <IconCalendarBolt />, // optional
-                disabled: false, // optional
-                content: <ReviewEmailReminderComponent />,
+                icon: <IconCalendarBolt />,
+                disabled: false,
+                content: <Suspense fallback={<TabFallback />}><ReviewEmailReminderComponent /></Suspense>,
             },
             {
                 id: 'qr',
                 label: 'QR Code',
-                icon: <IconQrcode />, // optional
-                disabled: false, // optional
-                content: <ReviewQrCodeComponent />,
+                icon: <IconQrcode />,
+                disabled: false,
+                content: <Suspense fallback={<TabFallback />}><ReviewQrCodeComponent /></Suspense>,
             },
             {
                 id: 'general',
                 label: 'General Settings',
-                icon: <IconAbc />, // optional
-                disabled: false, // optional
-                content: <ReviewGeneralSettingsComponent />,
+                icon: <IconAbc />,
+                disabled: false,
+                content: <Suspense fallback={<TabFallback />}><ReviewGeneralSettingsComponent /></Suspense>,
             },
             {
                 id: 'import-export',
                 label: 'Import / Export',
-                icon: <IconFileImport />, // optional
-                disabled: false, // optional
-                content: <ReviewImportExportComponent />,
+                icon: <IconFileImport />,
+                disabled: false,
+                content: <Suspense fallback={<TabFallback />}><ReviewImportExportComponent /></Suspense>,
             },
         ];
     }, [reviewConfigFormHoook.reviewConfigs]);

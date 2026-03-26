@@ -38,7 +38,9 @@ export default defineConfig({
     })] : []),
   ],
   build: {
-    sourcemap: true,
+    // Only generate sourcemaps when Sentry is configured — it uploads then deletes them.
+    // Without SENTRY_AUTH_TOKEN they would ship to users in the dist/ folder.
+    sourcemap: !!process.env.SENTRY_AUTH_TOKEN,
   },
   preview: {
     port: 3001,
