@@ -245,8 +245,12 @@ const listReviewsByMerchantId = async (request: Hapi.Request, h: Hapi.ResponseTo
             // Resolve to the current active merchant for this shopId so that reviews
             // from a previous (deleted/uninstalled) merchant registration never surface
             // in the public storefront widget.
+            // Storefront sends the numeric shop ID ({{ shop.id }} in Liquid).
+            // The merchant's shopId is stored as a Shopify GID
+            // (e.g. "gid://shopify/Shop/98917089592") so we use `contains` to
+            // match the numeric portion against the full GID string.
             const merchant = await prisma.merchants.findFirst({
-                where: { shopId: shopid as string, deleted: { not: true } },
+                where: { shopId: { contains: shopid as string }, deleted: { not: true } },
                 select: { id: true },
             });
             if (!merchant) {

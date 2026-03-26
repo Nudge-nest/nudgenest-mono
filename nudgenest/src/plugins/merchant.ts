@@ -298,10 +298,12 @@ const createVerificationEmailMessaging = (
 };
 
 const deactivateMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
-    const { shopId } = request.payload as { shopId: string };
+    // Webhook sends shop domain (e.g. "store.myshopify.com") — look up by `domains`
+    // since `shopId` stores the Shopify GID which is a different format
+    const { shopId: shopDomain } = request.payload as { shopId: string };
     const { prisma } = request.server.app;
     try {
-        const merchant = await prisma.merchants.findFirst({ where: { shopId } });
+        const merchant = await prisma.merchants.findFirst({ where: { domains: shopDomain } });
         if (!merchant) {
             return h.response({ ok: true, message: 'Merchant not found' }).code(200);
         }
@@ -314,7 +316,7 @@ const deactivateMerchantHandler = async (request: Hapi.Request, h: Hapi.Response
             where: { merchantId: merchant.id, status: 'ACTIVE' },
             data: { status: 'CANCELED' },
         });
-        request.logger.info({ shopId }, 'Merchant soft-deleted on app uninstall');
+        request.logger.info({ shopDomain }, 'Merchant soft-deleted on app uninstall');
         return h.response({ ok: true }).code(200);
     } catch (error: any) {
         request.logger.error({ err: error }, 'Failed to deactivate merchant');
