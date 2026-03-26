@@ -198,9 +198,8 @@ const verifyMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
     try {
         const merchant = await prisma.merchants.findFirst({
             where: {
-                shopId: {
-                    contains: merchantPlatformId,
-                },
+                shopId: { contains: merchantPlatformId },
+                deleted: { not: true },
             },
             select: {
                 // Explicitly select fields (excludes otpSecret)
