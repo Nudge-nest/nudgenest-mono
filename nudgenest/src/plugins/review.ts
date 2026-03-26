@@ -315,6 +315,21 @@ const reviewsPlugin: Hapi.Plugin<null> = {
     register: async (server: Hapi.Server) => {
         server.route([
             {
+                method: 'DELETE',
+                path: '/api/v1/reviews/{reviewId}',
+                options: { auth: 'apikey' },
+                handler: async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+                    const { reviewId } = request.params;
+                    const { prisma } = request.server.app;
+                    try {
+                        await prisma.reviews.delete({ where: { id: reviewId as string } });
+                        return h.response({ version: '1.0.0', data: { deleted: true } }).code(200);
+                    } catch (error: any) {
+                        return h.response({ version: '1.0.0', error: error.message }).code(500);
+                    }
+                },
+            },
+            {
                 method: 'GET',
                 path: '/api/v1/reviews/{reviewId}',
                 handler: getReviewById,

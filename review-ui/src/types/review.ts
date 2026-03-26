@@ -2,9 +2,11 @@ export interface IReview {
     id?: string;
     merchantId: string;
     customerName: string;
+    customerEmail?: string;
     items: IReviewItem[];
     result?: IReviewResult[];
     status: 'Pending' | 'Completed' | 'Failed';
+    published?: boolean;
     createdAt: string;
     updatedAt: string;
     merchantBusinessId: string;
