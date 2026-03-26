@@ -269,7 +269,7 @@ const billingPlugin: Hapi.Plugin<any> = {
                         shopId: Joi.string().required(),
                         planTier: Joi.string().valid('FREE', 'STARTER', 'GROWTH', 'PRO', 'ENTERPRISE').required(),
                         shopifyChargeId: Joi.string().optional(),
-                        status: Joi.string().valid('ACTIVE', 'ACCEPTED', 'CANCELLED', 'EXPIRED', 'FROZEN', 'PENDING').required(),
+                        status: Joi.string().valid('ACTIVE', 'ACCEPTED', 'CANCELLED', 'EXPIRED', 'FROZEN', 'PENDING', 'DECLINED').required(),
                         currentPeriodEnd: Joi.date().optional(),
                         billingOn: Joi.date().optional(),
                         webhookTopic: Joi.string().optional(),

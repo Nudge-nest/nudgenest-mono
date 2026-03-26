@@ -26,8 +26,8 @@ export const nudgeNestApi = createApi({
                 providesTags: ['review'],
             }),
             listReviews: builder.query({
-                query: (params: string | { shopId?: string; merchantId?: string }) => {
-                    // Support both old string format and new object format
+                query: (params: string | { shopId?: string; merchantId?: string; published?: boolean }) => {
+                    // String format = storefront/public widget — always published=true
                     if (typeof params === 'string') {
                         return {
                             url: `reviews/list?shopid=${params}&published=true`,
@@ -37,7 +37,8 @@ export const nudgeNestApi = createApi({
                     const queryParams = new URLSearchParams();
                     if (params.shopId) queryParams.append('shopid', params.shopId);
                     if (params.merchantId) queryParams.append('merchantid', params.merchantId);
-                    queryParams.append('published', 'true');
+                    // Only add published filter when explicitly set — omitting returns all reviews
+                    if (params.published !== undefined) queryParams.append('published', String(params.published));
                     return {
                         url: `reviews/list?${queryParams.toString()}`,
                         method: 'GET',
@@ -60,6 +61,23 @@ export const nudgeNestApi = createApi({
                     url: `reviews/${review.id}`,
                     method: 'PUT',
                     body: { result: review.result, status: review.status },
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                invalidatesTags: ['review'],
+            }),
+            toggleReviewPublished: builder.mutation({
+                query: ({ id, published }: { id: string; published: boolean }) => ({
+                    url: `reviews/${id}`,
+                    method: 'PUT',
+                    body: { published },
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                invalidatesTags: ['review'],
+            }),
+            deleteReview: builder.mutation({
+                query: (id: string) => ({
+                    url: `reviews/${id}`,
+                    method: 'DELETE',
                 }),
                 transformResponse: (response: { data: any }) => response.data,
                 invalidatesTags: ['review'],
@@ -202,6 +220,8 @@ export const {
     useGetUsageStatsQuery,
     useImportReviewsPreviewMutation,
     useImportReviewsConfirmMutation,
+    useToggleReviewPublishedMutation,
+    useDeleteReviewMutation,
 } = nudgeNestApi;
 
 export const { endpoints, reducerPath, reducer, middleware } = nudgeNestApi;
