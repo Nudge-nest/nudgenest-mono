@@ -24,6 +24,8 @@ model Merchants {
   businessInfo   String           @unique
   apiKey             String?          @unique
   shopifyAccessToken String?
+  deleted            Boolean          @default(false)
+  deletedAt          DateTime?
   createdAt          DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   address        Address

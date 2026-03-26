@@ -43,6 +43,14 @@ const merchantsPlugin: Hapi.Plugin<null> = {
                     auth: false,
                 },
             },
+            {
+                method: 'POST',
+                path: '/api/v1/merchants/deactivate',
+                handler: deactivateMerchantHandler,
+                options: {
+                    auth: false,
+                },
+            },
         ]);
     },
 };
@@ -289,12 +297,65 @@ const createVerificationEmailMessaging = (
     } as IRabbitDataObject<IReviewMessagePayloadContent>;
 };
 
+const deactivateMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+    const { shopId } = request.payload as { shopId: string };
+    const { prisma } = request.server.app;
+    try {
+        const merchant = await prisma.merchants.findFirst({ where: { shopId } });
+        if (!merchant) {
+            return h.response({ ok: true, message: 'Merchant not found' }).code(200);
+        }
+        await prisma.merchants.update({
+            where: { id: merchant.id },
+            data: { deleted: true, deletedAt: new Date(), shopifyAccessToken: null },
+        });
+        // Downgrade any active paid subscription to cancelled
+        await prisma.subscriptions.updateMany({
+            where: { merchantId: merchant.id, status: 'ACTIVE' },
+            data: { status: 'CANCELED' },
+        });
+        request.logger.info({ shopId }, 'Merchant soft-deleted on app uninstall');
+        return h.response({ ok: true }).code(200);
+    } catch (error: any) {
+        request.logger.error({ err: error }, 'Failed to deactivate merchant');
+        return h.response({ error: error.message }).code(500);
+    }
+};
+
 const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const merchantData = request.payload as any;
     const { prisma, pubsub } = request.server.app;
     const { messagingTopic } = pubsub;
     try {
         const apiKey = crypto.randomBytes(32).toString('hex');
+
+        // Reinstall within 48h window — merchant exists but was soft-deleted
+        const existing = await prisma.merchants.findFirst({ where: { shopId: merchantData.shopId } });
+        if (existing?.deleted) {
+            const merchant = await prisma.merchants.update({
+                where: { id: existing.id },
+                data: { ...merchantData, deleted: false, deletedAt: null, apiKey } as any,
+            });
+            // Restore FREE subscription
+            const freePlan = await prisma.plans.findUnique({ where: { name: 'free' } });
+            if (freePlan) {
+                const now = new Date();
+                await prisma.subscriptions.create({
+                    data: {
+                        merchantId: merchant.id,
+                        planId: freePlan.id,
+                        status: 'ACTIVE',
+                        currentPeriodStart: now,
+                        currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+                        trialStart: null,
+                        trialEnd: null,
+                    },
+                });
+            }
+            request.logger.info({ shopId: merchantData.shopId }, 'Merchant reactivated on reinstall');
+            return h.response({ version: '1.0.0', data: { merchant } }).code(200);
+        }
+
         const merchant = await prisma.merchants.create({
             data: { ...(merchantData || {}), apiKey } as any,
         });
