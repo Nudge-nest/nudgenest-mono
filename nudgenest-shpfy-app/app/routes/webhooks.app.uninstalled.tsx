@@ -14,7 +14,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   // 2. Soft-delete merchant — fire-and-forget so Shopify gets an immediate 200.
   //    Awaiting the backend risks breaching Shopify's 5s webhook timeout (cold start).
   //    shop/redact fires 48h later for full GDPR erasure regardless.
-  fetch(`${BASE_URL}/api/v1/merchants/deactivate`, {
+  fetch(`${BASE_URL}/merchants/deactivate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ shopId: shop }),
