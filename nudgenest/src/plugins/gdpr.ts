@@ -139,9 +139,10 @@ const gdprPlugin: Hapi.Plugin<null> = {
                 request.logger.info({ shop }, '[GDPR] shop/redact — starting full shop data deletion');
 
                 try {
-                    // Find the merchant by shopId
+                    // shop from webhook is the myshopify domain — match against `domains`
+                    // (shopId stores the Shopify GID which is a different format)
                     const merchant = await prisma.merchants.findFirst({
-                        where: { shopId: shop },
+                        where: { domains: shop },
                         select: { id: true },
                     });
 
@@ -151,22 +152,49 @@ const gdprPlugin: Hapi.Plugin<null> = {
                     }
 
                     const merchantId = merchant.id;
+                    // Stable anonymous token — used to keep unique constraints valid
+                    const anonToken = `redacted-${merchantId}`;
 
-                    // Delete in dependency order:
-                    // 1. Usage records (reference subscriptions)
-                    await prisma.usageRecords.deleteMany({ where: { merchantId } });
-                    // 2. Subscriptions (reference merchant)
-                    await prisma.subscriptions.deleteMany({ where: { merchantId } });
-                    // 3. Reviews (reference merchant)
-                    await prisma.reviews.deleteMany({ where: { merchantId } });
-                    // 4. Configurations (reference merchant)
-                    await prisma.configurations.deleteMany({ where: { merchantId } });
-                    // 5. Merchant record itself
-                    await prisma.merchants.delete({ where: { id: merchantId } });
+                    // 1. Anonymize reviews — strip customer PII but keep ratings/content
+                    //    for aggregate stats. Anonymized data is no longer personal data.
+                    await prisma.reviews.updateMany({
+                        where: { merchantId },
+                        data: {
+                            customerEmail: `${anonToken}@redacted.invalid`,
+                            customerName: REDACTED,
+                            customerPhone: REDACTED,
+                            published: false,
+                        },
+                    });
+                    // 2. Anonymize merchant PII in place — keep the record for billing/tax history.
+                    //    Configurations and subscriptions are retained (no PII).
+                    //    Subscriptions are left linked (no PII, needed for financial records).
+                    await prisma.merchants.update({
+                        where: { id: merchantId },
+                        data: {
+                            email: `${anonToken}@redacted.invalid`,
+                            name: anonToken,
+                            shopId: anonToken,
+                            domains: anonToken,
+                            businessInfo: anonToken,
+                            apiKey: null,
+                            shopifyAccessToken: null,
+                            address: {
+                                address1: REDACTED,
+                                address2: REDACTED,
+                                city: REDACTED,
+                                country: REDACTED,
+                                formatted: REDACTED,
+                                zip: REDACTED,
+                            },
+                            deleted: true,
+                            redactedAt: new Date(),
+                        },
+                    });
 
-                    request.logger.info({ shop, merchantId }, '[GDPR] shop/redact — all data deleted');
+                    request.logger.info({ shop, merchantId }, '[GDPR] shop/redact — PII removed, billing record archived');
 
-                    return h.response({ ok: true, deleted: true, merchantId }).code(200);
+                    return h.response({ ok: true, redacted: true, merchantId }).code(200);
                 } catch (err: any) {
                     request.logger.error({ err }, '[GDPR] shop/redact failed');
                     Sentry.captureException(err, { tags: { component: 'gdpr', action: 'shop/redact' } });

@@ -35,6 +35,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const status = rawStatus.toUpperCase();
 
+    // DECLINED = merchant cancelled an upgrade attempt — their existing subscription
+    // is unchanged so we must NOT sync to the backend (would incorrectly downgrade to FREE)
+    if (status === "DECLINED") {
+      console.log(`[billing] Charge declined for shop ${shop} — no plan change`);
+      return new Response("Charge declined — no action taken", { status: 200 });
+    }
+
     // Map Shopify plan name → our tier
     const planTierMap: Record<string, string> = {
       "Starter Plan": "STARTER",

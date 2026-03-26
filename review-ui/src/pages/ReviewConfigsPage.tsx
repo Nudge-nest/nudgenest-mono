@@ -1,4 +1,4 @@
-import { IconAbc, IconCalendarBolt, IconCalendarTime, IconFileImport, IconMailCode, IconQrcode, IconUserScreen } from '@tabler/icons-react';
+import { IconAbc, IconCalendarBolt, IconCalendarTime, IconFileImport, IconListDetails, IconMailCode, IconQrcode, IconUserScreen } from '@tabler/icons-react';
 import Tabs from '../components/TabComponent';
 import { lazy, Suspense, useMemo } from 'react';
 import { useReviewConfig } from '../contexts/ReviewConfigContext.tsx';
@@ -10,6 +10,7 @@ const ReviewEmailScheduleComponent = lazy(() => import('../components/configs/Re
 const ReviewQrCodeComponent = lazy(() => import('../components/configs/ReviewQrCodeComponent.tsx'));
 const ReviewGeneralSettingsComponent = lazy(() => import('../components/configs/ReviewGeneralSettingsComponent.tsx'));
 const ReviewImportExportComponent = lazy(() => import('../components/configs/ReviewImportExportComponent.tsx'));
+const ReviewModerationComponent = lazy(() => import('../components/configs/ReviewModerationComponent.tsx'));
 
 const TabFallback = () => <div className="p-6 text-sm text-[color:var(--color-disabled)]">Loading...</div>;
 
@@ -21,8 +22,8 @@ const ReviewConfigsPage = () => {
             {
                 id: 'review',
                 label: 'Review Publishing',
-                icon: <IconUserScreen />, // optional
-                disabled: false, // optional
+                icon: <IconUserScreen />,
+                disabled: false,
                 content: <Suspense fallback={<TabFallback />}><ReviewPublishConfigsComponent /></Suspense>,
             },
             {
@@ -66,6 +67,13 @@ const ReviewConfigsPage = () => {
                 icon: <IconFileImport />,
                 disabled: false,
                 content: <Suspense fallback={<TabFallback />}><ReviewImportExportComponent /></Suspense>,
+            },
+            {
+                id: 'moderation',
+                label: 'Reviews',
+                icon: <IconListDetails />,
+                disabled: false,
+                content: <Suspense fallback={<TabFallback />}><ReviewModerationComponent /></Suspense>,
             },
         ];
     }, [reviewConfigFormHoook.reviewConfigs]);

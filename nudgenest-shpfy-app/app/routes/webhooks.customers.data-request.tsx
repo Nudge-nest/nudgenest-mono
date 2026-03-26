@@ -17,7 +17,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     // Forward the request to the backend for logging and compliance tracking
-    const response = await fetch(`${BASE_URL}/api/v1/gdpr/customers/data-request`, {
+    const response = await fetch(`${BASE_URL}/gdpr/customers/data-request`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ shop, topic, payload }),
