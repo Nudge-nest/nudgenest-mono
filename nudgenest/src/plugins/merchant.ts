@@ -330,7 +330,9 @@ const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         const apiKey = crypto.randomBytes(32).toString('hex');
 
         // Reinstall within 48h window — merchant exists but was soft-deleted
-        const existing = await prisma.merchants.findFirst({ where: { shopId: merchantData.shopId } });
+        const existing = merchantData?.shopId
+            ? await prisma.merchants.findFirst({ where: { shopId: merchantData.shopId } })
+            : null;
         if (existing?.deleted) {
             const merchant = await prisma.merchants.update({
                 where: { id: existing.id },
