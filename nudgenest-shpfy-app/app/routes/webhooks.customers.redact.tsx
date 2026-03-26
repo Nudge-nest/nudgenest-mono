@@ -18,7 +18,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     // Forward to backend which will delete customer PII from MongoDB reviews
-    const response = await fetch(`${BASE_URL}/api/v1/gdpr/customers/redact`, {
+    const response = await fetch(`${BASE_URL}/gdpr/customers/redact`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ shop, topic, payload }),

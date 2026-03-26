@@ -26,6 +26,7 @@ model Merchants {
   shopifyAccessToken String?
   deleted            Boolean          @default(false)
   deletedAt          DateTime?
+  redactedAt         DateTime?
   createdAt          DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   address        Address

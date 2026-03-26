@@ -18,7 +18,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     // Forward to backend which will delete all data for this shop from MongoDB
-    const response = await fetch(`${BASE_URL}/api/v1/gdpr/shop/redact`, {
+    const response = await fetch(`${BASE_URL}/gdpr/shop/redact`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ shop, topic, payload }),

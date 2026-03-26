@@ -334,7 +334,10 @@ const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         const existing = merchantData?.shopId
             ? await prisma.merchants.findFirst({ where: { shopId: merchantData.shopId } })
             : null;
-        if (existing?.deleted) {
+        if (existing?.deleted && !existing?.redactedAt) {
+            // Reinstall within 48h grace window — reactivate the soft-deleted merchant.
+            // Redacted merchants (GDPR-erased) are excluded: their PII is gone so they
+            // cannot be restored; a fresh registration creates a new record instead.
             const merchant = await prisma.merchants.update({
                 where: { id: existing.id },
                 data: { ...merchantData, deleted: false, deletedAt: null, apiKey } as any,
