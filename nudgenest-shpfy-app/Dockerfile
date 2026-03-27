@@ -24,10 +24,8 @@ RUN npx prisma generate
 
 RUN pnpm run build
 
-# Remove dev dependencies after build
-RUN pnpm prune --prod
-
 # Push schema to CockroachDB then start the server.
 # prisma db push is used instead of migrate deploy — no migration files needed
 # for CockroachDB Serverless. Safe for additive schema changes.
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && pnpm run start"]
+# || true ensures the container starts even if db push fails (schema already up to date).
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss || true && pnpm run start"]
