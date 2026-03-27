@@ -85,17 +85,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ success: true, message: "Already subscribed to this plan", planTier });
     }
 
-    for (const sub of appSubscriptions) {
-      try {
-        await billing.cancel({
-          subscriptionId: sub.id,
-          isTest: process.env.NODE_ENV !== "production",
-          prorate: true,
-        });
-      } catch (cancelErr) {
-        console.error("Error cancelling subscription:", cancelErr);
-      }
-    }
+    // Do NOT cancel the existing subscription here — Shopify cancels it automatically
+    // when the merchant approves the new charge. Cancelling eagerly means a decline
+    // leaves the merchant on FREE instead of their current paid plan.
 
     const returnUrl = `${process.env.SHOPIFY_APP_URL}/api/billing/callback?plan=${planTier}&shop=${session.shop}`;
 
