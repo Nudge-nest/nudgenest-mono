@@ -40,7 +40,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   // The Shopify app handle — must match `handle` in shopify.app.toml
-  const appHandle = "nudgenest-shpfy-app";
+  const appHandle = "nudgenest";
 
   // Encode billing status for the cookie
   // Format: "success:GROWTH" | "declined" | "success"
