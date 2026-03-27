@@ -6,11 +6,13 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY package.json package-lock.json* ./
+# Install pnpm
+RUN npm install -g pnpm
 
-RUN npm ci --omit=dev && npm cache clean --force
-# Remove CLI packages not needed in production
-RUN npm remove @shopify/cli
+COPY package.json pnpm-lock.yaml ./
+
+# Install all deps (including dev) — needed for prisma generate + vite build
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
@@ -20,9 +22,12 @@ RUN cp prisma/schema.prod.prisma prisma/schema.prisma
 # Generate Prisma client against the production schema
 RUN npx prisma generate
 
-RUN npm run build
+RUN pnpm run build
+
+# Remove dev dependencies after build
+RUN pnpm prune --prod
 
 # Push schema to CockroachDB then start the server.
 # prisma db push is used instead of migrate deploy — no migration files needed
 # for CockroachDB Serverless. Safe for additive schema changes.
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npm run start"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && pnpm run start"]
