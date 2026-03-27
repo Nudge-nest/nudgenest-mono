@@ -59,28 +59,35 @@ export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, 
         body: JSON.stringify({ planTier }),
       });
 
-      // Paid plan — billing.request() throws a 401 with the reauthorize URL header.
-      // Remix re-throws it; read the header and navigate window.top directly.
-      // This bypasses App Bridge postMessage (which breaks when tunnel URL changes).
-      const reauthorizeUrl = response.headers.get("x-shopify-api-request-failure-reauthorize-url");
-      if (reauthorizeUrl) {
-        window.top!.location.href = reauthorizeUrl;
+      if (!response.ok) {
+        console.error("Billing request failed:", response.status, await response.text().catch(() => ""));
+        setIsProcessing(false);
+        return;
+      }
+
+      const data = await response.json();
+
+      // Paid plan upgrade — navigate top frame to Shopify billing approval page
+      if (data.confirmationUrl) {
+        try {
+          window.top!.location.href = data.confirmationUrl;
+        } catch (_navErr) {
+          window.location.href = data.confirmationUrl;
+        }
         return;
       }
 
       // FREE downgrade — server handled it synchronously
-      if (response.ok) {
-        const data = await response.json();
-        if (data.downgraded || planTier === "FREE") {
-          document.cookie = `nudgenest_billing_status=${encodeURIComponent("success:FREE")}; path=/; max-age=120; SameSite=None; Secure`;
-          window.location.reload();
-          return;
-        }
+      if (data.downgraded || planTier === "FREE") {
+        document.cookie = `nudgenest_billing_status=${encodeURIComponent("success:FREE")}; path=/; max-age=120; SameSite=None; Secure`;
+        window.location.reload();
+        return;
       }
 
+      // Already on this plan (backend synced) — reload to reflect current state
       setIsProcessing(false);
       window.location.reload();
-    } catch (e) {
+    } catch (e: any) {
       console.error("Billing request error:", e);
       setIsProcessing(false);
     }
@@ -142,11 +149,7 @@ export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, 
 
         {/* Processing Message */}
         {isProcessing && (
-          <Box
-            padding="400"
-            background="bg-fill-info"
-            borderRadius="200"
-          >
+          <Box padding="400" background="bg-fill-info" borderRadius="200">
             <Text variant="bodySm" as="p">
               Processing your billing request... You will be redirected to approve the charge.
             </Text>
