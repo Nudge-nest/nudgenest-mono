@@ -7,6 +7,7 @@ import loggerPlugin from './plugins/logger';
 import pubsubPlugin from './plugins/googlePubSub';
 import shopifyWebhookPlugin from './plugins/shopifyWebhook';
 import pubsubConsumerPlugin from './plugins/pubsubConsumer';
+import complianceConsumerPlugin from './plugins/complianceConsumer';
 import prismaPlugin from './plugins/prisma';
 import authPlugin from './plugins/auth';
 import merchantsPlugin from './plugins/merchant';
@@ -45,7 +46,8 @@ export const createServer = async () => {
         prismaPlugin,
         authPlugin,
         pubsubPlugin,
-        pubsubConsumerPlugin,  // Pull subscription for dev and production
+        pubsubConsumerPlugin,       // email/messaging pull subscription
+        complianceConsumerPlugin,   // GDPR compliance Pub/Sub pull subscription
         shopifyWebhookPlugin,
         merchantsPlugin,
         reviewsPlugin,

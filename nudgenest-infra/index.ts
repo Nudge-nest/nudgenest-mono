@@ -129,11 +129,67 @@ const messagingSubscription = new gcp.pubsub.Subscription("nudgenest-messaging-p
     },
 }, { dependsOn: [messagingTopic] });
 
+// ============================================
+// GDPR Compliance Pub/Sub Topic
+// Shopify publishes all three mandatory compliance webhooks here directly.
+// URI in shopify.app.toml: pubsub://nudgenest:nudgenest-compliance
+// ============================================
+
+const complianceTopic = new gcp.pubsub.Topic("nudgenest-compliance", {
+    name: "nudgenest-compliance",
+    messageStoragePolicy: {
+        allowedPersistenceRegions: [config.get("region") || "europe-west1"],
+    },
+    labels: {
+        environment: "production",
+        service: "nudgenest-backend",
+        purpose: "gdpr-compliance",
+    },
+});
+
+// Pull subscription — backend complianceConsumer plugin listens here
+const complianceSubscription = new gcp.pubsub.Subscription("nudgenest-compliance-pull", {
+    name: "nudgenest-compliance-pull",
+    topic: complianceTopic.name,
+    ackDeadlineSeconds: 60,
+    messageRetentionDuration: "2592000s", // 30 days — matches GDPR response deadline
+    retryPolicy: {
+        minimumBackoff: "60s",
+        maximumBackoff: "3600s",
+    },
+    expirationPolicy: {
+        ttl: "", // Never expire
+    },
+    labels: {
+        environment: "all",
+        service: "nudgenest-backend",
+        purpose: "gdpr-compliance",
+    },
+}, { dependsOn: [complianceTopic] });
+
+// Grant Shopify's Pub/Sub service account publisher access on the compliance topic.
+// Shopify uses GCP's Cloud Pub/Sub service agent to publish webhook payloads.
+// If this binding needs updating, check: https://shopify.dev/docs/apps/build/compliance/privacy-law-compliance
+const shopifyCompliancePublisher = new gcp.pubsub.TopicIAMMember("shopify-compliance-publisher", {
+    topic: complianceTopic.name,
+    role: "roles/pubsub.publisher",
+    member: "serviceAccount:cloud-pubsub@system.gserviceaccount.com",
+}, { dependsOn: [complianceTopic] });
+
+// Also grant our own service account subscriber access on the compliance subscription
+const complianceSubscriberBinding = new gcp.projects.IAMMember("compliance-subscriber-role", {
+    project: "nudgenest",
+    role: "roles/pubsub.subscriber",
+    member: `serviceAccount:${existingServiceAccountEmail}`,
+});
+
 // Export Pub/Sub resources
 export const pubsubTopicName = messagingTopic.name;
 export const pubsubTopicId = messagingTopic.id;
 export const pubsubSubscriptionName = messagingSubscription.name;
 export const pubsubServiceAccountEmail = existingServiceAccountEmail;
+export const complianceTopicName = complianceTopic.name;
+export const complianceSubscriptionName = complianceSubscription.name;
 
 // ============================================
 // Google Cloud Storage for Media Uploads
