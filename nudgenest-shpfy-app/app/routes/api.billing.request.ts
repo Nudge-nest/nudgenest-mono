@@ -89,23 +89,29 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     // when the merchant approves the new charge. Cancelling eagerly means a decline
     // leaves the merchant on FREE instead of their current paid plan.
 
-    const returnUrl = `${process.env.SHOPIFY_APP_URL}/api/billing/callback?plan=${planTier}&shop=${session.shop}`;
+    // Derive app base URL from the incoming request rather than SHOPIFY_APP_URL env var.
+    // shopify app dev generates a new Cloudflare tunnel URL on every restart and updates
+    // shopify.app.toml automatically — but .env is never updated, making SHOPIFY_APP_URL stale.
+    const appBaseUrl = new URL(request.url).origin;
+    const returnUrl = `${appBaseUrl}/api/billing/callback?plan=${planTier}&shop=${session.shop}`;
 
-    let billingResponse: any;
     try {
-      billingResponse = await billing.request({
+      await billing.request({
         plan: planName,
         isTest: process.env.NODE_ENV !== "production",
         returnUrl,
       });
-      return json({ success: true, confirmationUrl: billingResponse?.confirmationUrl, planTier });
+      // billing.request() always throws — this line is unreachable
+      return json({ error: "Unexpected: billing.request() did not throw" }, { status: 500 });
     } catch (billingErr: any) {
-      throw billingErr; // re-throw so SDK/Remix handles the redirect
+      // Re-throw the 401 Response — Remix forwards it to the client with the
+      // X-Shopify-API-Request-Failure-Reauthorize-Url header intact.
+      // BillingCard reads that header and does window.top.location.href directly.
+      throw billingErr;
     }
 
   } catch (error: any) {
-    // Only catches non-billing errors (body parse, plan lookup etc)
-    if (error instanceof Response) throw error; // let redirect responses through
+    if (error instanceof Response) throw error;
     console.error("Unexpected billing error:", error?.message);
     return json({ error: "Failed to create billing charge", details: error.message }, { status: 500 });
   }

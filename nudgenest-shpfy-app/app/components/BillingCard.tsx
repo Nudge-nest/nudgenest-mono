@@ -59,16 +59,16 @@ export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, 
         body: JSON.stringify({ planTier }),
       });
 
+      // Paid plan — billing.request() throws a 401 with the reauthorize URL header.
+      // Remix re-throws it; read the header and navigate window.top directly.
+      // This bypasses App Bridge postMessage (which breaks when tunnel URL changes).
       const reauthorizeUrl = response.headers.get("x-shopify-api-request-failure-reauthorize-url");
-
-      // Paid plan — App Bridge intercepts the 401 and redirects to approval page
       if (reauthorizeUrl) {
         window.top!.location.href = reauthorizeUrl;
         return;
       }
 
-      // FREE downgrade — server handled it synchronously, set cookie and reload
-      // so the dashboard can read the billing status and show a toast
+      // FREE downgrade — server handled it synchronously
       if (response.ok) {
         const data = await response.json();
         if (data.downgraded || planTier === "FREE") {

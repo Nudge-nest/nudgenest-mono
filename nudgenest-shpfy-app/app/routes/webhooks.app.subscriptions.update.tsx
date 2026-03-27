@@ -35,11 +35,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const status = rawStatus.toUpperCase();
 
-    // DECLINED = merchant cancelled an upgrade attempt — their existing subscription
-    // is unchanged so we must NOT sync to the backend (would incorrectly downgrade to FREE)
-    if (status === "DECLINED") {
-      console.log(`[billing] Charge declined for shop ${shop} — no plan change`);
-      return new Response("Charge declined — no action taken", { status: 200 });
+    // DECLINED — merchant cancelled an upgrade attempt, existing subscription unchanged.
+    // CANCELLED — Shopify fires this for BOTH explicit cancellation AND auto-cancel when
+    //   upgrading/downgrading. We cannot safely distinguish them here, so we ignore it:
+    //   - FREE downgrades are handled explicitly in api.billing.request.ts
+    //   - Upgrade/downgrade: the new plan's ACCEPTED webhook handles the sync
+    // Only EXPIRED should trigger a FREE downgrade (plan legitimately ended, no replacement).
+    if (status === "DECLINED" || status === "CANCELLED") {
+      console.log(`[billing] ${status} for shop ${shop} — no action taken`);
+      return new Response(`${status} — no action taken`, { status: 200 });
     }
 
     // Map Shopify plan name → our tier
@@ -59,7 +63,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const syncPayload = {
         merchantId,
         shopId: shop,
-        planTier: isActive ? planTier : "FREE",
+        planTier: isActive ? planTier : "FREE", // EXPIRED → FREE
         shopifyChargeId: shopifyChargeId.toString(),
         status,
         currentPeriodEnd: current_period_end,
