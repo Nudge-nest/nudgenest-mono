@@ -155,7 +155,7 @@ const complianceSubscription = new gcp.pubsub.Subscription("nudgenest-compliance
     messageRetentionDuration: "2592000s", // 30 days — matches GDPR response deadline
     retryPolicy: {
         minimumBackoff: "60s",
-        maximumBackoff: "3600s",
+        maximumBackoff: "600s", // GCP max is 600s (10 minutes)
     },
     expirationPolicy: {
         ttl: "", // Never expire
