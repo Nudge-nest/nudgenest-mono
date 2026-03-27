@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 EXPOSE 3000
 
@@ -6,8 +6,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install pnpm
-RUN npm install -g pnpm
+# Enable Corepack and prepare pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 COPY package.json pnpm-lock.yaml .npmrc ./
 
