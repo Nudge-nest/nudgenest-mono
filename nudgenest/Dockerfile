@@ -24,7 +24,7 @@ RUN pnpm build
 
 
 # === Stage 2: Production ===
-FROM node:23-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
