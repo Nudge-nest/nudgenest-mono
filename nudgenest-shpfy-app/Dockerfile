@@ -9,7 +9,7 @@ ENV NODE_ENV=production
 # Install pnpm
 RUN npm install -g pnpm
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml .npmrc ./
 
 # Install all deps (including dev) — needed for prisma generate + vite build
 RUN pnpm install --frozen-lockfile
