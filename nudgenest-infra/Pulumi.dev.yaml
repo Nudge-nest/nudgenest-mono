@@ -37,3 +37,15 @@ config:
     secure: AAABAExnSg80dJwJfnGzclPJX0KUc369YF8qK664rd8Cjo1aSvmbYFW+SekH+DoioeRNyneXr4Z6
   nudgenest-infra:BACKEND_ANTHROPIC_API_KEY:
     secure: AAABAChIVihi9WtgX4ioYHZjHAmFeY/Cy7TfMQ3t/93AhMnh90XrmCBtWNBdIP61fVXr0k+ST4HROymEQo4bbLbsqBOUKlpnmMvP14sZ3dgNKqRgwopwCtZFl5ktiIFOQGZQNBn3Bp3bt8qvZqTorWsg9dMK5IrzlEVF3Q9E6B8A5PHY2CjsbFidoYs=
+  nudgenest-infra:SHOPIFY_APP_API_KEY:
+    secure: AAABALzgQheivMqYlEn4Y9H767rjLsb4JfiKzQzGx6zZNj93CgYd0cJD8M4W7u9MW3f6Cig77NXJDmMYzxQpfA==
+  nudgenest-infra:SHOPIFY_APP_API_SECRET:
+    secure: AAABAAze5aYASkkejgpjibeEeE2lMU57Lft+AFS8Gzhn4IWhLNQRf8L7pad9uwgkLyMsxHXuF+6E3xqAh8DHZQ==
+  nudgenest-infra:SHOPIFY_APP_DATABASE_URL:
+    secure: AAABANfqtQey2UigP2qVdT3AZrLc2SL/NR30+om7lZJxkYhoJtyZLgkPh02VnjT7LIDHZzmfpvOegWVtH4CQujSQIcajBNU14N3evV1gTuzlepZpnG1LXzeDKZMJjUiEhpLl8e0xpla68lO0sCxzdpyjZutIhKzVbx2YGlD7nVTO7QYVmaW/BPP/7JmmxLQwzlSqNOtv1qe/SVxhHRfwwK3iR7NPzHnHxhhJaQ==
+  nudgenest-infra:NUDGENEST_BACKEND_URL:
+    secure: AAABAA21MEcfYNUqk0o/Xx3kIYkfxBF1xRxJptqEV8fVuwhGrh8xrmPwO0TzCSNCc5Z2FLQTkee9ErItoSSMGuhxPonMXzo=
+  nudgenest-infra:SHOPIFY_APP_SCOPES:
+    secure: AAABAKEzrUNACFw//Pzh8nvTSP47NspjqCtyRfU2AOAI0MUE2gzbNDjnR7Lrn1JK4elKHummbLJMGvv+1g8CKm3CS12wG4vf
+  nudgenest-infra:SHOPIFY_APP_URL:
+    secure: AAABAO/Vnfeez/3G1i2xmXYNuD/WBecvfW6zyp+WUXnFRKcEoeSpgZHcVeLqQv9kbvpjzrn9xgP43jE=
