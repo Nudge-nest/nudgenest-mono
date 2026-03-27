@@ -89,7 +89,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     // when the merchant approves the new charge. Cancelling eagerly means a decline
     // leaves the merchant on FREE instead of their current paid plan.
 
-    const returnUrl = `${process.env.SHOPIFY_APP_URL}/api/billing/callback?plan=${planTier}&shop=${session.shop}`;
+    // Derive app base URL from the incoming request rather than SHOPIFY_APP_URL env var.
+    // shopify app dev generates a new Cloudflare tunnel URL on every restart and updates
+    // shopify.app.toml automatically — but .env is never updated, making SHOPIFY_APP_URL stale.
+    const appBaseUrl = new URL(request.url).origin;
+    const returnUrl = `${appBaseUrl}/api/billing/callback?plan=${planTier}&shop=${session.shop}`;
 
     try {
       await billing.request({
