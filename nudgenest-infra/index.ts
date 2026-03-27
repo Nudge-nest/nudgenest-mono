@@ -344,13 +344,76 @@ const landing_connection_trigger = new gcp.cloudbuild.Trigger("landing_build_tri
     serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
 }, {dependsOn: [monorepo_connection_repo, landing_repo]})
 
+// Shopify App Artifact Registry
+const shopify_repo = new gcp.artifactregistry.Repository('nudgenest-shopify-service', {
+    location: config.get("region"),
+    repositoryId: "nudgenest-shopify-service",
+    format: "DOCKER",
+    description: "Repository for NudgeNest Shopify app (Remix)",
+    dockerConfig: {
+        immutableTags: false,
+    },
+    mode: "STANDARD_REPOSITORY",
+})
+
+// ============================================
+// Shopify App Secrets
+// Set values via: pulumi config set --secret <key> <value>
+// ============================================
+const shopifyAppSecrets = {
+    SHOPIFY_APP_API_KEY:       config.get("SHOPIFY_APP_API_KEY"),
+    SHOPIFY_APP_API_SECRET:    config.get("SHOPIFY_APP_API_SECRET"),
+    SHOPIFY_APP_URL:           config.get("SHOPIFY_APP_URL") || "https://placeholder.run.app", // updated after first deploy
+    SHOPIFY_APP_DATABASE_URL:  config.get("SHOPIFY_APP_DATABASE_URL"), // CockroachDB Serverless connection string
+    SHOPIFY_APP_SCOPES:        config.get("SHOPIFY_APP_SCOPES") || "read_products,read_orders,read_customers",
+    NUDGENEST_BACKEND_URL:     config.get("NUDGENEST_BACKEND_URL"),
+};
+
+const shopifyAppSecretsArray = Object.keys(shopifyAppSecrets).map((key) => {
+    const _secret = new gcp.secretmanager.Secret(key, {
+        secretId: key,
+        replication: { auto: {} },
+    });
+    // @ts-ignore
+    const secretData = shopifyAppSecrets[key];
+    const _secretVersion = new gcp.secretmanager.SecretVersion(key, {
+        secret: pulumi.interpolate`${_secret.id}`,
+        secretData: secretData,
+    }, { dependsOn: [_secret] });
+    new gcp.secretmanager.SecretIamMember(`${key}-access`, {
+        secretId: key,
+        role: "roles/secretmanager.secretAccessor",
+        member: "serviceAccount:service-1094805904049@gcp-sa-cloudbuild.iam.gserviceaccount.com",
+    }, { dependsOn: [_secretVersion] });
+    return _secret;
+});
+
+// Shopify App Cloud Build Trigger
+const shopify_connection_trigger = new gcp.cloudbuild.Trigger("shopify_build_trigger", {
+    location: config.get("region"),
+    name: 'nudgenest-shopify-trigger',
+    description: "Deploys NudgeNest Shopify app (Remix, Cloud Run) on push to test branch",
+    filename: "nudgenest-shpfy-app/cloudbuild.yaml",
+    project: "nudgenest",
+    repositoryEventConfig: {
+        repository: monorepo_connection_repo.id,
+        push: {
+            branch: "^test$",
+        },
+    },
+    includedFiles: ["nudgenest-shpfy-app/**"],
+    serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
+}, { dependsOn: [monorepo_connection_repo, shopify_repo, ...shopifyAppSecretsArray] })
+
 // Export CI/CD resources
 export const repoName = repo.name;
 export const feRepoName = fe_repo.name;
 export const landingRepoName = landing_repo.name;
+export const shopifyRepoName = shopify_repo.name;
 export const monorepoConnection = monorepo_connection.name;
 export const monorepoConnectionRepo = monorepo_connection_repo.name;
 export const backendConnectionTrigger = backend_connection_trigger.name;
 export const feConnectionTrigger = fe_connection_trigger.name;
 export const landingConnectionTrigger = landing_connection_trigger.name;
+export const shopifyConnectionTrigger = shopify_connection_trigger.name;
 
