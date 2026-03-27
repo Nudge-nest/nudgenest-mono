@@ -91,21 +91,29 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const returnUrl = `${process.env.SHOPIFY_APP_URL}/api/billing/callback?plan=${planTier}&shop=${session.shop}`;
 
-    let billingResponse: any;
     try {
-      billingResponse = await billing.request({
+      await billing.request({
         plan: planName,
         isTest: process.env.NODE_ENV !== "production",
         returnUrl,
       });
-      return json({ success: true, confirmationUrl: billingResponse?.confirmationUrl, planTier });
+      // billing.request() always throws — this line is unreachable
+      return json({ error: "Unexpected: billing.request() did not throw" }, { status: 500 });
     } catch (billingErr: any) {
-      throw billingErr; // re-throw so SDK/Remix handles the redirect
+      // billing.request() throws a Response with the confirmation URL in a header.
+      // We extract it and return it as JSON so the client can navigate directly,
+      // bypassing App Bridge's postMessage redirect (which breaks with tunnel URL mismatches).
+      if (billingErr instanceof Response) {
+        const confirmationUrl = billingErr.headers.get("x-shopify-api-request-failure-reauthorize-url");
+        if (confirmationUrl) {
+          return json({ confirmationUrl, planTier });
+        }
+      }
+      throw billingErr;
     }
 
   } catch (error: any) {
-    // Only catches non-billing errors (body parse, plan lookup etc)
-    if (error instanceof Response) throw error; // let redirect responses through
+    if (error instanceof Response) throw error;
     console.error("Unexpected billing error:", error?.message);
     return json({ error: "Failed to create billing charge", details: error.message }, { status: 500 });
   }

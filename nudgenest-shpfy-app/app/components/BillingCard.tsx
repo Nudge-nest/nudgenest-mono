@@ -59,23 +59,21 @@ export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, 
         body: JSON.stringify({ planTier }),
       });
 
-      const reauthorizeUrl = response.headers.get("x-shopify-api-request-failure-reauthorize-url");
+      const data = await response.json();
 
-      // Paid plan — App Bridge intercepts the 401 and redirects to approval page
-      if (reauthorizeUrl) {
-        window.top!.location.href = reauthorizeUrl;
+      // Paid plan — server extracted confirmationUrl from billing.request() throw.
+      // Navigate window.top directly; bypasses App Bridge postMessage entirely
+      // (postMessage breaks when the tunnel URL changes between dev sessions).
+      if (data.confirmationUrl) {
+        window.top!.location.href = data.confirmationUrl;
         return;
       }
 
-      // FREE downgrade — server handled it synchronously, set cookie and reload
-      // so the dashboard can read the billing status and show a toast
-      if (response.ok) {
-        const data = await response.json();
-        if (data.downgraded || planTier === "FREE") {
-          document.cookie = `nudgenest_billing_status=${encodeURIComponent("success:FREE")}; path=/; max-age=120; SameSite=None; Secure`;
-          window.location.reload();
-          return;
-        }
+      // FREE downgrade — server handled it synchronously
+      if (data.downgraded || planTier === "FREE") {
+        document.cookie = `nudgenest_billing_status=${encodeURIComponent("success:FREE")}; path=/; max-age=120; SameSite=None; Secure`;
+        window.location.reload();
+        return;
       }
 
       setIsProcessing(false);
