@@ -3,8 +3,8 @@
 client_id = "17dd6639f0adf774c19762bfc1f17d24"
 application_url = "https://say-psp-classics-celebrate.trycloudflare.com"
 embedded = true
-name = "nudgenest-shpfy-app"
-handle = "nudgenest-shpfy-app"
+name = "NudgeNest ‑ Product Reviews"
+handle = "nudgenest"
 
 [webhooks]
 api_version = "2024-10"
