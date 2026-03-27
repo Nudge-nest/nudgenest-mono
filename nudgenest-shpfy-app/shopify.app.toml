@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "17dd6639f0adf774c19762bfc1f17d24"
-application_url = "https://success-powerseller-jewel-cookbook.trycloudflare.com"
+application_url = "https://say-psp-classics-celebrate.trycloudflare.com"
 embedded = true
 name = "nudgenest-shpfy-app"
 handle = "nudgenest-shpfy-app"
@@ -41,14 +41,14 @@ scopes = "read_products, read_orders, read_customers"
 
 [auth]
 redirect_urls = [
-  "https://success-powerseller-jewel-cookbook.trycloudflare.com/auth/callback",
-  "https://success-powerseller-jewel-cookbook.trycloudflare.com/auth/shopify/callback",
-  "https://success-powerseller-jewel-cookbook.trycloudflare.com/api/auth/callback"
+  "https://say-psp-classics-celebrate.trycloudflare.com/auth/callback",
+  "https://say-psp-classics-celebrate.trycloudflare.com/auth/shopify/callback",
+  "https://say-psp-classics-celebrate.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
 embedded = false
 
 [build]
-dev_store_url = "nudgenest.myshopify.com"
+dev_store_url = "byteminds-test-nudge.myshopify.com"
 automatically_update_urls_on_dev = true

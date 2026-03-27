@@ -9,13 +9,20 @@ const PLAN_NAMES = {
   PRO: "Pro Plan",
 } as const;
 
+// Must match shopify.server.ts billing config
+const PLAN_PRICING: Record<string, number> = {
+  "Starter Plan": 4.99,
+  "Growth Plan": 12.99,
+  "Pro Plan": 29.99,
+};
+
 type PlanName = typeof PLAN_NAMES[keyof typeof PLAN_NAMES];
 type PlanTierKey = keyof typeof PLAN_NAMES;
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  let billing: any, session: any;
+  let billing: any, session: any, admin: any;
   try {
-    ({ billing, session } = await authenticate.admin(request));
+    ({ billing, session, admin } = await authenticate.admin(request));
   } catch (authErr: any) {
     throw authErr; // let the SDK handle it (redirect to login etc)
   }
@@ -82,7 +89,23 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const alreadyOnPlan = appSubscriptions.find((s: any) => s.name === planName);
     if (alreadyOnPlan) {
-      return json({ success: true, message: "Already subscribed to this plan", planTier });
+      // Shopify already has this plan active — sync backend in case it's stale
+      try {
+        const merchantId = session.shop.replace(".myshopify.com", "");
+        await fetchWithErrorHandling(`${BASE_URL}/billing/sync-shopify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            merchantId,
+            shopId: session.shop,
+            planTier,
+            status: "ACTIVE",
+          }),
+        });
+      } catch (syncErr) {
+        console.error("Backend sync for alreadyOnPlan failed:", syncErr);
+      }
+      return json({ success: true, alreadyOnPlan: true, planTier });
     }
 
     // Do NOT cancel the existing subscription here — Shopify cancels it automatically
@@ -90,25 +113,68 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     // leaves the merchant on FREE instead of their current paid plan.
 
     // Derive app base URL from the incoming request rather than SHOPIFY_APP_URL env var.
-    // shopify app dev generates a new Cloudflare tunnel URL on every restart and updates
-    // shopify.app.toml automatically — but .env is never updated, making SHOPIFY_APP_URL stale.
     const appBaseUrl = new URL(request.url).origin;
     const returnUrl = `${appBaseUrl}/api/billing/callback?plan=${planTier}&shop=${session.shop}`;
+    const isTest = process.env.NODE_ENV !== "production";
+    const price = PLAN_PRICING[planName];
 
-    try {
-      await billing.request({
-        plan: planName,
-        isTest: process.env.NODE_ENV !== "production",
-        returnUrl,
-      });
-      // billing.request() always throws — this line is unreachable
-      return json({ error: "Unexpected: billing.request() did not throw" }, { status: 500 });
-    } catch (billingErr: any) {
-      // Re-throw the 401 Response — Remix forwards it to the client with the
-      // X-Shopify-API-Request-Failure-Reauthorize-Url header intact.
-      // BillingCard reads that header and does window.top.location.href directly.
-      throw billingErr;
+    // Use appSubscriptionCreate GraphQL mutation directly instead of billing.request().
+    // billing.request() always throws a 401 to trigger App Bridge's redirect mechanism,
+    // but Remix strips custom headers from thrown Responses (remix-run/remix#5356),
+    // so App Bridge never receives the billing URL. Calling the mutation directly
+    // returns the confirmationUrl as plain JSON which the client navigates to directly.
+    const gqlResponse = await admin.graphql(
+      `#graphql
+      mutation AppSubscriptionCreate(
+        $name: String!
+        $lineItems: [AppSubscriptionLineItemInput!]!
+        $returnUrl: URL!
+        $test: Boolean
+      ) {
+        appSubscriptionCreate(name: $name, lineItems: $lineItems, returnUrl: $returnUrl, test: $test) {
+          appSubscription {
+            id
+          }
+          confirmationUrl
+          userErrors {
+            field
+            message
+          }
+        }
+      }`,
+      {
+        variables: {
+          name: planName,
+          returnUrl,
+          test: isTest,
+          lineItems: [
+            {
+              plan: {
+                appRecurringPricingDetails: {
+                  price: { amount: price, currencyCode: "USD" },
+                  interval: "EVERY_30_DAYS",
+                },
+              },
+            },
+          ],
+        },
+      }
+    );
+
+    const gqlData = await gqlResponse.json();
+    const userErrors = gqlData.data?.appSubscriptionCreate?.userErrors;
+    if (userErrors?.length > 0) {
+      console.error("Billing GraphQL userErrors:", userErrors);
+      return json({ error: userErrors[0].message }, { status: 400 });
     }
+
+    const confirmationUrl = gqlData.data?.appSubscriptionCreate?.confirmationUrl;
+    if (!confirmationUrl) {
+      console.error("No confirmationUrl in billing GraphQL response:", JSON.stringify(gqlData));
+      return json({ error: "Failed to create billing charge — no confirmation URL" }, { status: 500 });
+    }
+
+    return json({ confirmationUrl, planTier });
 
   } catch (error: any) {
     if (error instanceof Response) throw error;
