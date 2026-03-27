@@ -104,15 +104,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       // billing.request() always throws — this line is unreachable
       return json({ error: "Unexpected: billing.request() did not throw" }, { status: 500 });
     } catch (billingErr: any) {
-      // billing.request() throws a Response with the confirmation URL in a header.
-      // We extract it and return it as JSON so the client can navigate directly,
-      // bypassing App Bridge's postMessage redirect (which breaks with tunnel URL mismatches).
-      if (billingErr instanceof Response) {
-        const confirmationUrl = billingErr.headers.get("x-shopify-api-request-failure-reauthorize-url");
-        if (confirmationUrl) {
-          return json({ confirmationUrl, planTier });
-        }
-      }
+      // Re-throw the 401 Response — Remix forwards it to the client with the
+      // X-Shopify-API-Request-Failure-Reauthorize-Url header intact.
+      // BillingCard reads that header and does window.top.location.href directly.
       throw billingErr;
     }
 
