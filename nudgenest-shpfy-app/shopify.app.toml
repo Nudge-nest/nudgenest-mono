@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "17dd6639f0adf774c19762bfc1f17d24"
-application_url = "https://nudgenest-shopify-1094805904049.europe-west1.run.app"
+application_url = "https://merchant-staging.nudgenest.io"
 embedded = true
 name = "NudgeNest ‑ Product Reviews"
 handle = "nudgenest"
@@ -34,9 +34,9 @@ scopes = "read_products, read_orders, read_customers"
 
 [auth]
 redirect_urls = [
-  "https://nudgenest-shopify-1094805904049.europe-west1.run.app/auth/callback",
-  "https://nudgenest-shopify-1094805904049.europe-west1.run.app/auth/shopify/callback",
-  "https://nudgenest-shopify-1094805904049.europe-west1.run.app/api/auth/callback"
+  "https://merchant-staging.nudgenest.io/auth/callback",
+  "https://merchant-staging.nudgenest.io/auth/shopify/callback",
+  "https://merchant-staging.nudgenest.io/api/auth/callback"
 ]
 
 [pos]
