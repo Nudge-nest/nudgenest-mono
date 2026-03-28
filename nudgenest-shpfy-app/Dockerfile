@@ -16,16 +16,18 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-# Swap in production schema (CockroachDB) before generating the Prisma client
-RUN cp prisma/schema.prod.prisma prisma/schema.prisma
+# Swap in production schema (CockroachDB) and CockroachDB-compatible migrations
+RUN cp prisma/schema.prod.prisma prisma/schema.prisma && \
+    rm -rf prisma/migrations && \
+    cp -r prisma/migrations-cockroach prisma/migrations
 
 # Generate Prisma client against the production schema
 RUN npx prisma generate
 
 RUN pnpm run build
 
-# Push schema to CockroachDB then start the server.
-# prisma db push is used instead of migrate deploy — no migration files needed
-# for CockroachDB Serverless. Safe for additive schema changes.
-# || true ensures the container starts even if db push fails (schema already up to date).
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss || true && pnpm run start"]
+# Apply pending migrations to CockroachDB then start the server.
+# prisma migrate deploy applies pre-written SQL files — no schema diff, so it
+# never tries to touch CockroachDB's internal crdb_internal_region system enum.
+# Idempotent: tracks applied migrations in _prisma_migrations table.
+CMD ["sh", "-c", "npx prisma migrate deploy && pnpm run start"]
