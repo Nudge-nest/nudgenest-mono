@@ -11,7 +11,7 @@ steps:
           - 'COMMIT_SHA=$COMMIT_SHA'
           - '-t'
           - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-shopify-service/nudgenest-shopify-service:$COMMIT_SHA'
-          - nudgenest-shpfy-app
+          - .  # Build context is monorepo root (needed for packages/shared)
           - '-f'
           - nudgenest-shpfy-app/Dockerfile
       id: build

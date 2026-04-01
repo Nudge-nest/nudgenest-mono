@@ -25,7 +25,7 @@ steps:
           - 'COMMIT_SHA=$COMMIT_SHA'
           - '-t'
           - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-fe-service/nudgenest-fe-service:$COMMIT_SHA'
-          - review-ui  # Build context is the review-ui directory
+          - .  # Build context is monorepo root (needed for packages/shared)
           - '-f'
           - review-ui/Dockerfile  # Path to Dockerfile from repo root
       secretEnv: # Make secrets available to this step
