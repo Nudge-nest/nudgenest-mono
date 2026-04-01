@@ -84,7 +84,6 @@ const createReview = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
                 merchantBusinessId: reviewData.merchantBusinessId || '',
                 shopId: reviewData.shopId || '',
                 customerEmail: reviewData.customerEmail || '',
-                customerPhone: reviewData.customerPhone || '',
                 customerName: reviewData.customerName,
                 items: reviewData.items || [],
                 result: reviewData.result || null,

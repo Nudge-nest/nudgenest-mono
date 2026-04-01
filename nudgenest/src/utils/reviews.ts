@@ -88,7 +88,6 @@ export const createNewReview = async (prisma: any, reviewData: IDataFromShopifyP
                 merchantId: merchantId,
                 merchantBusinessId: merchant_business_entity_id,
                 shopId: shopId,
-                customerPhone: customer.phone || '',
                 customerEmail: customer.email,
                 customerName: `${customer.first_name} ${customer.last_name}`,
                 items: line_items,

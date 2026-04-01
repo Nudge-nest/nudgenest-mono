@@ -43,7 +43,6 @@ model Reviews {
   merchantBusinessId String
   shopId             String
   customerEmail      String
-  customerPhone      String
   customerName       String     @default("Verified Customer")
   items              Json
   result             Json?
