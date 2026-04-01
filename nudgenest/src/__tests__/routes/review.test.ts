@@ -26,7 +26,6 @@ const mockReview: any = {
     shopId: '67580297354',
     customerEmail: 'ayoalabi0@gmail.com',
     customerName: 'Test Customer',
-    customerPhone: '',
     verified: true,
     published: false,
     replies: [],

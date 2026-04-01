@@ -217,7 +217,6 @@ const importConfirm = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => 
                     merchantBusinessId: '',
                     shopId: '',
                     customerEmail,
-                    customerPhone: '',
                     customerName,
                     items,
                     result,

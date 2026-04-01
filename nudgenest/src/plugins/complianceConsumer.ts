@@ -97,7 +97,6 @@ const complianceConsumerPlugin: Hapi.Plugin<null> = {
                             data: {
                                 customerEmail: `[REDACTED]-${customerId ?? 'unknown'}@redacted.invalid`,
                                 customerName: REDACTED,
-                                customerPhone: REDACTED,
                                 published: false,
                             },
                         });
@@ -133,7 +132,6 @@ const complianceConsumerPlugin: Hapi.Plugin<null> = {
                             data: {
                                 customerEmail: `${anonToken}@redacted.invalid`,
                                 customerName: REDACTED,
-                                customerPhone: REDACTED,
                                 published: false,
                             },
                         });
