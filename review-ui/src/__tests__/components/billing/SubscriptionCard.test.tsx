@@ -8,8 +8,8 @@ const mockSubscriptionDetails = {
         merchantId: 'merchant1',
         planId: 'plan1',
         status: 'ACTIVE' as const,
-        currentPeriodStart: new Date('2024-01-01'),
-        currentPeriodEnd: new Date('2024-02-01'),
+        currentPeriodStart: '2024-01-01T00:00:00.000Z',
+        currentPeriodEnd: '2024-02-01T00:00:00.000Z',
         Plans: {
             id: 'plan1',
             name: 'starter',
@@ -40,8 +40,8 @@ const mockSubscriptionDetails = {
                 teamMembers: 2,
             },
             isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: '2024-01-01T00:00:00.000Z',
+            updatedAt: '2024-01-01T00:00:00.000Z',
         },
     },
     usage: {
