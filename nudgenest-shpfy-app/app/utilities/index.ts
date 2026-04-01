@@ -1,4 +1,7 @@
 
+export type { Plan, PlanFeatures, PlanLimits, SubscriptionDetails } from '@nudgenest/shared';
+import type { SubscriptionDetails } from '@nudgenest/shared';
+
 export interface IShopifyBusinessAddress {
   address1: string;
   address2: string;
@@ -33,64 +36,6 @@ export interface ReviewStats {
   responseRate: number;
 }
 
-export interface SubscriptionDetails {
-  subscription?: {
-    id: string;
-    status: string;
-    currentPeriodEnd: string;
-    trialEnd?: string;
-    Plans: {
-      id: string;
-      name: string;
-      displayName: string;
-      tier: string;
-      price: number;
-      billingInterval: string;
-    };
-  } | null;
-  usage?: {
-    REVIEW_REQUEST?: number;
-    EMAIL_SENT?: number;
-    API_CALL?: number;
-  };
-  limits?: {
-    reviewRequestsPerMonth: number;
-    emailsPerMonth: number;
-    apiCallsPerDay: number;
-  };
-}
-
-export interface Plan {
-  id: string;
-  name: string;
-  displayName: string;
-  description: string;
-  tier: string;
-  price: number;
-  billingInterval: string;
-  limits: {
-    reviewRequestsPerMonth: number;
-    emailsPerMonth: number;
-    smsPerMonth: number;
-    storageGB: number;
-    apiCallsPerDay: number;
-    teamMembers: number;
-  };
-  features: {
-    emailReviewRequests: boolean;
-    smsReviewRequests: boolean;
-    autoReminders: boolean;
-    customEmailTemplates: boolean;
-    reviewIncentives: boolean;
-    bulkImport: boolean;
-    advancedAnalytics: boolean;
-    apiAccess: boolean;
-    whiteLabel: boolean;
-    prioritySupport: boolean;
-    dedicatedAccountManager: boolean;
-  };
-}
-
 export interface LoaderData {
   isRegistered: boolean;
   shopInfo: IShopifyShop | null;
@@ -106,7 +51,7 @@ export interface LoaderData {
     price: number;
     billingInterval: string;
   } | null;
-  allPlans?: Plan[] | null;
+  allPlans?: import('@nudgenest/shared').Plan[] | null;
   reviewUiBaseUrl?: string;
   billingStatus?: string | null;
   error?: string;
@@ -235,5 +180,3 @@ export const fetchSubscriptionDetails = async (merchantId: string, apiKey?: stri
     return null;
   }
 };
-
-

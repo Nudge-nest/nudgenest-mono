@@ -86,19 +86,20 @@ export interface IReview {
     merchantId: string;
     shopId: string;
     customerEmail?: string;
-    customerPhone?: string;
     customerName?: string;
     verified: boolean;
     replies?: object;
     items: IReviewItem[];
     result: IReviewResult[];
     status: 'Pending' | 'Completed' | 'Failed';
+    published?: boolean;
+    merchantApiKey?: string;
     createdAt: string;
     updatedAt: string;
 }
 
 export interface IReviewItem {
-    [key: string]: any; // Or make a stricter type if known
+    [key: string]: any;
 }
 
 export interface IReviewResult {

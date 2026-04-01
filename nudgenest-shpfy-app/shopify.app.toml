@@ -44,4 +44,4 @@ embedded = false
 
 [build]
 dev_store_url = "byteminds-test-nudge.myshopify.com"
-automatically_update_urls_on_dev = true
+automatically_update_urls_on_dev = false
