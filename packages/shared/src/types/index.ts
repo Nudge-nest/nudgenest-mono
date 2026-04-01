@@ -48,8 +48,8 @@ export interface Plan {
     features: PlanFeatures;
     limits: PlanLimits;
     isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string; // ISO date string (JSON-serialised)
+    updatedAt: string; // ISO date string (JSON-serialised)
 }
 
 export interface Subscription {
@@ -57,12 +57,12 @@ export interface Subscription {
     merchantId: string;
     planId: string;
     status: SubscriptionStatus;
-    currentPeriodStart: Date;
-    currentPeriodEnd: Date;
-    cancelAt?: Date;
-    canceledAt?: Date;
-    trialStart?: Date;
-    trialEnd?: Date;
+    currentPeriodStart: string; // ISO date string (JSON-serialised)
+    currentPeriodEnd: string;   // ISO date string (JSON-serialised)
+    cancelAt?: string;
+    canceledAt?: string;
+    trialStart?: string;
+    trialEnd?: string;
     shopifyChargeId?: string;
     Plans: Plan;
 }
