@@ -9,15 +9,8 @@ import sharp from 'sharp';
 
 dotenv.config();
 
-// Types
-interface UploadedFile {
-    filename: string;
-    headers: { [key: string]: string };
-    payload: Buffer;
-}
-
 // Configuration
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
+const _ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILES_PER_REQUEST = 12;
@@ -65,14 +58,12 @@ const reviewMediaPlugin: Hapi.Plugin<null> = {
 const uploadMediaToGCSHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit): Promise<Hapi.ResponseObject> => {
     return new Promise((resolve) => {
         const files: Array<{ buffer: Buffer; filename: string; contentType: string }> = [];
-        let reviewId = '';
         let merchantId = '';
 
         const busboy = Busboy({ headers: request.headers });
 
         // Handle form fields
         busboy.on('field', (fieldname: string, value: string) => {
-            if (fieldname === 'reviewId') reviewId = value;
             if (fieldname === 'merchantId') merchantId = value;
         });
 

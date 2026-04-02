@@ -1,6 +1,6 @@
 import { createServer } from '../../server-factory';
 import { Server, ServerInjectResponse } from '@hapi/hapi';
-import { IReview, responseType } from '../../types';
+import { responseType } from '../../types';
 import { prismaMock } from '../mocks/prisma';
 
 const testApiKey = 'test-review-api-key';

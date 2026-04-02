@@ -105,7 +105,6 @@ describe('Merchants Unit Tests', () => {
     });
 
     test('default merchant configs should exist', async () => {
-        defaultConfigs;
         expect(defaultConfigs).toBeTruthy();
         expect(defaultConfigs).toHaveProperty('emailContent');
         expect(defaultConfigs).toHaveProperty('reminderEmailContent');

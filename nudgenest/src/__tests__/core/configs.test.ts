@@ -1,7 +1,6 @@
 import { Context, createMockContext, MockContext } from '../prismaContext';
-import { IReview } from '../../types';
 import { defaultConfigs } from '../../plugins/merchant';
-import { IReviewConfiguration, IStrictReviewConfiguration } from '../../types/reviewConfigs';
+import { IReviewConfiguration } from '../../types/reviewConfigs';
 
 export async function createConfig(config: IReviewConfiguration, ctx: Context) {
     return ctx.prisma.configurations.create({
@@ -43,8 +42,8 @@ const createTestReviewConfigData = (): IReviewConfiguration => {
 describe('Review Configurations Unit Tests', () => {
     let mockCtx: MockContext;
     let ctx: Context;
-    let reviewConfigData = createTestReviewConfigData();
-    let expectedReviewConfigData = {
+    const reviewConfigData = createTestReviewConfigData();
+    const expectedReviewConfigData = {
         ...reviewConfigData,
         id: '507f1f77bcf86cd799439011',
         merchantId: '507f1f77bcf86cd799439055',

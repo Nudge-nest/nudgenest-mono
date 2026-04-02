@@ -13,7 +13,7 @@ import {
 } from '../utils/reviews';
 import { isRabbitReviewRequestMessageValid, sampleMessaging } from '../messagesSchema';
 import { convertObjectToBuffer, createMerchantEmailMessagingTemplate } from './merchant';
-import { enrichLineItemsWithImages, getShopifyAccessToken } from '../utils/shopify';
+import { enrichLineItemsWithImages } from '../utils/shopify';
 
 dotenv.config();
 
@@ -80,7 +80,7 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
     // Parse JSON after HMAC verification
     const payload = JSON.parse(rawBody);
     const { pubsub, prisma } = request.server.app;
-    const { messagingTopic, client } = pubsub;
+    const { messagingTopic, client: _client } = pubsub;
     const topic = request.headers['x-shopify-topic'];
 
     console.log('Webhook topic:', topic);
@@ -91,7 +91,7 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         return h.response({ message: 'Topic not handled' }).code(200);
     }
 
-    let { customer_locale, order_number } = payload;
+    const { customer_locale, order_number } = payload;
 
     if (!order_number) {
         console.log('Missing order_number, skipping webhook');

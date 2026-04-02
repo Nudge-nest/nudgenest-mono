@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 import { Sentry } from '../lib/sentry';
 import { eventType, IRabbitDataObject, IReviewMessagePayloadContent } from '../types';
 import EmailService from '../email-service';
-import { trackEmailUsage, trackReviewRequestUsage } from '../middleware/usage-tracking';
+// import { trackEmailUsage, trackReviewRequestUsage } from '../middleware/usage-tracking';
 
 dotenv.config();
 
