@@ -15,6 +15,8 @@ export interface EmailData {
     reviewId?: string;
     unsubscribeUrl?: string;
     currency?: string;
+    storeName?: string;
+    storeDomain?: string;
     // Merchant-configurable overrides for review request / reminder emails
     subjectOverride?: string;
     bodyOverride?: string;
@@ -89,7 +91,9 @@ class EmailService {
         switch (type) {
             case EmailType.REVIEW_REQUEST:
                 return {
-                    subject: data.subjectOverride || `${data.userName}, how was your recent purchase?`,
+                    subject: data.subjectOverride || (data.storeName
+                        ? `${data.userName}, how was your recent order from ${data.storeName}?`
+                        : `${data.userName}, how was your recent purchase?`),
                     mainMessage: data.bodyOverride || `We would be grateful if you shared how things look and feel. Your review helps us and the community that supports us, and it only takes a few seconds.`,
                     showRating: true,
                     showItems: true,
@@ -101,7 +105,9 @@ class EmailService {
 
             case EmailType.REVIEW_REMINDER:
                 return {
-                    subject: data.reminderSubjectOverride || `Quick reminder: Share your thoughts on order #${data.order_number}`,
+                    subject: data.reminderSubjectOverride || (data.storeName
+                        ? `Reminder from ${data.storeName}: share your thoughts on order #${data.order_number}`
+                        : `Quick reminder: Share your thoughts on order #${data.order_number}`),
                     mainMessage: data.reminderBodyOverride || `We noticed you haven't had a chance to review your recent purchase yet. We'd love to hear what you think!`,
                     showRating: true,
                     showItems: true,
@@ -227,8 +233,11 @@ class EmailService {
             const html = ejs.render(template, templateData);
 
             // Send email via Resend
+            const fromDisplay = data.storeName
+                ? `${data.storeName} <${this.fromEmail}>`
+                : `NudgeNest Team <${this.fromEmail}>`;
             const result = await this.resend.emails.send({
-                from: this.fromEmail,
+                from: fromDisplay,
                 to: data.email,
                 subject: config.subject,
                 html: html,

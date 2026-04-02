@@ -161,6 +161,18 @@
             Hello <%= typeof userName !== 'undefined' ? userName : 'there' %>,
         </div>
 
+        <!-- Store attribution (customer emails only) -->
+        <% if (typeof storeName !== 'undefined' && storeName) { %>
+        <div style="font-size:13px; color:#6b7280; margin-bottom:20px;">
+            Regarding your order from
+            <% if (typeof storeDomain !== 'undefined' && storeDomain) { %>
+                <a href="https://<%= storeDomain %>" style="color:#6b7280; font-weight:600; text-decoration:none;"><%= storeName %></a>
+            <% } else { %>
+                <strong><%= storeName %></strong>
+            <% } %>
+        </div>
+        <% } %>
+
         <!-- Main Message -->
         <div class="message">
             <%- mainMessage %>
@@ -236,7 +248,10 @@
         <% if (order_number && order_number !== 'undefined') { %>
             <p>Order #<%= order_number %></p>
         <% } %>
-        <p>© <%= currentYear %>  Powered by Nudge-nest </p>
+        <% if (typeof storeName !== 'undefined' && storeName) { %>
+        <p>Sent on behalf of <strong><%= storeName %></strong></p>
+        <% } %>
+        <p>© <%= currentYear %> Powered by <a href="https://nudgenest.io" style="color:#9ca3af; text-decoration:none;">NudgeNest</a></p>
         <div>
 
         </div>

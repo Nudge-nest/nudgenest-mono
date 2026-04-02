@@ -38,27 +38,36 @@ const extractParamsFromLineItems = (lineItems: any[]) => {
     });
 };
 
-// Fetch merchant config overrides (subject / body / buttonText) for customer-facing emails
+// Fetch merchant config overrides (subject / body / buttonText) and store identity for customer-facing emails
 const getMerchantEmailConfig = async (server: Hapi.Server, merchantId?: string) => {
     if (!merchantId) return {};
     try {
         const prisma = server.app.prisma;
-        const config = await prisma.configurations.findFirst({
-            where: { merchantId },
-            select: { emailContent: true, reminderEmailContent: true },
-        });
-        if (!config) return {};
+        const [config, merchant] = await Promise.all([
+            prisma.configurations.findFirst({
+                where: { merchantId },
+                select: { emailContent: true, reminderEmailContent: true },
+            }),
+            prisma.merchants.findFirst({
+                where: { id: merchantId },
+                select: { name: true, domains: true },
+            }),
+        ]);
 
         const getVal = (fields: any[], key: string) =>
             fields?.find((f: any) => f.key === key)?.value;
 
         return {
-            subjectOverride: getVal(config.emailContent, 'subject'),
-            bodyOverride: getVal(config.emailContent, 'body'),
-            buttonTextOverride: getVal(config.emailContent, 'buttonText'),
-            reminderSubjectOverride: getVal(config.reminderEmailContent, 'reminderSubject'),
-            reminderBodyOverride: getVal(config.reminderEmailContent, 'reminderBody'),
-            reminderButtonTextOverride: getVal(config.reminderEmailContent, 'reminderButtonText'),
+            storeName: merchant?.name || undefined,
+            storeDomain: merchant?.domains || undefined,
+            ...(config ? {
+                subjectOverride: getVal(config.emailContent, 'subject'),
+                bodyOverride: getVal(config.emailContent, 'body'),
+                buttonTextOverride: getVal(config.emailContent, 'buttonText'),
+                reminderSubjectOverride: getVal(config.reminderEmailContent, 'reminderSubject'),
+                reminderBodyOverride: getVal(config.reminderEmailContent, 'reminderBody'),
+                reminderButtonTextOverride: getVal(config.reminderEmailContent, 'reminderButtonText'),
+            } : {}),
         };
     } catch (err: any) {
         console.warn(`⚠️ Could not load merchant config for ${merchantId}:`, err.message);
