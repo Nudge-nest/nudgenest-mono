@@ -118,25 +118,6 @@ export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, 
     }
   };
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  // Format price
-  const formatPrice = (price: number, interval: string) => {
-    const intervalMap: Record<string, string> = {
-      'MONTHLY': '/month',
-      'YEARLY': '/year',
-      'ANNUAL': '/year'
-    };
-    return `$${price.toFixed(2)}${intervalMap[interval] || ''}`;
-  };
-
   return (
     <Card>
       <BlockStack gap="400">

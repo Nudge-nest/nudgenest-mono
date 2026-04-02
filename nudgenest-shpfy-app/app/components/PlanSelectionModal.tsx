@@ -1,4 +1,4 @@
-import { Modal, BlockStack, RadioButton, Text, Button, InlineStack, Box, Divider } from "@shopify/polaris";
+import { Modal, BlockStack, RadioButton, Text, InlineStack, Box, Divider } from "@shopify/polaris";
 import { useState } from "react";
 
 interface Plan {

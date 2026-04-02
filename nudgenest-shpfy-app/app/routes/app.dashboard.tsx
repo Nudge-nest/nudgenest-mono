@@ -1,4 +1,3 @@
-import { TitleBar } from "@shopify/app-bridge-react";
 import {BlockStack, Button, Card, InlineStack, Layout, Page, Toast, Text, Frame} from "@shopify/polaris";
 import {useCallback, useState, useEffect} from "react";
 import { useLocation } from "@remix-run/react";
@@ -67,7 +66,6 @@ function CustomerDashboard({ merchantData, shopInfo, reviewStats, subscriptionDe
   }, [location.search, showToast]);
 
   const openConfigModal = useCallback(() => {
-    const shopDomain = merchantData?.domains || shopInfo.myshopifyDomain;
     const merchantId = merchantData?.id || merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
     const configUrl = `${reviewUiBaseUrl}/configs/${merchantId}?apiKey=${merchantData?.apiKey ?? ''}`;
 

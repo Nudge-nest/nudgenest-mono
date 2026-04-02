@@ -1,5 +1,4 @@
 import {useFetcher, useRevalidator} from "@remix-run/react";
-import { TitleBar } from "@shopify/app-bridge-react";
 import {Banner, BlockStack, Button, Card, FormLayout, InlineStack, Layout, Page, TextField, Text} from "@shopify/polaris";
 import {useCallback, useEffect, useState} from "react";
 import type {IShopifyBusinessEntityData, IShopifyShop} from "../utilities";

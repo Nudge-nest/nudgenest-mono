@@ -229,7 +229,7 @@
       img.src = mediaURL;
       img.alt = 'Review media';
       img.setAttribute('loading', 'lazy');
-      img.onclick = function() { openMediaModal(mediaURL); };
+      img.onclick = function() { window.openMediaModal(mediaURL); };
       mediaDiv.appendChild(img);
     }
     return mediaDiv;
@@ -266,15 +266,15 @@
       modal = document.createElement('div');
       modal.id = 'mediaModal';
       modal.className = 'media-modal';
-      modal.innerHTML = '<div class="media-modal__content"><button class="media-modal__close" onclick="closeMediaModal()">&times;</button><img class="media-modal__image" id="modalImage" src="" alt="Review media"></div>';
+      modal.innerHTML = '<div class="media-modal__content"><button class="media-modal__close" onclick="window.closeMediaModal()">&times;</button><img class="media-modal__image" id="modalImage" src="" alt="Review media"></div>';
       document.body.appendChild(modal);
 
       modal.onclick = function(event) {
-        if (event.target === modal) closeMediaModal();
+        if (event.target === modal) window.closeMediaModal();
       };
 
       document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') closeMediaModal();
+        if (event.key === 'Escape') window.closeMediaModal();
       });
     }
 

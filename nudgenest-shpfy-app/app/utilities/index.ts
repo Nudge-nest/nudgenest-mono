@@ -1,6 +1,6 @@
 
-export type { Plan, PlanFeatures, PlanLimits, SubscriptionDetails } from '@nudgenest/shared';
 import type { SubscriptionDetails } from '@nudgenest/shared';
+export type { Plan, PlanFeatures, PlanLimits, SubscriptionDetails } from '@nudgenest/shared';
 
 export interface IShopifyBusinessAddress {
   address1: string;
