@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'fix/**'
+      - develop
+      - test
+      - master
+  pull_request:
+    branches:
+      - develop
+      - test
+      - master
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Backend — nudgenest (Hapi.js)
+  # ---------------------------------------------------------------------------
+  ci-backend:
+    name: Backend — TS + Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: nudgenest/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: nudgenest
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript check
+        working-directory: nudgenest
+        run: pnpm tsc --noEmit
+
+      - name: Run tests
+        working-directory: nudgenest
+        run: pnpm test:ci
+
+  # ---------------------------------------------------------------------------
+  # Review UI — React + Vite (unit + E2E)
+  # ---------------------------------------------------------------------------
+  ci-review-ui:
+    name: Review UI — Build + Unit + E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (TS + Vite)
+        run: pnpm --filter review-ui build
+        env:
+          VITE_APP_BACKEND_HOST: http://localhost:50001
+
+      - name: Unit tests (Vitest)
+        run: pnpm --filter review-ui test --run
+
+      - name: Install Playwright browsers
+        run: pnpm --filter review-ui exec playwright install --with-deps chromium
+
+      - name: Start preview server
+        run: pnpm --filter review-ui preview &
+        env:
+          VITE_APP_BACKEND_HOST: http://localhost:50001
+
+      - name: Wait for server
+        run: sleep 5
+
+      - name: E2E tests (Playwright)
+        run: pnpm --filter review-ui test:integration
+        env:
+          CI: 'true'
+
+  # ---------------------------------------------------------------------------
+  # Shopify App — Remix
+  # ---------------------------------------------------------------------------
+  ci-shopify:
+    name: Shopify App — Build + Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (Remix + TS)
+        run: pnpm --filter nudgenest-shpfy-app build
+
+      - name: Lint
+        run: pnpm --filter nudgenest-shpfy-app lint
+
+  # ---------------------------------------------------------------------------
+  # Landing Page — React + Vite (build + E2E)
+  # ---------------------------------------------------------------------------
+  ci-landing:
+    name: Landing — Build + E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: nudge-nest-landing/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: nudge-nest-landing
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (TS + Vite)
+        working-directory: nudge-nest-landing
+        run: pnpm build
+
+      - name: Install Playwright browsers
+        working-directory: nudge-nest-landing
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Start preview server
+        working-directory: nudge-nest-landing
+        run: pnpm preview &
+
+      - name: Wait for server
+        run: sleep 5
+
+      - name: E2E tests (Playwright)
+        working-directory: nudge-nest-landing
+        run: pnpm test
+        env:
+          CI: 'true'
