@@ -63,6 +63,7 @@ function CustomerDashboard({ merchantData, shopInfo, reviewStats, subscriptionDe
       showToast(`❌ Billing error: ${decodeURIComponent(billingError)}`, true);
       window.history.replaceState({}, '', location.pathname);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search, showToast]);
 
   const openConfigModal = useCallback(() => {

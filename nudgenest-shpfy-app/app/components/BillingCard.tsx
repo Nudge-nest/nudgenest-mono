@@ -42,7 +42,7 @@ interface BillingCardProps {
   onManagePlan?: () => void;
 }
 
-export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, onManagePlan }: BillingCardProps) {
+export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade: _onUpgrade, onManagePlan: _onManagePlan }: BillingCardProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const shopify = useAppBridge();
 

@@ -76,6 +76,7 @@ const ReviewConfigsPage = () => {
                 content: <Suspense fallback={<TabFallback />}><ReviewModerationComponent /></Suspense>,
             },
         ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reviewConfigFormHoook.reviewConfigs]);
 
     return (

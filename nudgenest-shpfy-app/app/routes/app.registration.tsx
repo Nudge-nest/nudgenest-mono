@@ -3,7 +3,7 @@ import {Banner, BlockStack, Button, Card, FormLayout, InlineStack, Layout, Page,
 import {useCallback, useEffect, useState} from "react";
 import type {IShopifyBusinessEntityData, IShopifyShop} from "../utilities";
 
-function RegistrationPage({ shopInfo, businessInfo, defaultPlan }: {
+function RegistrationPage({ shopInfo, businessInfo: _businessInfo, defaultPlan }: {
   shopInfo: IShopifyShop;
   businessInfo: IShopifyBusinessEntityData;
   defaultPlan?: {

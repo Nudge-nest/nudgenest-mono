@@ -56,6 +56,7 @@ const RatingWidget: FC<RatingWidgetProps> = memo(({ product, result, isCompleted
                 setSelectedRating(Number(itemReview.value));
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [result, isCompleted]);
 
     const handleSetRating = useCallback(

@@ -51,7 +51,7 @@ export interface LoaderData {
     price: number;
     billingInterval: string;
   } | null;
-  allPlans?: import('@nudgenest/shared').Plan[] | null;
+  allPlans?: Plan[] | null;
   reviewUiBaseUrl?: string;
   billingStatus?: string | null;
   error?: string;

@@ -1,4 +1,5 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import { BASE_URL, fetchWithErrorHandling } from "../utilities";
 

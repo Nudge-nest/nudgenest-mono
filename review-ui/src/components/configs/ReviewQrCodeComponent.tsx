@@ -99,6 +99,7 @@ const ReviewQrCodeComponent = () => {
         };
 
         generateInitialQrCode();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reviewConfigs?.qrCode]); // Minimal dependencies
 
     // Handle manual URL changes

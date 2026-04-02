@@ -16,7 +16,7 @@ interface PlanSelectionModalProps {
   active: boolean;
   onClose: () => void;
   currentPlanTier?: string;
-  onSelectPlan: (planId: string) => void;
+  onSelectPlan: (_planId: string) => void;
 }
 
 // Mock plans - in production, fetch these from your API

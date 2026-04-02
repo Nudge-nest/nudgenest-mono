@@ -14,6 +14,7 @@ const ReviewPage = () => {
     // Get slide count - recalculate when slider is loaded
     const slideCount = useMemo(() => {
         return sliderHook.instanceRef.current?.track.details.slides.length || 3; // Default to 3 slides
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sliderHook.loaded]); // Depend on loaded state, not ref
 
     // True when every product has been given a star rating
@@ -37,11 +38,13 @@ const ReviewPage = () => {
             event.preventDefault();
             sliderHook.instanceRef.current?.moveToIdx(targetIndex);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Refs don't need to be in dependencies
 
     // Navigate to specific slide
     const navigateToSlide = useCallback((idx: number) => {
         sliderHook.instanceRef.current?.moveToIdx(idx);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Refs don't need to be in dependencies
 
     // Auto-advance from rating slide once all products are rated — fires only once
@@ -54,6 +57,7 @@ const ReviewPage = () => {
             }, 600);
             return () => clearTimeout(timer);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [allRated, sliderHook.currentSlide]);
 
     // Get slide label for accessibility

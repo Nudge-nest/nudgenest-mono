@@ -29,6 +29,7 @@ if (new URLSearchParams(window.location.search).has('sentry-test')) {
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Fallback({ error }: FallbackProps) {
     // react-error-boundary v6 widened error to `unknown` — narrow before accessing .message
     const message = error instanceof Error ? error.message : String(error);

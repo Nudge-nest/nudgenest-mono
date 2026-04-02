@@ -4,7 +4,7 @@
   const container = document.querySelector('.business-reviews-container');
   if (!container) return;
 
-  const reviewsHeader = document.getElementById('businessReviewsHeader');
+  const _reviewsHeader = document.getElementById('businessReviewsHeader');
   const loadingEl = document.getElementById('reviewsLoading');
   const gridEl = document.getElementById('reviewsGrid');
   const errorEl = document.getElementById('reviewsError');
@@ -65,7 +65,7 @@
     const reviewId = review.id || '';
     const createdAt = review.createdAt || '';
     const result = review.result || [];
-    const items = review.items || [];
+    const _items = review.items || [];
     // Review result data
     const numericalResults = result.filter((res)=>res.value);
     const nonNumericalResults = result.filter((res)=>!res.value);
@@ -78,7 +78,7 @@
     // For now, we'll use a placeholder for customer info
     // You might want to add customer data to your schema
     const customerName = 'Verified Customer';
-    const customerImage = '';
+    const _customerImage = '';
 
     // Format date
     const reviewDate = createdAt ? new Date(createdAt).toLocaleDateString() : '';
@@ -162,7 +162,7 @@
   function generateSummaryReviews(reviews) {
     console.log("Summary- reviews2");
     const reviewsSummaryWrapper = document.getElementById('reviewsSummaryWrapper');
-    const reviewsSummarySort = document.getElementById('reviewsSummarySort');
+    const _reviewsSummarySort = document.getElementById('reviewsSummarySort');
     const reviewsCount = reviews.length;
     const reviewsNumericalResult = reviews.result.filter((res)=>res.value) || [];
     const rating = Number(reviewsNumericalResult.reduce((a, b)=>a.value + b.value, 0))/reviewsNumericalResult.length;
