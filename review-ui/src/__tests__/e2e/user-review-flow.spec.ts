@@ -91,6 +91,7 @@ test.describe('Customer Review Flow - Simple', () => {
 
     // Test demo mode if available
     test('should allow review in demo mode', async ({ page }) => {
+        test.skip(!!process.env.CI, 'Requires running backend — skipped in CI');
         await page.goto(`${FRONTEND_BASE_URL}/review/demo`);
 
         // Check if demo mode works

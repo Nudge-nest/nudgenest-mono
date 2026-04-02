@@ -38,6 +38,10 @@ jobs:
         working-directory: nudgenest
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        working-directory: nudgenest
+        run: pnpm exec prisma generate
+
       - name: TypeScript check
         working-directory: nudgenest
         run: pnpm tsc --noEmit
@@ -109,16 +113,19 @@ jobs:
         with:
           node-version: '22'
           cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+          cache-dependency-path: nudgenest-shpfy-app/pnpm-lock.yaml
 
       - name: Install dependencies
+        working-directory: nudgenest-shpfy-app
         run: pnpm install --frozen-lockfile
 
       - name: Build (Remix + TS)
-        run: pnpm --filter nudgenest-shpfy-app build
+        working-directory: nudgenest-shpfy-app
+        run: pnpm build
 
       - name: Lint
-        run: pnpm --filter nudgenest-shpfy-app lint
+        working-directory: nudgenest-shpfy-app
+        run: pnpm lint
 
   # ---------------------------------------------------------------------------
   # Landing Page — React + Vite (build + E2E)
@@ -163,3 +170,4 @@ jobs:
         run: pnpm test
         env:
           CI: 'true'
+          BASE_URL: 'http://localhost:4173'
