@@ -91,7 +91,8 @@ const webhookMessageHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
         return h.response({ message: 'Topic not handled' }).code(200);
     }
 
-    const { customer_locale, order_number } = payload;
+    let { customer_locale } = payload;
+    const { order_number } = payload;
 
     if (!order_number) {
         console.log('Missing order_number, skipping webhook');

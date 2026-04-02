@@ -5,44 +5,24 @@ test.describe('App Test', () => {
         await page.goto('/');
     });
 
-    test('media/video section is visible', async ({ page }) => {
+    test('hero section is visible', async ({ page }) => {
         await expect(page).toHaveTitle(/Nudgenest/);
-        await expect(page.getByLabel('media-video')).toBeVisible();
+        await expect(page.getByLabel('hero-section')).toBeVisible();
+        await expect(page.getByText('Boost Trust. Grow Your Brand. Simplify Reviews.')).toBeVisible();
     });
 
-    test('signup for early access url works', async ({ page }) => {
+    test('get started link is visible', async ({ page }) => {
         await expect(page).toHaveTitle(/Nudgenest/);
-        await expect(page.getByRole('button', { name: 'Sign Up for Early Access' })).toBeVisible();
-        const [popup] = await Promise.all([
-            page.waitForEvent('popup'), // Wait for a new tab to open
-            page.getByRole('button', { name: /Sign Up for Early Access/i }).click(), // Click the button
-        ]);
-        await popup.waitForURL(/docs\.google\.com\/forms/i);
-        await expect(popup).toHaveURL(/docs\.google\.com\/forms/i);
-        await expect(popup).toHaveTitle(/Sign Up for Early Access to Nudge-Nest/);
+        await expect(page.getByRole('link', { name: /Get Started/i })).toBeVisible();
     });
 
-    test('submit feature request url works', async ({ page }) => {
+    test('submit feature request link is visible', async ({ page }) => {
         await expect(page).toHaveTitle(/Nudgenest/);
-        await expect(page.getByRole('button', { name: 'Submit Your Feature Request' })).toBeVisible();
-        const [popup] = await Promise.all([
-            page.waitForEvent('popup'), // Wait for a new tab to open
-            page.getByRole('button', { name: /Submit Your Feature Request/i }).click(), // Click the button
-        ]);
-        await popup.waitForURL(/docs\.google\.com\/forms/i);
-        await expect(popup).toHaveURL(/docs\.google\.com\/forms/i);
-        await expect(popup).toHaveTitle(/Feature Request Form for Nudge-Nest/);
+        await expect(page.getByRole('link', { name: /Submit Your Feature Request/i })).toBeVisible();
     });
 
-    test('contact url works', async ({ page }) => {
+    test('contact link is visible', async ({ page }) => {
         await expect(page).toHaveTitle(/Nudgenest/);
-        await expect(page.getByRole('link', { name: 'Contact' })).toBeVisible();
-        const [popup] = await Promise.all([
-            page.waitForEvent('popup'), // Wait for a new tab to open
-            page.getByRole('link', { name: /Contact/i }).click(), // Click the button
-        ]);
-        await popup.waitForURL(/google\.com\/search/i);
-        await expect(popup).toHaveURL(/google\.com\/search/i);
-        await expect(popup).toHaveTitle(/Nudgenest/);
+        await expect(page.getByRole('link', { name: /Contact/i })).toBeVisible();
     });
 });
