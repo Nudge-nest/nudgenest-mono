@@ -163,12 +163,12 @@
 
         <!-- Store attribution (customer emails only) -->
         <% if (typeof storeName !== 'undefined' && storeName) { %>
-        <div style="font-size:13px; color:#6b7280; margin-bottom:20px;">
+        <div style="font-size:16px; color:#6b7280; margin-bottom:20px;">
             Regarding your order from
             <% if (typeof storeDomain !== 'undefined' && storeDomain) { %>
-                <a href="https://<%= storeDomain %>" style="color:#6b7280; font-weight:600; text-decoration:none;"><%= storeName %></a>
+                <a href="https://<%= storeDomain %>" style="color:#6b7280; text-decoration:none;"><%= storeName %></a>
             <% } else { %>
-                <strong><%= storeName %></strong>
+                <span><%= storeName %></span>
             <% } %>
         </div>
         <% } %>
