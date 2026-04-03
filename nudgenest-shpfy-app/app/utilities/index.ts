@@ -1,6 +1,6 @@
 
-export type { Plan, PlanFeatures, PlanLimits, SubscriptionDetails } from '@nudgenest/shared';
 import type { SubscriptionDetails } from '@nudgenest/shared';
+export type { Plan, PlanFeatures, PlanLimits, SubscriptionDetails } from '@nudgenest/shared';
 
 export interface IShopifyBusinessAddress {
   address1: string;
@@ -51,7 +51,7 @@ export interface LoaderData {
     price: number;
     billingInterval: string;
   } | null;
-  allPlans?: import('@nudgenest/shared').Plan[] | null;
+  allPlans?: Plan[] | null;
   reviewUiBaseUrl?: string;
   billingStatus?: string | null;
   error?: string;

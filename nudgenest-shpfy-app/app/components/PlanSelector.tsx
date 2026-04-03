@@ -17,7 +17,7 @@ interface PlanSelectorProps {
   plans?: DatabasePlan[] | null;
   currentPlanTier?: string;
   currentPeriodEnd?: string;
-  onSelectPlan: (planId: string, planTier: string) => void;
+  onSelectPlan: (_planId: string, _planTier: string) => void;
 }
 
 /**

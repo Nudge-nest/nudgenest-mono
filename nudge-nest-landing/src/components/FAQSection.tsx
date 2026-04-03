@@ -4,19 +4,19 @@ import { LargeHeaderTextBold, MediumBodyText, MediumHeaderTextBold } from './Typ
 
 const faqs = [
     {
-        question: 'What is Nudgenest?',
+        question: 'What is NudgeNest?',
         answer:
-            'Nudgenest is an automated review platform for Shopify merchants. It sends personalised review request emails to your customers after every fulfilled order, helping you collect genuine, verified reviews at scale.',
+            'NudgeNest is an automated review platform for Shopify merchants. It sends personalised review request emails to your customers after every fulfilled order, helping you collect genuine, verified reviews at scale.',
     },
     {
         question: 'How does it integrate with my Shopify store?',
         answer:
-            'Install the Nudgenest app from the Shopify App Store. Once installed, it automatically registers your store and starts monitoring order fulfilments — no coding or manual setup required.',
+            'Install the NudgeNest app from the Shopify App Store. Once installed, it automatically registers your store and starts monitoring order fulfilments — no coding or manual setup required.',
     },
     {
         question: 'What happens after a customer places an order?',
         answer:
-            'When an order is fulfilled, Nudgenest automatically sends a review request email to your customer. You can configure the timing, the subject line, and the message body to match your brand.',
+            'When an order is fulfilled, NudgeNest automatically sends a review request email to your customer. You can configure the timing, the subject line, and the message body to match your brand.',
     },
     {
         question: 'Can I customise the review request emails?',
@@ -31,7 +31,7 @@ const faqs = [
     {
         question: 'How do I display reviews on my store?',
         answer:
-            'Each merchant gets a hosted public review page that you can link to from your store. Advanced display widgets for embedding reviews directly in your Shopify theme are on the roadmap.',
+            'Every merchant gets a public review page you can link to from your store, product pages, or email signature. In-theme widgets for embedding reviews directly in your Shopify storefront are actively in development.',
     },
 ];
 

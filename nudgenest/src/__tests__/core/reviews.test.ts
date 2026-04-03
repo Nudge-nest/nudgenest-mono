@@ -88,8 +88,8 @@ const createTestReviewData = (status: 'Pending' | 'Completed' | 'Failed'): IRevi
 describe('Reviews Unit Tests', () => {
     let mockCtx: MockContext;
     let ctx: Context;
-    let reviewData = createTestReviewData('Pending');
-    let expectedReviewData = { ...reviewData, id: '507f1f77bcf86cd799439011' } as any;
+    const reviewData = createTestReviewData('Pending');
+    const expectedReviewData = { ...reviewData, id: '507f1f77bcf86cd799439011' } as any;
     beforeEach(() => {
         mockCtx = createMockContext();
         ctx = mockCtx as unknown as Context;

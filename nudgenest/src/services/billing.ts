@@ -135,7 +135,7 @@ export class BillingService {
                 return limits.emailsPerMonth === -1 || totalUsage <= limits.emailsPerMonth;
             case 'SMS_SENT':
                 return limits.smsPerMonth === -1 || totalUsage <= limits.smsPerMonth;
-            case 'API_CALL':
+            case 'API_CALL': {
                 // Daily limit check
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -149,6 +149,7 @@ export class BillingService {
                 });
                 const todayTotal = (dailyUsage._sum.quantity || 0) + additionalQuantity;
                 return limits.apiCallsPerDay === -1 || todayTotal <= limits.apiCallsPerDay;
+            }
             default:
                 return true;
         }
@@ -274,7 +275,6 @@ export class BillingService {
         await this.cancelSubscription(merchantId, false);
 
         // Create new subscription starting at end of current period
-        const now = new Date();
         const periodStart = currentSubscription.currentPeriodEnd;
         const periodEnd = new Date(
             periodStart.getTime() +

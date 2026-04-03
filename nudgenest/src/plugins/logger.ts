@@ -49,7 +49,7 @@ const loggerPlugin: ServerRegisterPluginObject<any> = {
         logPayload: false, // Disabled to avoid logging large payloads/buffers
         logQueryParams: process.env.NODE_ENV !== 'production',
         logPathParams: true,
-        customLogLevel: (req: any, res: any, err: any) => {
+        customLogLevel: (req: any, res: any, _err: any) => {
             if (res.statusCode >= 500) return 'error';
             if (res.statusCode >= 400) return 'warn';
             if (res.statusCode >= 300) return 'info';

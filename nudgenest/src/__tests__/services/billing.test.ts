@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { BillingService } from '../../services/billing';
 import { prismaMock } from '../mocks/prisma';
 

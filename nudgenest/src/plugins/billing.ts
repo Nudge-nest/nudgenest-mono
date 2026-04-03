@@ -284,7 +284,7 @@ const billingPlugin: Hapi.Plugin<any> = {
                             shopifyChargeId,
                             status,
                             currentPeriodEnd,
-                            billingOn,
+                            billingOn: _billingOn,
                             webhookTopic,
                         } = request.payload as any;
 

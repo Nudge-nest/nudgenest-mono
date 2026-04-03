@@ -3,7 +3,7 @@ import Hapi from '@hapi/hapi';
 import crypto from 'crypto';
 
 import * as dotenv from 'dotenv';
-import { eventType, IMerchant, IRabbitDataObject, IReviewMessagePayloadContent } from '../types';
+import { eventType, IRabbitDataObject, IReviewMessagePayloadContent } from '../types';
 import { isRabbitReviewRequestMessageValid, sampleMessaging } from '../messagesSchema';
 
 dotenv.config();

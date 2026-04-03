@@ -124,6 +124,7 @@ export const ReviewProvider: FC<{ children: ReactNode }> = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useReview = () => {
     const context = useContext(ReviewContext);
     if (!context) throw new Error('useReview must be used within a ReviewProvider');

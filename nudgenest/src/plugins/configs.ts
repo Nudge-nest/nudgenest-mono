@@ -2,7 +2,6 @@
 import Hapi from '@hapi/hapi';
 
 import * as dotenv from 'dotenv';
-import { IReviewConfiguration } from '../types/reviewConfigs';
 
 dotenv.config();
 
@@ -89,8 +88,8 @@ const updateReviewConfigsHandler = async (request: Hapi.Request, h: Hapi.Respons
     const { prisma } = request.server.app;
     try {
         // Strip Prisma-managed fields that cannot appear in updateMany data
-        const { id, merchantId: _merchantId, createdAt, updatedAt, ...updateData } = (configs ?? {}) as any;
-        const result = await prisma.configurations.updateMany({
+        const { id: _id, merchantId: _merchantId, createdAt: _createdAt, updatedAt: _updatedAt, ...updateData } = (configs ?? {}) as any;
+        await prisma.configurations.updateMany({
             where: {
                 merchantId: merchantId as string,
             },

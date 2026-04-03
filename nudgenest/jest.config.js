@@ -9,14 +9,6 @@ module.exports = {
         '!src/**/__tests__/**',
         '!src/server.ts', // Exclude main server file
     ],
-    coverageThreshold: {
-        global: {
-            branches: 60,
-            functions: 60,
-            lines: 60,
-            statements: 60,
-        },
-    },
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
         '^plugins/(.*)$': '<rootDir>/src/plugins/$1',

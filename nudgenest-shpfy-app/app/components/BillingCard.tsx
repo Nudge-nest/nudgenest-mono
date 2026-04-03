@@ -42,7 +42,7 @@ interface BillingCardProps {
   onManagePlan?: () => void;
 }
 
-export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, onManagePlan }: BillingCardProps) {
+export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade: _onUpgrade, onManagePlan: _onManagePlan }: BillingCardProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const shopify = useAppBridge();
 
@@ -116,25 +116,6 @@ export function BillingCard({ subscription, usage, limits, allPlans, onUpgrade, 
       default:
         return <Badge>{status}</Badge>;
     }
-  };
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  // Format price
-  const formatPrice = (price: number, interval: string) => {
-    const intervalMap: Record<string, string> = {
-      'MONTHLY': '/month',
-      'YEARLY': '/year',
-      'ANNUAL': '/year'
-    };
-    return `$${price.toFixed(2)}${intervalMap[interval] || ''}`;
   };
 
   return (

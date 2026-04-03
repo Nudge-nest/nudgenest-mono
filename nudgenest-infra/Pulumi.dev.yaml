@@ -47,5 +47,6 @@ config:
     secure: AAABAA21MEcfYNUqk0o/Xx3kIYkfxBF1xRxJptqEV8fVuwhGrh8xrmPwO0TzCSNCc5Z2FLQTkee9ErItoSSMGuhxPonMXzo=
   nudgenest-infra:SHOPIFY_APP_SCOPES:
     secure: AAABAKEzrUNACFw//Pzh8nvTSP47NspjqCtyRfU2AOAI0MUE2gzbNDjnR7Lrn1JK4elKHummbLJMGvv+1g8CKm3CS12wG4vf
-  nudgenest-infra:SHOPIFY_APP_URL:
-    secure: AAABAO/Vnfeez/3G1i2xmXYNuD/WBecvfW6zyp+WUXnFRKcEoeSpgZHcVeLqQv9kbvpjzrn9xgP43jE=
+  nudgenest-infra:SHOPIFY_APP_URL: https://nudgenest-shopify-1094805904049.europe-west1.run.app
+  nudgenest-infra:VITE_APP_REVIEW_UI_URL: https://nudgenest-review-ui-1094805904049.europe-west1.run.app
+  nudgenest-infra:VITE_APP_DEMO_MERCHANT_ID: 69c536e3c2f816233e4e2d96

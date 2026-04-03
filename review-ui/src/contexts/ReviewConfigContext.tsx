@@ -52,6 +52,7 @@ export const ReviewConfigProvider: FC<{ children: ReactNode }> = ({ children }) 
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useReviewConfig = () => {
     const context = useContext(ReviewConfigContext);
     if (!context) throw new Error('useReviewConfig must be used within a ReviewConfigContext');

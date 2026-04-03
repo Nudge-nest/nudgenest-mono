@@ -5,7 +5,7 @@ const steps = [
     {
         number: '01',
         title: 'Install',
-        description: 'Add Nudgenest from the Shopify App Store in seconds. No coding required.',
+        description: 'Add NudgeNest from the Shopify App Store in seconds. No coding required.',
     },
     {
         number: '02',
@@ -15,7 +15,7 @@ const steps = [
     {
         number: '03',
         title: 'Grow',
-        description: 'Collect verified reviews and display them on your store to build trust and drive more sales.',
+        description: 'Share your public review page to build trust, drive more sales, and grow your reputation.',
     },
 ];
 
@@ -23,7 +23,7 @@ const HowItWorksSection = () => {
     return (
         <PageSection name="how-it-works">
             <div className="col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 py-16 items-center">
-                <LargeHeaderTextBold>How It Works</LargeHeaderTextBold>
+                <LargeHeaderTextBold>Up and running in minutes</LargeHeaderTextBold>
                 <div className="flex flex-col gap-y-8 md:flex-row md:gap-x-8 w-full">
                     {steps.map((step) => (
                         <div key={step.number} className="flex-1 flex flex-col gap-y-3">

@@ -1,7 +1,7 @@
 import Hapi from '@hapi/hapi';
 import { Sentry } from '../lib/sentry';
 
-const sentryTestPlugin: Hapi.Plugin<{}> = {
+const sentryTestPlugin: Hapi.Plugin<object> = {
     name: 'sentryTest',
     register: async (server: Hapi.Server) => {
         if (process.env.NODE_ENV === 'production') return;
