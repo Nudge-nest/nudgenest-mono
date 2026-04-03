@@ -8,7 +8,7 @@ test.describe('App Test', () => {
     test('hero section is visible', async ({ page }) => {
         await expect(page).toHaveTitle(/Nudgenest/);
         await expect(page.getByLabel('hero-section')).toBeVisible();
-        await expect(page.getByText('Boost Trust. Grow Your Brand. Simplify Reviews.')).toBeVisible();
+        await expect(page.getByText('Turn Every Order Into a 5-Star Review.')).toBeVisible();
     });
 
     test('get started link is visible', async ({ page }) => {
