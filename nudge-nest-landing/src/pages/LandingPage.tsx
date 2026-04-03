@@ -25,12 +25,11 @@ const LandingPage = () => {
             <PageSection name="hero">
                 <div className={`col-span-full w-full md:w-4/5 mx-auto flex flex-col gap-y-8 justify-center py-24 md:py-32`}>
                     <LargerHeaderTextBoldItalic>
-                        Boost Trust. Grow Your Brand. Simplify Reviews.
+                        Turn Every Order Into a 5-Star Review.
                     </LargerHeaderTextBoldItalic>
                     <MediumBodyText>
-                        Discover Nudgenest — the seamless solution for gathering, showcasing, and analyzing customer
-                        reviews. Empower your e-commerce store to build credibility, increase conversions, and connect
-                        authentically with your audience.
+                        NudgeNest automatically emails your customers after every fulfilled order, turning happy buyers
+                        into verified reviews. No code. No friction. Just social proof that sells.
                     </MediumBodyText>
                     <Button>
                         <a href={signupUrl} target="_blank" rel="noopener noreferrer">
@@ -46,8 +45,8 @@ const LandingPage = () => {
                     <div className="flex-1 flex flex-col gap-y-4 text-left">
                         <LargeHeaderTextBold>The review experience your customers will love</LargeHeaderTextBold>
                         <MediumBodyText>
-                            Customers receive a beautifully simple, mobile-first review request after every fulfilled
-                            order — no account needed, no friction. Just tap a star, leave a comment, and submit.
+                            A beautifully simple, mobile-first review form sent straight to your customer's inbox —
+                            no account, no login, no friction. Tap a star, leave a thought, done.
                         </MediumBodyText>
                     </div>
                     <div className="flex-shrink-0 flex gap-3 items-start justify-center">
@@ -70,33 +69,35 @@ const LandingPage = () => {
                 </div>
             </PageSection>
             <PageSection name="features">
-                <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 justify-center items-center`}>
-                    <LargeHeaderTextBold>Why Choose Nudgenest?</LargeHeaderTextBold>
+                <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 justify-center items-center py-16`}>
+                    <LargeHeaderTextBold>Everything that runs on autopilot</LargeHeaderTextBold>
                     <ul className="flex flex-col gap-y-4 md:flex-row md:gap-x-4">
                         <li className="w-full md:text-left md:w-4/5">
-                            <SmallBodyTextBold>Seamless Integration:</SmallBodyTextBold>
+                            <SmallBodyTextBold>Automated from day one:</SmallBodyTextBold>
                             <SmallBodyText>
-                                Seamlessly connect with Shopify and other e-commerce platforms to simplify collecting
-                                and managing text, photo, and video reviews
+                                Review emails go out the moment an order is fulfilled. No manual work,
+                                no missed opportunities.
                             </SmallBodyText>
                         </li>
                         <li className="w-full md:text-left md:w-4/5">
-                            <SmallBodyTextBold className="font-bold">Automated Review Requests:</SmallBodyTextBold>
+                            <SmallBodyTextBold className="font-bold">Your brand, your message:</SmallBodyTextBold>
                             <SmallBodyText>
-                                Send perfectly timed review invites via email, SMS, or QR codes to boost response rates.
+                                Customise the subject line, body, and call-to-action button from your
+                                dashboard. Your voice, every time.
                             </SmallBodyText>
                         </li>
                         <li className="w-full md:text-left md:w-4/5">
-                            <SmallBodyTextBold className="font-bold">Customizable Widgets:</SmallBodyTextBold>
+                            <SmallBodyTextBold className="font-bold">Smart follow-up reminders:</SmallBodyTextBold>
                             <SmallBodyText>
-                                Showcase customer feedback, whether in text, photos, or videos, using beautifully
-                                designed widgets that align perfectly with your brand and look stunning on any website.
+                                Automated reminders nudge customers who haven't responded yet — at the
+                                cadence you choose.
                             </SmallBodyText>
                         </li>
                         <li className="w-full md:text-left md:w-4/5">
-                            <SmallBodyTextBold className="font-bold">Data-Driven Insights:</SmallBodyTextBold>
+                            <SmallBodyTextBold className="font-bold">QR codes & analytics:</SmallBodyTextBold>
                             <SmallBodyText>
-                                Unlock powerful analytics to measure the impact of customer feedback on your business.
+                                Generate a QR code for in-store review collection and track response
+                                rates from your analytics dashboard.
                             </SmallBodyText>
                         </li>
                     </ul>
@@ -104,31 +105,27 @@ const LandingPage = () => {
             </PageSection>
             <PageSection name="advantage">
                 <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 items-center py-16 md:py-20`}>
-                    <LargeHeaderTextBold>Our Value Proposition</LargeHeaderTextBold>
+                    <LargeHeaderTextBold>Built for the way merchants actually work</LargeHeaderTextBold>
                     <div className="flex flex-col gap-y-4 md:flex-row md:gap-x-4">
                         <div className={`md:col-span-6`}>
                             <div className={'w-full md:w-4/5 text-left flex flex-col gap-y-1'}>
                                 <MediumHeaderTextBold>
-                                    Turn Customer Feedback into Your Competitive Advantage.
+                                    Real reviews from real customers — automatically.
                                 </MediumHeaderTextBold>
                                 <MediumBodyText>
-                                    At Nudgenest, we believe every great product deserves authentic recognition. Our
-                                    platform helps you capture the voice of your customers and transform it into
-                                    compelling stories that drive trust, loyalty, and sales.
+                                    Every review on NudgeNest is tied to an actual order. Only customers
+                                    who've genuinely purchased from your store can submit one — so you
+                                    get authentic feedback that shoppers trust.
                                 </MediumBodyText>
-                                {/*<LinkButton>
-                                    <SmallBodyText className={`!text-[color:var(--color-main)] !font-[500]`}>
-                                        Learn More
-                                    </SmallBodyText>
-                                </LinkButton>*/}
                             </div>
                         </div>
                         <div className={`md:col-span-6`}>
                             <div className={'w-full md:w-4/5 text-left flex flex-col gap-y-1'}>
-                                <MediumHeaderTextBold>Feature Request Section</MediumHeaderTextBold>
+                                <MediumHeaderTextBold>Switching is painless</MediumHeaderTextBold>
                                 <MediumBodyText>
-                                    Already using a competitor but considering switching? Tell us what features you need
-                                    to make Nudgenest perfect for you.
+                                    Already using a competitor? NudgeNest is quick to set up and your
+                                    reviews migrate with you. If there's a feature you need, tell us —
+                                    we ship fast.
                                 </MediumBodyText>
                                 <LinkButton>
                                     <a

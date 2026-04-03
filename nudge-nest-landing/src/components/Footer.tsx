@@ -66,9 +66,7 @@ const Footer = () => {
                             Privacy Policy
                         </Link>
                         <span aria-hidden="true">·</span>
-                        <span className="cursor-default">Terms</span>
-                        <span aria-hidden="true">·</span>
-                        <span className="cursor-default">Sitemap</span>
+                        <span className="cursor-default opacity-50">Terms (coming soon)</span>
                     </div>
                 </div>
             </div>

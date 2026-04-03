@@ -17,13 +17,13 @@ import { useParams } from 'react-router';
 import { IconStar, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 
 /** Returns items-per-page that matches the grid column count at each breakpoint:
- *  mobile  < 640px  → 1 col  → 1 per page
- *  tablet  640–1279 → 2 cols → 2 per page
- *  desktop ≥ 1280px → 4 cols → 4 per page
+ *  mobile  < 640px → 1 col  → 1 per page
+ *  tablet  640–767 → 2 cols → 2 per page
+ *  desktop ≥ 768px → 4 cols → 4 per page
  */
 const useItemsPerPage = (): number => {
     const get = () => {
-        if (window.innerWidth >= 1280) return 4;
+        if (window.innerWidth >= 768) return 4;
         if (window.innerWidth >= 640) return 2;
         return 1;
     };
@@ -55,7 +55,10 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp 
         currentPage * itemsPerPage,
     );
 
-    const { data: reviewsData, isError, isFetching } = useListReviewsQuery(shopId ?? '');
+    // A 24-char hex string is a MongoDB ObjectId (merchantId); anything else is a Shopify shopId
+    const isObjectId = /^[0-9a-f]{24}$/.test(shopId ?? '');
+    const reviewsQuery = isObjectId ? { merchantId: shopId } : (shopId ?? '');
+    const { data: reviewsData, isError, isFetching } = useListReviewsQuery(reviewsQuery);
     const merchantId = merchantIdProp ?? reviewsData?.[0]?.merchantId;
 
     const sortReviews = useCallback((reviewsToSort: IReview[], sortType: SortType): IReview[] => {
@@ -153,7 +156,7 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp 
 
                 <section className="w-full" aria-label="Loading reviews" role="status">
                     <div
-                        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"
                         data-testid="reviews-skeleton-grid"
                     >
                         {[1, 2, 3, 4].map((i) => (
@@ -256,7 +259,7 @@ const ReviewsListPage: FC<ReviewContainerProps> = ({ merchantId: merchantIdProp 
                 data-testid="reviews-container"
             >
                 <div
-                    className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
+                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"
                     role="list"
                     aria-label={`${reviews.length} customer reviews`}
                     data-testid="reviews-grid-container"
