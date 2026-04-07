@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# .githooks/post-checkout
+# Automatically syncs .env files when switching branches.
+#
+# Git passes three arguments:
+#   $1 — previous HEAD ref
+#   $2 — new HEAD ref
+#   $3 — flag: 1 = branch checkout, 0 = file checkout
+#
+# We only run sync-env on branch checkouts (flag=1).
+
+CHECKOUT_TYPE="$3"
+
+if [[ "$CHECKOUT_TYPE" != "1" ]]; then
+  # File-level checkout (git checkout -- <file>) — skip env sync
+  exit 0
+fi
+
+ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null)"
+SYNC_SCRIPT="$ROOT_DIR/scripts/sync-env.sh"
+
+if [[ -f "$SYNC_SCRIPT" ]]; then
+  bash "$SYNC_SCRIPT"
+else
+  echo "[post-checkout] sync-env.sh not found — skipping env sync"
+fi

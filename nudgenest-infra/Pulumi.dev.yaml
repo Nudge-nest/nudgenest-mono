@@ -54,13 +54,13 @@ config:
     secure: AAABADQBDGuLvK1RP4qQM6Px/h/S84YBNfOBmKYlqLxsfHR6H7d7hSYR9PinexZv5MvnfWvWC5b17jusbrmF8g==
   nudgenest-infra:SHOPIFY_APP_API_SECRET_PROD:
     secure: AAABAOQ4RT4XxlqsyKFWTtelvrheGQ87SI6ddvYCZ3IWu9lf7h81TwWIZXzPl98kVNF2Aq6uAWsljtSoXf4gu7zrVkyrOw==
-  nudgenest-infra:SHOPIFY_APP_URL_PROD: https://nudgenest-shopify-prod-1094805904049.europe-west1.run.app
+  nudgenest-infra:SHOPIFY_APP_URL_PROD: https://merchant.nudgenest.io
   nudgenest-infra:SHOPIFY_APP_DATABASE_URL_PROD:
     secure: AAABAD5yl9h7idkUF44QfPok9hJSbJu5m/6WfPC/004v9y3sqLMLoJ4JjgV8ggXUsfng7OWCeLRqaFWne+uSmjEmhWaZLoRLAa8GhETlmgnT7DZm+6vj9bbUcOgUHmxKgiC3uiKeydRYft6UOpR0FMq9IJLyqeymp5REoSw/NFYxVUGpdJO3bIBHGTFa3MjL0IwjJ69tR+Q10Fy6LAR2OwVo/bpmuMKMMLLbQbupcHqz
   nudgenest-infra:SHOPIFY_APP_SCOPES_PROD: read_products,read_orders,read_customers
-  nudgenest-infra:NUDGENEST_BACKEND_URL_PROD: https://nudgenest-backend-1094805904049.europe-west1.run.app
+  nudgenest-infra:NUDGENEST_BACKEND_URL_PROD: https://api.nudgenest.io
   nudgenest-infra:DATABASE_URL_PROD:
     secure: AAABALKC2GdUxqBT+letAfRiCjRyFvI19aFmktpc6rbO2G9u7sYlhxKmKHGyAtecVtakn7tdL9V9l/34oXzsXguJVnvbikwGP9u73iod0IbpUm3Yq4aHum+in8d1e0hJ9zfZDhvV/I4QWTBitWXfamunUPeEZNPZv0RkS9m8vJYJ
-  nudgenest-infra:REVIEW_UI_BASE_URL_PROD: https://nudgenest-review-ui-prod-1094805904049.europe-west1.run.app
-  nudgenest-infra:VITE_APP_BACKEND_HOST_PROD: https://nudgenest-backend-prod-1094805904049.europe-west1.run.app/api/v1/
-  nudgenest-infra:VITE_APP_REVIEW_UI_URL_PROD: https://nudgenest-review-ui-prod-1094805904049.europe-west1.run.app
+  nudgenest-infra:REVIEW_UI_BASE_URL_PROD: https://reviews.nudgenest.io
+  nudgenest-infra:VITE_APP_BACKEND_HOST_PROD: https://api.nudgenest.io/api/v1/
+  nudgenest-infra:VITE_APP_REVIEW_UI_URL_PROD: https://reviews.nudgenest.io
