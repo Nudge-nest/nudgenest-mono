@@ -1,0 +1,59 @@
+# Cloud Build pipeline for NudgeNest Shopify App (Remix) — PRODUCTION
+# Triggers on push to main branch when nudgenest-shpfy-app/** changes.
+# Builds Docker image → pushes to Artifact Registry → deploys to Cloud Run (prod).
+steps:
+    # -------------------- Build --------------------
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+          - build
+          - '--no-cache'
+          - '--build-arg'
+          - 'COMMIT_SHA=$COMMIT_SHA'
+          - '-t'
+          - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-shopify-service/nudgenest-shopify-prod:$COMMIT_SHA'
+          - .
+          - '-f'
+          - nudgenest-shpfy-app/Dockerfile
+      id: build
+
+    # -------------------- Push --------------------
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+          - push
+          - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-shopify-service/nudgenest-shopify-prod:$COMMIT_SHA'
+      id: push
+
+    # -------------------- Deploy --------------------
+    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+      entrypoint: gcloud
+      args:
+          - run
+          - deploy
+          - nudgenest-shopify-prod
+          - '--platform=managed'
+          - '--image=$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-shopify-service/nudgenest-shopify-prod:$COMMIT_SHA'
+          - '--region=$_DEPLOY_REGION'
+          - '--allow-unauthenticated'
+          - '--port=3000'
+          - '--max-instances=5'
+          - '--labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID'
+          - '--set-secrets=DATABASE_URL=SHOPIFY_APP_DATABASE_URL_PROD:latest,SHOPIFY_API_KEY=SHOPIFY_APP_API_KEY_PROD:latest,SHOPIFY_API_SECRET=SHOPIFY_APP_API_SECRET_PROD:latest,SHOPIFY_APP_URL=SHOPIFY_APP_URL_PROD:latest,SCOPES=SHOPIFY_APP_SCOPES_PROD:latest,NUDGENEST_BACKEND_URL=NUDGENEST_BACKEND_URL_PROD:latest,REVIEW_UI_BASE_URL=REVIEW_UI_BASE_URL:latest,NODE_ENV=NODE_ENV:latest'
+          - '--quiet'
+      id: deploy
+      waitFor: ['push']
+
+images:
+    - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-shopify-service/nudgenest-shopify-prod:$COMMIT_SHA'
+
+options:
+    logging: CLOUD_LOGGING_ONLY
+    substitutionOption: ALLOW_LOOSE
+
+substitutions:
+    _DEPLOY_REGION: europe-west1
+    _PLATFORM: managed
+
+tags:
+    - gcp-cloud-build-deploy-cloud-run
+    - gcp-cloud-build-deploy-cloud-run-managed
+    - nudgenest-shopify-prod
