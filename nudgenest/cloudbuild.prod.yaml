@@ -1,0 +1,59 @@
+# Cloud Build pipeline for NudgeNest Backend — PRODUCTION
+# Triggers on push to main branch when nudgenest/** changes.
+steps:
+    # -------------------- Build --------------------
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+          - build
+          - '--no-cache'
+          - '--build-arg'
+          - 'COMMIT_SHA=$COMMIT_SHA'
+          - '-t'
+          - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-backend-service/nudgenest-backend-prod:$COMMIT_SHA'
+          - nudgenest
+          - '-f'
+          - nudgenest/Dockerfile
+      id: build
+
+    # -------------------- Push --------------------
+    - name: gcr.io/cloud-builders/docker
+      args:
+          - push
+          - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-backend-service/nudgenest-backend-prod:$COMMIT_SHA'
+      id: push
+
+    # -------------------- Deploy --------------------
+    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+      entrypoint: gcloud
+      args:
+          - run
+          - deploy
+          - nudgenest-backend-prod
+          - '--platform=managed'
+          - '--image=$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-backend-service/nudgenest-backend-prod:$COMMIT_SHA'
+          - '--labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID'
+          - '--region=$_DEPLOY_REGION'
+          - '--allow-unauthenticated'
+          - '--min-instances=1'
+          - '--max-instances=5'
+          - '--quiet'
+          - '--set-secrets'
+          - 'DATABASE_URL=DATABASE_URL_PROD:latest,RESEND_API_KEY=RESEND_API_KEY:latest,RESEND_FROM_EMAIL=RESEND_FROM_EMAIL:latest,SHOPIFY_API_SECRET=SHOPIFY_API_SECRET_PROD:latest,NODE_ENV=NODE_ENV:latest,GOOGLE_CLOUD_PROJECT_ID=GOOGLE_CLOUD_PROJECT_ID:latest,GCS_BUCKET_NAME=GCS_BUCKET_NAME:latest,REVIEW_UI_BASE_URL=REVIEW_UI_BASE_URL_PROD:latest,SENTRY_BACKEND_DSN=SENTRY_BACKEND_DSN:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest'
+      id: deploy
+      waitFor: ['push']
+
+images:
+    - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-backend-service/nudgenest-backend-prod:$COMMIT_SHA'
+
+options:
+    logging: CLOUD_LOGGING_ONLY
+    substitutionOption: ALLOW_LOOSE
+
+substitutions:
+    _DEPLOY_REGION: europe-west1
+    _PLATFORM: managed
+
+tags:
+    - gcp-cloud-build-deploy-cloud-run
+    - gcp-cloud-build-deploy-cloud-run-managed
+    - nudgenest-backend-prod

@@ -391,6 +391,36 @@ const shopifyAppSecretsArray = Object.keys(shopifyAppSecrets).map((key) => {
 });
 
 // ============================================
+// Production Secrets — Backend, Review UI, Landing Page
+// Set values via: pulumi config set --secret <key> <value>
+// ============================================
+const remainingProdSecrets = {
+    DATABASE_URL_PROD:          config.get("DATABASE_URL_PROD"),
+    REVIEW_UI_BASE_URL_PROD:    config.get("REVIEW_UI_BASE_URL_PROD"),
+    VITE_APP_BACKEND_HOST_PROD: config.get("VITE_APP_BACKEND_HOST_PROD"),
+    VITE_APP_REVIEW_UI_URL_PROD: config.get("VITE_APP_REVIEW_UI_URL_PROD"),
+};
+
+const remainingProdSecretsArray = Object.keys(remainingProdSecrets).map((key) => {
+    const _secret = new gcp.secretmanager.Secret(key, {
+        secretId: key,
+        replication: { auto: {} },
+    });
+    // @ts-ignore
+    const secretData = remainingProdSecrets[key];
+    const _secretVersion = new gcp.secretmanager.SecretVersion(key, {
+        secret: pulumi.interpolate`${_secret.id}`,
+        secretData: secretData,
+    }, { dependsOn: [_secret] });
+    new gcp.secretmanager.SecretIamMember(`${key}-access`, {
+        secretId: key,
+        role: "roles/secretmanager.secretAccessor",
+        member: "serviceAccount:service-1094805904049@gcp-sa-cloudbuild.iam.gserviceaccount.com",
+    }, { dependsOn: [_secretVersion] });
+    return _secret;
+});
+
+// ============================================
 // Shopify App Production Secrets
 // Set values via: pulumi config set --secret <key> <value>
 // ============================================
@@ -439,6 +469,51 @@ const shopify_connection_trigger = new gcp.cloudbuild.Trigger("shopify_build_tri
     serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
 }, { dependsOn: [monorepo_connection_repo, shopify_repo, ...shopifyAppSecretsArray] })
 
+// Backend Production Cloud Build Trigger
+const backend_prod_connection_trigger = new gcp.cloudbuild.Trigger("backend_prod_build_trigger", {
+    location: config.get("region"),
+    name: 'nudgenest-backend-prod-trigger',
+    description: "Deploys NudgeNest backend to production (Cloud Run) on push to main branch",
+    filename: "nudgenest/cloudbuild.prod.yaml",
+    project: "nudgenest",
+    repositoryEventConfig: {
+        repository: monorepo_connection_repo.id,
+        push: { branch: "^main$" },
+    },
+    includedFiles: ["nudgenest/**"],
+    serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
+}, { dependsOn: [monorepo_connection_repo, repo, ...remainingProdSecretsArray] })
+
+// Review UI Production Cloud Build Trigger
+const fe_prod_connection_trigger = new gcp.cloudbuild.Trigger("fe_prod_build_trigger", {
+    location: config.get("region"),
+    name: 'nudgenest-fe-prod-trigger',
+    description: "Deploys NudgeNest Review UI to production (Cloud Run) on push to main branch",
+    filename: "review-ui/cloudbuild.prod.yaml",
+    project: "nudgenest",
+    repositoryEventConfig: {
+        repository: monorepo_connection_repo.id,
+        push: { branch: "^main$" },
+    },
+    includedFiles: ["review-ui/**"],
+    serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
+}, { dependsOn: [monorepo_connection_repo, fe_repo, ...remainingProdSecretsArray] })
+
+// Landing Page Production Cloud Build Trigger
+const landing_prod_connection_trigger = new gcp.cloudbuild.Trigger("landing_prod_build_trigger", {
+    location: config.get("region"),
+    name: 'nudgenest-landing-prod-trigger',
+    description: "Deploys NudgeNest landing page to production (Cloud Run) on push to main branch",
+    filename: "nudge-nest-landing/cloudbuild.prod.yaml",
+    project: "nudgenest",
+    repositoryEventConfig: {
+        repository: monorepo_connection_repo.id,
+        push: { branch: "^main$" },
+    },
+    includedFiles: ["nudge-nest-landing/**"],
+    serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
+}, { dependsOn: [monorepo_connection_repo, landing_repo, ...remainingProdSecretsArray] })
+
 // Shopify App Production Cloud Build Trigger (deploys on push to main)
 const shopify_prod_connection_trigger = new gcp.cloudbuild.Trigger("shopify_prod_build_trigger", {
     location: config.get("region"),
@@ -468,4 +543,7 @@ export const feConnectionTrigger = fe_connection_trigger.name;
 export const landingConnectionTrigger = landing_connection_trigger.name;
 export const shopifyConnectionTrigger = shopify_connection_trigger.name;
 export const shopifyProdConnectionTrigger = shopify_prod_connection_trigger.name;
+export const backendProdConnectionTrigger = backend_prod_connection_trigger.name;
+export const feProdConnectionTrigger = fe_prod_connection_trigger.name;
+export const landingProdConnectionTrigger = landing_prod_connection_trigger.name;
 
