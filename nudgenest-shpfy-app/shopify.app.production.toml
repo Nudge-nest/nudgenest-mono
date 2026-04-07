@@ -1,8 +1,8 @@
 # Production Shopify app configuration
 # application_url must be updated to the final Cloud Run URL after first deploy,
-# then run: shopify app deploy --config shopify.prod.app.toml
+# then run: shopify app deploy --config shopify.app.production.toml
 
-client_id = "4dfb6f6524790aac59ecfe8f2cf0dc7f"
+client_id = "17dd6639f0adf774c19762bfc1f17d24"
 application_url = "https://merchant.nudgenest.io"
 embedded = true
 name = "NudgeNest ‑ Product Reviews"
