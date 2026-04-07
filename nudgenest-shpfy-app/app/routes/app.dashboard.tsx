@@ -1,11 +1,17 @@
-import { TitleBar } from "@shopify/app-bridge-react";
-import {Banner, BlockStack, Button, Card, InlineStack, Layout, Page, Toast, Text} from "@shopify/polaris";
-import {useCallback, useState} from "react";
-import type {IShopifyShop} from "../utilities";
+import {BlockStack, Button, Card, InlineStack, Layout, Page, Toast, Text, Frame} from "@shopify/polaris";
+import {useCallback, useState, useEffect} from "react";
+import { useLocation } from "@remix-run/react";
+import type {IShopifyShop, ReviewStats, SubscriptionDetails, Plan} from "../utilities";
+import {BillingCard} from "../components/BillingCard";
 
-function CustomerDashboard({ merchantData, shopInfo }: {
+function CustomerDashboard({ merchantData, shopInfo, reviewStats, subscriptionDetails, allPlans, reviewUiBaseUrl, billingStatus: initialBillingStatus }: {
   merchantData: any;
   shopInfo: IShopifyShop;
+  reviewStats?: ReviewStats | null;
+  subscriptionDetails?: SubscriptionDetails | null;
+  allPlans?: Plan[] | null;
+  reviewUiBaseUrl?: string | null;
+  billingStatus?: string | null;
 }) {
   const [toastActive, setToastActive] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -17,10 +23,52 @@ function CustomerDashboard({ merchantData, shopInfo }: {
     setToastActive(true);
   }, []);
 
+  const location = useLocation();
+
+  // Check for billing status from the cookie (set by api.billing.callback and
+  // passed via loader data). Format: "success:PLANNAME" | "declined" | "success"
+  useEffect(() => {
+    if (!initialBillingStatus) return;
+    if (initialBillingStatus.startsWith('success')) {
+      const plan = initialBillingStatus.includes(':') ? initialBillingStatus.split(':')[1] : null;
+      const message = plan === 'FREE'
+        ? '✅ Downgraded to Free plan.'
+        : plan
+          ? `✅ Successfully upgraded to ${plan} plan!`
+          : '✅ Plan updated successfully!';
+      showToast(message);
+    } else if (initialBillingStatus === 'declined') {
+      showToast('❌ Billing charge was declined. Please try again.', true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Also check for billing status messages from URL params (legacy / direct nav)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const billingStatus = params.get('billing_status');
+    const billingError = params.get('billing_error');
+    const plan = params.get('plan');
+
+    if (billingStatus === 'success') {
+      showToast(plan === 'FREE' ? '✅ Downgraded to Free plan.' : `✅ Successfully upgraded to ${plan} plan!`);
+      window.history.replaceState({}, '', location.pathname);
+    } else if (billingStatus === 'already_active') {
+      showToast(`You are already on the ${plan} plan.`);
+      window.history.replaceState({}, '', location.pathname);
+    } else if (billingStatus === 'declined') {
+      showToast('❌ Billing charge was declined. Please try again.', true);
+      window.history.replaceState({}, '', location.pathname);
+    } else if (billingError) {
+      showToast(`❌ Billing error: ${decodeURIComponent(billingError)}`, true);
+      window.history.replaceState({}, '', location.pathname);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search, showToast]);
+
   const openConfigModal = useCallback(() => {
-    const shopDomain = merchantData?.domains || shopInfo.myshopifyDomain;
-    const merchantId = merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
-    const configUrl = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/configs/${merchantId}`;
+    const merchantId = merchantData?.id || merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
+    const configUrl = `${reviewUiBaseUrl}/configs/${merchantId}?apiKey=${merchantData?.apiKey ?? ''}`;
 
     const overlayHTML = `
       <div id="nudgenest-overlay" style="
@@ -108,23 +156,33 @@ function CustomerDashboard({ merchantData, shopInfo }: {
       }
     };
     document.addEventListener('keydown', handleEscape);
-  }, [merchantData, shopInfo]);
+  }, [merchantData, shopInfo, reviewUiBaseUrl]);
 
   const shopDomain = merchantData?.domains || shopInfo.myshopifyDomain;
-  const merchantId = merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
+  const merchantId = merchantData?.id || merchantData?.shopId?.split('/')[4] || shopInfo.id.split('/')[4];
 
   return (
-    <Page>
-      <TitleBar title="Nudge-nest Reviews Dashboard" />
-
-      <BlockStack gap="500">
-        {/* Welcome Banner */}
-        <Banner title="Welcome Back!" >
-          <p>
-            Your review system is active and collecting customer feedback.
-            Manage your settings and view analytics below.
-          </p>
-        </Banner>
+    <Frame>
+      <Page>
+        <BlockStack gap="500">
+          {/* Welcome Banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
+          border: '1px solid #e5e7eb',
+          borderLeft: '4px solid #6b7280',
+          borderRadius: '8px',
+          padding: '16px 20px',
+        }}>
+          <BlockStack gap="200">
+            <Text variant="headingMd" as="h2" fontWeight="semibold" tone="base">
+              Welcome Back! 👋
+            </Text>
+            <Text variant="bodyMd" as="p" tone="subdued">
+              Your review system is active and collecting customer feedback.
+              Manage your settings and view analytics below.
+            </Text>
+          </BlockStack>
+        </div>
 
         <Layout>
           {/* Configuration Section */}
@@ -159,7 +217,7 @@ function CustomerDashboard({ merchantData, shopInfo }: {
                 <InlineStack gap="400" align="space-around">
                   <BlockStack gap="100" align="center">
                     <Text variant="heading2xl" as="p">
-                      {merchantData?.totalReviews || 0}
+                      {reviewStats?.totalReviews ?? 0}
                     </Text>
                     <Text variant="bodySm" as="p" >
                       Total Reviews
@@ -168,24 +226,34 @@ function CustomerDashboard({ merchantData, shopInfo }: {
 
                   <BlockStack gap="100" align="center">
                     <Text variant="heading2xl" as="p">
-                      {merchantData?.averageRating || '0.0'}
+                      {reviewStats?.averageRating ?? '0.0'}
                     </Text>
                     <Text variant="bodySm" as="p" >
                       Average Rating
                     </Text>
                   </BlockStack>
 
-                  <BlockStack gap="100" align="center">
+                  {/*<BlockStack gap="100" align="center">
                     <Text variant="heading2xl" as="p">
-                      {merchantData?.responseRate || '0'}%
+                      {reviewStats?.responseRate ?? 0}%
                     </Text>
                     <Text variant="bodySm" as="p" >
                       Response Rate
                     </Text>
-                  </BlockStack>
+                  </BlockStack>*/}
                 </InlineStack>
               </BlockStack>
             </Card>
+          </Layout.Section>
+
+          {/* Billing Section */}
+          <Layout.Section>
+            <BillingCard
+              subscription={subscriptionDetails?.subscription}
+              usage={subscriptionDetails?.usage}
+              limits={subscriptionDetails?.limits}
+              allPlans={allPlans}
+            />
           </Layout.Section>
 
           {/* Store Info Section */}
@@ -230,14 +298,15 @@ function CustomerDashboard({ merchantData, shopInfo }: {
         </Layout>
       </BlockStack>
 
-      {toastActive && (
-        <Toast
-          content={toastMessage}
-          error={toastError}
-          onDismiss={() => setToastActive(false)}
-        />
-      )}
-    </Page>
+        {toastActive && (
+          <Toast
+            content={toastMessage}
+            error={toastError}
+            onDismiss={() => setToastActive(false)}
+          />
+        )}
+      </Page>
+    </Frame>
   );
 }
 

@@ -23,7 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-pnpm-lock.yaml
 .env
 .env.production
 
@@ -35,3 +34,4 @@ coverage/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.env.development.local

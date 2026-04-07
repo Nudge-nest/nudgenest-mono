@@ -39,7 +39,8 @@ export const buildPublishJson = (content: any, sampleMessage: any) => ({
 
 export const extractMessagingContentFromShopifyData = (
     shopifyOrderData: IDataFromShopifyPayload,
-    reviewId: string
+    reviewId: string,
+    merchantId: string
 ): IReviewMessagePayloadContent => {
     const { customer, line_items, order_number, currency } = shopifyOrderData;
     return {
@@ -50,6 +51,7 @@ export const extractMessagingContentFromShopifyData = (
         order_number: order_number,
         reviewId: reviewId,
         currency: currency,
+        merchantId: merchantId,
     };
 };
 
@@ -86,7 +88,6 @@ export const createNewReview = async (prisma: any, reviewData: IDataFromShopifyP
                 merchantId: merchantId,
                 merchantBusinessId: merchant_business_entity_id,
                 shopId: shopId,
-                customerPhone: customer.phone || '',
                 customerEmail: customer.email,
                 customerName: `${customer.first_name} ${customer.last_name}`,
                 items: line_items,

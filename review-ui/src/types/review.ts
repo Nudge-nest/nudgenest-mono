@@ -1,37 +1,5 @@
-export interface IReview {
-    id?: string;
-    merchantId: string;
-    customerName: string;
-    items: IReviewItem[];
-    result?: IReviewResult[];
-    status: 'Pending' | 'Completed' | 'Failed';
-    createdAt: string;
-    updatedAt: string;
-    merchantBusinessId: string;
-    replies: any;
-    verified: boolean;
-    merchantApiKey?: string;
-}
-
-export interface IReviewItem {
-    id: string;
-    name: string;
-    image?: string;
-    [key: string]: any;
-}
-
-export interface IReviewResult {
-    id?: string;
-    value?: number;
-    mediaURL?: string;
-    media?: IUploadedMediaObject[];
-    comment?: string;
-}
-
-export interface IUploadedMediaObject {
-    id: string;
-    mediaURL: string;
-}
+export type { IReview, IReviewItem, IReviewResult, IUploadedMediaObject, ReviewStatus } from '@nudgenest/shared';
+import type { IReview, IUploadedMediaObject } from '@nudgenest/shared';
 
 export type UploadResult = Array<{
     id: string;

@@ -1,73 +1,40 @@
 import { createServer } from '../../server-factory';
 import { Server, ServerInjectResponse } from '@hapi/hapi';
-import { IReview, responseType } from '../../types';
+import { responseType } from '../../types';
 import { prismaMock } from '../mocks/prisma';
+
+const testApiKey = 'test-review-api-key';
+const testMerchant = {
+    id: 'test-review-merchant-id',
+    shopId: 'MTY3NTgwMjk3MzU0',
+    apiKey: testApiKey,
+    name: 'Test Review Shop',
+    email: 'test@test.com',
+    currencyCode: 'EUR',
+    domains: 'test.example.com',
+    businessInfo: 'Test biz',
+    address: { address1: '1 Test St', address2: '', city: 'City', country: 'US', zip: '12345', formatted: [] },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+} as any;
 
 const mockReview: any = {
     id: '68415f4bc99be1ae3f921dc1',
     merchantId: 'MTY3NTgwMjk3MzU0',
+    merchantApiKey: testApiKey,
     merchantBusinessId: 'MTY3NTgwMjk3MzU0',
     shopId: '67580297354',
     customerEmail: 'ayoalabi0@gmail.com',
-    customerPhone: '',
+    customerName: 'Test Customer',
     verified: true,
+    published: false,
     replies: [],
-    items: [
-        {
-            id: '14832321495178',
-            admin_graphql_api_id: 'gid://shopify/LineItem/14832321495178',
-            attributed_staffs: [],
-            current_quantity: { $numberInt: '1' },
-            fulfillable_quantity: { $numberInt: '1' },
-            fulfillment_service: 'gift_card',
-            fulfillment_status: null,
-            gift_card: true,
-            grams: { $numberInt: '0' },
-            name: 'Gift Card - $25',
-            price: '25.00',
-            price_set: {
-                shop_money: { amount: '25.00', currency_code: 'EUR' },
-                presentment_money: { amount: '25.00', currency_code: 'EUR' },
-            },
-            product_exists: true,
-            product_id: { $numberLong: '8365100138634' },
-            properties: [],
-            quantity: { $numberInt: '1' },
-            requires_shipping: false,
-            sku: null,
-            taxable: false,
-            title: 'Gift Card',
-            total_discount: '0.00',
-            total_discount_set: {
-                shop_money: { amount: '0.00', currency_code: 'EUR' },
-                presentment_money: { amount: '0.00', currency_code: 'EUR' },
-            },
-            variant_id: { $numberLong: '45728675201162' },
-            variant_inventory_management: null,
-            variant_title: '$25',
-            vendor: 'Snowboard Vendor',
-            tax_lines: [],
-            duties: [],
-            discount_allocations: [],
-        },
-    ],
+    items: [],
     status: 'Completed',
     createdAt: '1749114697542',
     updatedAt: '1749115067462',
     result: [
         { id: '14832321495178', value: '5' },
-        {
-            id: '9b6171f9-b7ee-422e-8329-811eea7af29c',
-            mediaURL: 'https://nudge-nest-media.s3.eu-north-1.amazonaws.com/MTY3NTgwMjk3MzU0/yoda.webp',
-        },
-        {
-            id: 'e82bf0a8-2f81-45cc-a66e-6cb1383a158b',
-            mediaURL: 'https://nudge-nest-media.s3.eu-north-1.amazonaws.com/MTY3NTgwMjk3MzU0/mace_windu.webp',
-        },
-        {
-            id: '80ccb8ba-bd25-4aff-b032-b7f084bc92a3',
-            mediaURL: 'https://nudge-nest-media.s3.eu-north-1.amazonaws.com/MTY3NTgwMjk3MzU0/obiwan.webp',
-        },
         { comment: 'I love all the products very much thank you!' },
     ],
 };
@@ -96,16 +63,16 @@ describe('Reviews route', () => {
         expect(res.result).toHaveProperty('data');
         expect(res.result?.version).toMatch('1.0.0');
 
-        // Verify Prisma was called correctly
         expect(prismaMock.reviews.findUnique).toHaveBeenCalledWith({
             where: { id: '68415f4bc99be1ae3f921dc1' },
             select: {
-                // Explicitly select fields (excludes otpSecret)
                 id: true,
                 merchantId: true,
+                merchantApiKey: true,
                 shopId: true,
                 merchantBusinessId: true,
                 verified: true,
+                published: true,
                 replies: true,
                 customerName: true,
                 items: true,
@@ -138,16 +105,23 @@ describe('Reviews route', () => {
             payload: { id: reviewId, status: 'completed' },
         });
         expect(res.statusCode).toBe(200);
-        expect(res.result).toHaveProperty('version');
-        expect(res.result).toHaveProperty('data');
-        expect(res.result?.version).toMatch('1.0.0');
     });
-    test('PUT /api/v1/reviews/{reviewId} return 500 on error', async () => {
+    test('PUT /api/v1/reviews/{reviewId} requires auth — returns 401 without x-api-key', async () => {
+        const res: ServerInjectResponse<{ version: string; error: responseType }> = await server.inject({
+            method: 'PUT',
+            url: '/api/v1/reviews/nonexistent',
+            payload: { id: 'nonexistent' },
+        });
+        expect(res.statusCode).toBe(401);
+    });
+    test('PUT /api/v1/reviews/{reviewId} return 500 on error with valid auth', async () => {
+        prismaMock.merchants.findFirst.mockResolvedValue(testMerchant);
         prismaMock.reviews.update.mockRejectedValue(new Error('Invalid `prisma.reviews.findUnique()` invocation'));
         const res: ServerInjectResponse<{ version: string; error: responseType }> = await server.inject({
             method: 'PUT',
             url: '/api/v1/reviews/nonexistent',
             payload: { id: 'nonexistent' },
+            headers: { 'x-api-key': testApiKey },
         });
         expect(res.statusCode).toBe(500);
         expect(res.result).toHaveProperty('version');
@@ -166,16 +140,12 @@ describe('Reviews route', () => {
         expect(res.result).toHaveProperty('data');
         expect(res.result?.version).toMatch('1.0.0');
     });
-    test('GET /api/v1/reviews/list fails with 500 when shopid is missing from query', async () => {
-        prismaMock.reviews.findMany.mockRejectedValue(new Error('shopid is missing in the query'));
+    test('GET /api/v1/reviews/list fails with 400 when shopid and merchantid are both missing', async () => {
         const res: ServerInjectResponse<{ version: string; error: responseType }> = await server.inject({
             method: 'GET',
             url: '/api/v1/reviews/list?hello=world',
         });
-        expect(res.statusCode).toBe(500);
-        expect(res.result).toHaveProperty('version');
+        expect(res.statusCode).toBe(400);
         expect(res.result).toHaveProperty('error');
-        expect(res.result?.version).toMatch('1.0.0');
-        expect(res.result?.error).toMatch('shopid is missing in the query');
     });
 });

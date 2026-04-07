@@ -22,7 +22,7 @@ const PreviewComponent: FC<PreviewComponentProps> = ({ media, onDelete, index = 
 
     return (
         <article
-            className="relative w-20 h-20 rounded-lg overflow-hidden"
+            className="relative w-full aspect-square rounded-lg overflow-hidden"
             role="img"
             aria-label={ariaLabel}
             data-testid={`media-preview-${index}`}

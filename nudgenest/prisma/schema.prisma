@@ -22,8 +22,12 @@ model Merchants {
   email          String           @unique
   name           String           @unique
   businessInfo   String           @unique
-  apiKey         String?          @unique
-  createdAt      DateTime         @default(now())
+  apiKey             String?          @unique
+  shopifyAccessToken String?
+  deleted            Boolean          @default(false)
+  deletedAt          DateTime?
+  redactedAt         DateTime?
+  createdAt          DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   address        Address
   Configurations Configurations[]
@@ -39,15 +43,19 @@ model Reviews {
   merchantBusinessId String
   shopId             String
   customerEmail      String
-  customerPhone      String
   customerName       String     @default("Verified Customer")
   items              Json
   result             Json?
   verified           Boolean    @default(true)
   replies            Json?
   status             String     @default("Pending")
-  merchantApiKey     String?
-  createdAt          DateTime   @default(now())
+  published          Boolean    @default(false)
+  merchantApiKey       String?
+  remindersSent        Int        @default(0)
+  lastReminderAt       DateTime?
+  scheduledEmailAt     DateTime?
+  initialEmailSentAt   DateTime?
+  createdAt            DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   Merchants          Merchants? @relation(fields: [merchantId], references: [id])
 
@@ -61,6 +69,7 @@ model Configurations {
   emailContent         ConfigField[]
   reminderEmailContent ConfigField[]
   remindersFrequency   ConfigField[]
+  emailSchedule        ConfigField[]
   publish              ConfigField[]
   qrCode               ConfigField[]
   general              GeneralConfigs
@@ -148,7 +157,7 @@ model Subscriptions {
   canceledAt      DateTime?
   trialStart      DateTime?
   trialEnd        DateTime?
-  shopifyChargeId String?            @unique
+  shopifyChargeId String?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   Merchants       Merchants          @relation(fields: [merchantId], references: [id])

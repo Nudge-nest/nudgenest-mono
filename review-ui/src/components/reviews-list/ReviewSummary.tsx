@@ -19,11 +19,15 @@ const ReviewSummary: FC<ReviewSummaryProps> = ({ reviews }) => {
             </span>
             <Dropdown
                 trigger={
-                    <button className="hover:bg-[color:var(--color-bg)] p-1 rounded transition-colors">
-                        <IconCaretDown size={24} />
+                    <button
+                        className="hover:bg-[color:var(--color-main-light)] p-2 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                        aria-label="View rating distribution"
+                    >
+                        <IconCaretDown size={24} className="text-[color:var(--color-text)]" />
                     </button>
                 }
                 width="350px"
+                position="right"
             >
                 <RatingDistribution reviews={reviews} />
             </Dropdown>

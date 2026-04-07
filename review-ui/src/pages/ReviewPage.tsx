@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useReview } from '../contexts/ReviewContext';
 import Loading from '../components/Loading.tsx';
 import { IReviewItem, IReviewResult } from '../types/review.ts';
@@ -7,14 +7,22 @@ import MediaWidget from '../components/review/MediaWidget.tsx';
 import CommentWidget from '../components/review/CommentWidget.tsx';
 
 const ReviewPage = () => {
-    const { review, sliderHook, isFetching, isError } = useReview();
+    const { review, sliderHook, isFetching, isError, reviewFormHook } = useReview();
     const [items, setItems] = useState<IReviewItem[]>([]);
     const [result, setResult] = useState<IReviewResult[] | undefined>(undefined);
 
     // Get slide count - recalculate when slider is loaded
     const slideCount = useMemo(() => {
         return sliderHook.instanceRef.current?.track.details.slides.length || 3; // Default to 3 slides
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sliderHook.loaded]); // Depend on loaded state, not ref
+
+    // True when every product has been given a star rating
+    const allRated = useMemo(() => {
+        return items.length > 0 &&
+            reviewFormHook.ratings.length === items.length &&
+            reviewFormHook.ratings.every((r: IReviewResult) => (r.value || 0) >= 1);
+    }, [items, reviewFormHook.ratings]);
 
     // Update state when review changes
     useEffect(() => {
@@ -30,12 +38,27 @@ const ReviewPage = () => {
             event.preventDefault();
             sliderHook.instanceRef.current?.moveToIdx(targetIndex);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Refs don't need to be in dependencies
 
     // Navigate to specific slide
     const navigateToSlide = useCallback((idx: number) => {
         sliderHook.instanceRef.current?.moveToIdx(idx);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Refs don't need to be in dependencies
+
+    // Auto-advance from rating slide once all products are rated — fires only once
+    const hasAutoAdvanced = useRef(false);
+    useEffect(() => {
+        if (allRated && sliderHook.currentSlide === 0 && !hasAutoAdvanced.current) {
+            const timer = setTimeout(() => {
+                hasAutoAdvanced.current = true;
+                navigateToSlide(1);
+            }, 600);
+            return () => clearTimeout(timer);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allRated, sliderHook.currentSlide]);
 
     // Get slide label for accessibility
     const getSlideLabel = useCallback((index: number): string => {
@@ -59,7 +82,7 @@ const ReviewPage = () => {
                 aria-live="polite"
                 aria-label="Loading reviews"
                 data-testid="review-loading"
-                className="flex justify-center items-center h-full"
+                className="absolute inset-0 flex justify-center items-center bg-[color:var(--color-bg)]"
             >
                 <Loading />
                 <span className="sr-only text-red-600">Loading reviews...</span>
@@ -95,8 +118,12 @@ const ReviewPage = () => {
 
     return (
         <div
-            className="h-full px-4 text-center grid grid-rows-[95%_auto]"
+            className="h-screen px-4 text-center grid grid-rows-[1fr_auto] safe-area-inset"
             data-testid="review-page"
+            style={{
+                paddingTop: 'max(1rem, env(safe-area-inset-top))',
+                paddingBottom: 'max(1rem, env(safe-area-inset-bottom))'
+            }}
         >
             {/* Main content area with slider */}
             <section
@@ -114,12 +141,12 @@ const ReviewPage = () => {
                     aria-label="Product ratings"
                     data-testid="rating-slide"
                 >
-                    <div className="h-full flex flex-col gap-2 p-4">
+                    <div className={`h-full flex flex-col gap-2 p-4 ${items.length === 1 ? 'justify-center' : 'justify-start pt-8'}`}>
                         <h2 className="sr-only">Rate Your Products</h2>
 
                         {/* Scrollable container for rating widgets */}
                         <div
-                            className="flex-1 overflow-y-auto overflow-x-hidden"
+                            className={`flex-1 overflow-y-auto overflow-x-hidden ${items.length > 3 ? 'space-y-6' : items.length === 1 ? 'flex items-center justify-center' : 'flex flex-col justify-evenly'}`}
                             role="list"
                             aria-label="Products to rate"
                             data-testid="rating-widgets-container"
@@ -129,7 +156,7 @@ const ReviewPage = () => {
                                 scrollbarColor: 'var(--color-main) transparent'
                             }}
                         >
-                            <div className="space-y-4">
+                            <div className={items.length > 3 ? 'space-y-4' : items.length === 1 ? '' : 'flex flex-col justify-evenly h-full'}>
                                 {items.map((item: IReviewItem, index: number) => (
                                     <div
                                         key={item.id || index}
@@ -184,6 +211,17 @@ const ReviewPage = () => {
                 </article>
             </section>
 
+            {/* Form validation error */}
+            {reviewFormHook?.error && (
+                <p
+                    role="alert"
+                    className="text-red-500 text-sm text-center px-4 py-1"
+                    data-testid="form-validation-error"
+                >
+                    {reviewFormHook.error}
+                </p>
+            )}
+
             {/* Navigation dots */}
             {sliderHook.loaded && sliderHook.instanceRef.current && (
                 <nav
@@ -192,9 +230,15 @@ const ReviewPage = () => {
                     aria-label="Review sections navigation"
                     data-testid="slider-navigation"
                 >
-                    <ul className="dots flex justify-center gap-4 list-none">
+                    {/* Visible step counter */}
+                    <p className="text-center text-xs text-[color:var(--color-disabled)] mb-2">
+                        Step {sliderHook.currentSlide + 1} of {slideCount}
+                    </p>
+
+                    <ul className="dots flex justify-center gap-2 list-none">
                         {[...Array(slideCount).keys()].map((idx) => {
-                            const isActive = idx <= sliderHook.currentSlide;
+                            const isCurrent = idx === sliderHook.currentSlide;
+                            const isCompleted = idx < sliderHook.currentSlide;
                             const slideLabel = getSlideLabel(idx);
 
                             return (
@@ -203,27 +247,48 @@ const ReviewPage = () => {
                                         onClick={() => navigateToSlide(idx)}
                                         onKeyDown={(e) => handleKeyDown(e, idx)}
                                         className={`
-                      dot w-20 h-1.5 rounded transition-all duration-200
-                      ${isActive
-                                            ? 'bg-[color:var(--color-main)]'
-                                            : 'bg-[color:var(--color-disabled)]'}
-                      hover:opacity-80 focus:outline-none focus:ring-2 
-                      focus:ring-[color:var(--color-main)] focus:ring-offset-2
+                      dot transition-all duration-300 ease-out rounded-full
+                      ${isCurrent
+                          ? 'w-8 h-2 bg-[color:var(--color-main)]'
+                          : isCompleted
+                          ? 'w-2 h-2 bg-[color:var(--color-main)] opacity-60'
+                          : 'w-2 h-2 bg-[color:var(--color-disabled)]'}
+                      hover:scale-110 hover:opacity-100
+                      focus:outline-none focus:ring-2 focus:ring-[color:var(--color-main)] focus:ring-offset-1
                     `}
                                         aria-label={`Go to ${slideLabel}`}
-                                        aria-current={idx === sliderHook.currentSlide ? 'step' : undefined}
-                                        aria-pressed={idx === sliderHook.currentSlide}
+                                        aria-current={isCurrent ? 'step' : undefined}
+                                        aria-pressed={isCurrent}
                                         data-testid={`slider-dot-${idx}`}
                                         tabIndex={0}
                                     >
                     <span className="sr-only">
-                      {slideLabel} - {idx === sliderHook.currentSlide ? 'Current' : 'Navigate to'}
+                      {slideLabel} - {isCurrent ? 'Current' : 'Navigate to'}
                     </span>
                                     </button>
                                 </li>
                             );
                         })}
                     </ul>
+
+                    {/* Next button — shown on rating and media slides */}
+                    {sliderHook.currentSlide < slideCount - 1 && (
+                        <div className="mt-3 flex justify-center">
+                            <button
+                                onClick={() => navigateToSlide(sliderHook.currentSlide + 1)}
+                                disabled={sliderHook.currentSlide === 0 && !allRated}
+                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200
+                                    ${sliderHook.currentSlide === 0 && !allRated
+                                        ? 'bg-[color:var(--color-disabled)] text-white opacity-50 cursor-not-allowed'
+                                        : 'bg-[color:var(--color-main)] text-white hover:opacity-90'
+                                    }`}
+                                aria-label={sliderHook.currentSlide === 0 ? 'Next: Upload media' : 'Next: Add comment'}
+                                data-testid="next-button"
+                            >
+                                Next →
+                            </button>
+                        </div>
+                    )}
 
                     {/* Progress indicator for screen readers */}
                     <div

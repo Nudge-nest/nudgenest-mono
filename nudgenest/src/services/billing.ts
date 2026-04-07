@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated/prisma/prisma/client';
+import { PlanTier, PrismaClient } from '../../generated/prisma/prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -69,6 +69,7 @@ export class BillingService {
                 merchantId,
                 status: { in: ['ACTIVE', 'TRIALING'] },
             },
+            orderBy: { createdAt: 'desc' },
             include: {
                 Plans: true,
             },
@@ -134,7 +135,7 @@ export class BillingService {
                 return limits.emailsPerMonth === -1 || totalUsage <= limits.emailsPerMonth;
             case 'SMS_SENT':
                 return limits.smsPerMonth === -1 || totalUsage <= limits.smsPerMonth;
-            case 'API_CALL':
+            case 'API_CALL': {
                 // Daily limit check
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -148,6 +149,7 @@ export class BillingService {
                 });
                 const todayTotal = (dailyUsage._sum.quantity || 0) + additionalQuantity;
                 return limits.apiCallsPerDay === -1 || todayTotal <= limits.apiCallsPerDay;
+            }
             default:
                 return true;
         }
@@ -194,6 +196,7 @@ export class BillingService {
                 merchantId,
                 status: { in: ['ACTIVE', 'TRIALING'] },
             },
+            orderBy: { createdAt: 'desc' },
             include: {
                 Plans: true,
             },
@@ -225,6 +228,7 @@ export class BillingService {
                 merchantId,
                 status: { in: ['ACTIVE', 'TRIALING'] },
             },
+            orderBy: { createdAt: 'desc' },
         });
 
         if (!subscription) {
@@ -252,6 +256,7 @@ export class BillingService {
                 merchantId,
                 status: { in: ['ACTIVE', 'TRIALING'] },
             },
+            orderBy: { createdAt: 'desc' },
         });
 
         if (!currentSubscription) {
@@ -270,7 +275,6 @@ export class BillingService {
         await this.cancelSubscription(merchantId, false);
 
         // Create new subscription starting at end of current period
-        const now = new Date();
         const periodStart = currentSubscription.currentPeriodEnd;
         const periodEnd = new Date(
             periodStart.getTime() +
@@ -348,6 +352,18 @@ export class BillingService {
         return await prisma.plans.findMany({
             where: { isActive: true },
             orderBy: { price: 'asc' },
+        });
+    }
+
+    /**
+     * Get a plan by tier
+     */
+    async getPlanByTier(tier: string) {
+        return await prisma.plans.findFirst({
+            where: {
+                tier: tier as PlanTier,
+                isActive: true,
+            },
         });
     }
 }

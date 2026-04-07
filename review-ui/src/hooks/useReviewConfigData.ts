@@ -5,7 +5,7 @@ import defaultReviewConfig from '../defaultReviewConfig.json';
 const getDemoReview = () => defaultReviewConfig;
 
 export const useReviewConfigData = (merchantId: string) => {
-    const skipFetch = !merchantId || merchantId === 'demo';
+    const skipFetch = !merchantId || merchantId === 'demo' || merchantId === 'undefined';
     const { data, isError, isLoading, isFetching } = useGetReviewConfigsQuery(merchantId as string, {
         skip: skipFetch,
     });

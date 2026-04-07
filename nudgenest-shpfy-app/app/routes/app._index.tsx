@@ -1,13 +1,20 @@
-import {Banner, BlockStack, Page, Text} from "@shopify/polaris";
+import {Banner, Page} from "@shopify/polaris";
 import RegistrationPage from "./app.registration";
 import CustomerDashboard from "./app.dashboard";
 import {useLoaderData} from "@remix-run/react";
-import {useEffect, useState} from "react";
 import type { LoaderData} from "../utilities";
-import {checkMerchantRegistration, getMerchantDataFromShopify, registerMerchant} from "../utilities";
+import {BASE_URL, checkMerchantRegistration, fetchWithErrorHandling, getMerchantDataFromShopify, registerMerchant, fetchReviewStats, fetchSubscriptionDetails} from "../utilities";
 import type {ActionFunctionArgs, LoaderFunctionArgs} from "@remix-run/node";
 import { json} from "@remix-run/node";
 import {authenticate} from "../shopify.server";
+import * as Sentry from "@sentry/remix";
+
+/** Parse a cookie header string and return the value for a given key */
+function parseCookie(cookieHeader: string | null, key: string): string | null {
+  if (!cookieHeader) return null;
+  const match = cookieHeader.split(";").find(c => c.trim().startsWith(`${key}=`));
+  return match ? decodeURIComponent(match.trim().slice(key.length + 1)) : null;
+}
 
 
 // ============================================================================
@@ -24,14 +31,55 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     // Check if merchant is already registered in Nudge-nest
     const registrationCheck = await checkMerchantRegistration(shopInfo.id);
 
+    // Fetch review stats and subscription details if merchant is registered
+    let reviewStats = null;
+    let subscriptionDetails = null;
+    if (registrationCheck.data?.id) {
+      const merchantApiKey = registrationCheck.data.apiKey;
+      reviewStats = await fetchReviewStats(registrationCheck.data.id, merchantApiKey);
+      subscriptionDetails = await fetchSubscriptionDetails(registrationCheck.data.id, merchantApiKey);
+    }
+
+    // Fetch all plans from backend (used for registration and billing cards)
+    let allPlans = null;
+    let defaultPlan = null;
+    try {
+      const merchantApiKey = registrationCheck.data?.apiKey;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (merchantApiKey) headers['x-api-key'] = merchantApiKey;
+
+      const plansData = await fetchWithErrorHandling(`${BASE_URL}/plans`, { headers });
+      const allPlansFromAPI = plansData.data?.plans || [];
+      allPlans = allPlansFromAPI.filter((p: any) => p.tier !== 'ENTERPRISE');
+      defaultPlan = allPlans?.find((p: any) => p.tier === 'FREE') || null;
+    } catch (error) {
+      console.error('Failed to fetch plans:', error);
+    }
+
+    // Read and immediately clear the billing status cookie set by api.billing.callback
+    const cookieHeader = request.headers.get("Cookie");
+    const billingStatus = parseCookie(cookieHeader, "nudgenest_billing_status");
+
     const loaderData: LoaderData = {
       isRegistered: !!registrationCheck.data,
       shopInfo,
       businessInfo,
       merchantData: registrationCheck.data || null,
+      reviewStats,
+      subscriptionDetails,
+      defaultPlan,
+      allPlans,
+      reviewUiBaseUrl: process.env.REVIEW_UI_BASE_URL,
+      billingStatus: billingStatus || null,
     };
 
-    return json(loaderData);
+    const responseHeaders: Record<string, string> = {};
+    if (billingStatus) {
+      // Clear the cookie now that we've read it
+      responseHeaders["Set-Cookie"] = "nudgenest_billing_status=; Path=/; Max-Age=0; SameSite=None; Secure";
+    }
+
+    return json(loaderData, { headers: responseHeaders });
   } catch (error) {
     console.error("Loader error:", error);
     return json({
@@ -39,6 +87,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       shopInfo: null,
       businessInfo: null,
       merchantData: null,
+      subscriptionDetails: null,
+      defaultPlan: null,
+      allPlans: null,
       error: error instanceof Error ? error.message : "Failed to load merchant data"
     } as LoaderData);
   }
@@ -49,7 +100,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 // ============================================================================
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { admin } = await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
   const formData = await request.formData();
   const actionType = formData.get("_action");
 
@@ -64,7 +115,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         email: shopInfo.email,
         name: shopInfo.name,
         businessInfo: businessInfo.id,
-        address: shopInfo.billingAddress,
+        address: {
+          address1:  shopInfo.billingAddress.address1  ?? '',
+          address2:  shopInfo.billingAddress.address2  ?? '',
+          city:      shopInfo.billingAddress.city      ?? '',
+          country:   shopInfo.billingAddress.country   ?? '',
+          formatted: shopInfo.billingAddress.formatted ?? [],
+          zip:       shopInfo.billingAddress.zip       ?? '',
+        },
+        shopifyAccessToken: session.accessToken,
       };
 
       const result = await registerMerchant(merchantData);
@@ -88,17 +147,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
   const data = useLoaderData<LoaderData>();
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Prevent flash of content
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-  if (isLoading || !data) {
+  if (!data) {
     return (
       <div style={{
         position: 'fixed',
@@ -108,21 +158,26 @@ export default function Index() {
         height: '100vh',
         backgroundColor: '#f6f6f7',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        gap: '12px',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}>
-        <BlockStack gap="200" align="center">
-          <div style={{
-            width: '32px',
-            height: '32px',
-            border: '3px solid #e1e3e5',
-            borderTop: '3px solid #ef4444',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <Text variant="bodyMd" as="p">Loading...</Text>
-        </BlockStack>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          border: '3px solid #e1e3e5',
+          borderTop: '3px solid #ef4444',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{
+          margin: 0,
+          fontSize: '14px',
+          fontWeight: 400,
+          color: '#202223'
+        }}>Loading...</p>
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -156,16 +211,26 @@ export default function Index() {
     );
   }
 
+  // Set Sentry user context now that shop identity is confirmed
+  Sentry.setUser({ username: data.shopInfo.myshopifyDomain });
+  Sentry.setTag("shop", data.shopInfo.myshopifyDomain);
+
   // Conditional rendering based on registration status
   return data.isRegistered ? (
     <CustomerDashboard
       merchantData={data.merchantData}
       shopInfo={data.shopInfo}
+      reviewStats={data.reviewStats}
+      subscriptionDetails={data.subscriptionDetails}
+      allPlans={data.allPlans}
+      reviewUiBaseUrl={data.reviewUiBaseUrl}
+      billingStatus={data.billingStatus}
     />
   ) : (
     <RegistrationPage
       shopInfo={data.shopInfo}
       businessInfo={data.businessInfo}
+      defaultPlan={data.defaultPlan}
     />
   );
 }

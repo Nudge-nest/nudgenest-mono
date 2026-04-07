@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { IconPlus } from '@tabler/icons-react';
 
@@ -10,9 +10,11 @@ import PreviewComponent from './MediaPreviewComponent.tsx';
 const MediaWidget = memo(() => {
     const { merchantId, reviewFormHook, review, reviewId, reviewStatus } = useReview();
     const [uploadReviewMedia] = useUploadReviewMediaMutation();
+    const [rejectionError, setRejectionError] = useState<string | null>(null);
 
     const onDrop = useCallback(
         async (acceptedFiles: File[]) => {
+            if (acceptedFiles.length === 0) return;
             if (reviewId === 'demo') {
                 reviewFormHook.addMedia([
                     {
@@ -37,13 +39,27 @@ const MediaWidget = memo(() => {
         [reviewFormHook, reviewId, merchantId, uploadReviewMedia]
     );
 
-    const { getRootProps, getInputProps } = useDropzone({
+    const onDropRejected = useCallback((rejectedFiles: any[]) => {
+        const isSizeError = rejectedFiles.some(f =>
+            f.errors?.some((e: any) => e.code === 'file-too-large')
+        );
+        setRejectionError(isSizeError
+            ? 'File exceeds 10MB limit. Please choose a smaller file.'
+            : 'Only images and videos are accepted.'
+        );
+        setTimeout(() => setRejectionError(null), 3000);
+    }, []);
+
+    const { getRootProps, getInputProps, open } = useDropzone({
         onDrop,
+        onDropRejected,
         accept: {
             'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'],
             'video/*': ['.mp4', '.mov', '.webm', '.ogg', '.avi', '.mkv']
         },
-        multiple: true
+        maxSize: 10 * 1024 * 1024,
+        multiple: true,
+        noClick: true,
     });
 
     const isCompleted = review?.status === 'Completed' || reviewStatus === 'Completed';
@@ -65,14 +81,23 @@ const MediaWidget = memo(() => {
                 <p className="font-normal text-base" data-testid="media-widget-subtitle">
                     Snap it, share it, show it off!
                 </p>
+                <p className="text-xs text-[color:var(--color-disabled)] mt-1">
+                    Uploading is optional — tap Next to skip
+                </p>
+                <p className="text-xs text-[color:var(--color-disabled)]">
+                    Max 12 files · 10MB per file
+                </p>
             </header>
 
             <div
-                className="w-full h-fit grid grid-cols-5 gap-1.5 p-2 border-1 border-[color:var(--color-text)] rounded-lg"
+                {...(!isCompleted ? getRootProps() : {})}
+                className="w-full h-fit grid grid-cols-3 sm:grid-cols-4 gap-2 p-2 border border-[color:var(--color-text)] rounded-lg"
                 role="region"
                 aria-label="Media uploads"
                 data-testid="media-container"
             >
+                {!isCompleted && <input {...getInputProps()} aria-label="File input for media upload" data-testid="file-input" />}
+
                 {reviewFormHook.media.map((media: IUploadedMediaObject, idx: number) => (
                     <PreviewComponent
                         media={media}
@@ -84,27 +109,32 @@ const MediaWidget = memo(() => {
 
                 {!isCompleted && (
                     <div
-                        {...getRootProps()}
-                        className="h-20 max-w-20 w-20 border-2 border-[color:var(--color-text)] rounded-lg flex
-                        items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={open}
+                        className="w-full aspect-square bg-[color:var(--color-main)] rounded-lg flex
+                        items-center justify-center cursor-pointer hover:opacity-90 transition-all duration-200 shadow-sm"
                         role="button"
                         tabIndex={0}
                         aria-label="Upload media files. Click or drag and drop files here"
                         aria-describedby="upload-instructions"
                         data-testid="upload-button"
                     >
-                        <input
-                            {...getInputProps()}
-                            aria-label="File input for media upload"
-                            data-testid="file-input"
-                        />
-                        <IconPlus aria-hidden="true" />
+                        <IconPlus aria-hidden="true" className="text-white" stroke={2.5} size={32} />
                         <span id="upload-instructions" className="sr-only">
                             Click to select files or drag and drop images and videos here
                         </span>
                     </div>
                 )}
             </div>
+
+            {rejectionError && (
+                <p
+                    role="alert"
+                    className="text-red-500 text-sm mt-2 text-center"
+                    data-testid="media-rejection-error"
+                >
+                    {rejectionError}
+                </p>
+            )}
         </section>
     );
 });

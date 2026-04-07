@@ -15,7 +15,7 @@ export const BodyText: React.FC<TypographyProps> = ({ children, className, ...pr
 
 export const MediumBodyText: React.FC<TypographyProps> = ({ children, className, ...props }) => {
     return (
-        <p className={`font-normal text-base text-[color:var(--color-dark)] ${className ? className : ''}`} {...props}>
+        <p className={`font-normal text-lg leading-relaxed text-[color:var(--color-dark)] ${className ? className : ''}`} {...props}>
             {children}
         </p>
     );
@@ -31,7 +31,7 @@ export const LargeBodyText: React.FC<TypographyProps> = ({ children, className, 
 
 export const SmallBodyText: React.FC<TypographyProps> = ({ children, className, ...props }) => {
     return (
-        <p className={`font-normal text-sm text-[color:var(--color-dark)] ${className ? className : ''}`} {...props}>
+        <p className={`font-normal text-base leading-relaxed text-[color:var(--color-dark)] ${className ? className : ''}`} {...props}>
             {children}
         </p>
     );
@@ -39,7 +39,7 @@ export const SmallBodyText: React.FC<TypographyProps> = ({ children, className, 
 
 export const SmallBodyTextBold: React.FC<TypographyProps> = ({ children, className, ...props }) => {
     return (
-        <p className={`font-bold text-base text-[color:var(--color-dark)] ${className ? className : ''}`} {...props}>
+        <p className={`font-bold text-lg text-[color:var(--color-dark)] ${className ? className : ''}`} {...props}>
             {children}
         </p>
     );
@@ -70,7 +70,7 @@ export const LargerHeaderTextBoldItalic: React.FC<TypographyProps> = ({ children
 export const LargeHeaderTextBold: React.FC<TypographyProps> = ({ children, className, ...props }) => {
     return (
         <p
-            className={`font-bold text-2xl text-[color:var(--color-dark)] text-pretty ${className ? className : ''}`}
+            className={`font-bold text-3xl text-[color:var(--color-dark)] text-pretty ${className ? className : ''}`}
             {...props}
         >
             {children}
@@ -81,7 +81,7 @@ export const LargeHeaderTextBold: React.FC<TypographyProps> = ({ children, class
 export const MediumHeaderTextBold: React.FC<TypographyProps> = ({ children, className, ...props }) => {
     return (
         <p
-            className={`font-semibold text-base text-[color:var(--color-dark)] ${className ? className : ''}`}
+            className={`font-semibold text-xl text-[color:var(--color-dark)] ${className ? className : ''}`}
             {...props}
         >
             {children}

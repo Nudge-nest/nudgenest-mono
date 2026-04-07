@@ -6,7 +6,7 @@ import { IReview } from '../types/review.ts';
 const getDemoReview = (): IReview => defaultReview as IReview;
 
 export const useReviewData = (reviewId: string, pathname: string) => {
-    const skipFetch = !reviewId || reviewId === 'demo';
+    const skipFetch = !reviewId || reviewId === 'demo' || reviewId === 'store-review';
     const _storeReviewMerchantId = pathname.split('/')[3] as string;
     const { data, isError, isLoading, isFetching } = useGetReviewQuery(reviewId as string, { skip: skipFetch });
     const {

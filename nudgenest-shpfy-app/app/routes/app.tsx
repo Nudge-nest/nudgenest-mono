@@ -1,10 +1,10 @@
 import type { HeadersFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, Outlet, useLoaderData, useRouteError } from "@remix-run/react";
+import { Outlet, useLoaderData, useRouteError } from "@remix-run/react";
 import { boundary } from "@shopify/shopify-app-remix/server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
-import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
+import * as Sentry from "@sentry/remix";
 
 import { authenticate } from "../shopify.server";
 
@@ -19,14 +19,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function App() {
   const { apiKey } = useLoaderData<typeof loader>();
 
+  // AppProvider must wrap Outlet so that all child components
+  // (including those using useAppBridge) have access to window.shopify
   return (
     <AppProvider isEmbeddedApp apiKey={apiKey}>
-      <NavMenu>
-        <Link to="/app" rel="home">
-          Home
-        </Link>
-        <Link to="/app/additional">Additional page</Link>
-      </NavMenu>
       <Outlet />
     </AppProvider>
   );
@@ -34,7 +30,12 @@ export default function App() {
 
 // Shopify needs Remix to catch some thrown responses, so that their headers are included in the response.
 export function ErrorBoundary() {
-  return boundary.error(useRouteError());
+  const error = useRouteError();
+  // Only capture actual Error objects — not Response throws from auth/billing
+  if (error instanceof Error) {
+    Sentry.captureException(error);
+  }
+  return boundary.error(error);
 }
 
 export const headers: HeadersFunction = (headersArgs) => {

@@ -10,12 +10,13 @@ interface UseReviewConfigFormReturn {
     setIsSubmitting: (value: boolean | undefined | ((prev: boolean | undefined) => boolean | undefined)) => void;
     isEditing: boolean;
     setIsEditing: (value: boolean | ((prev: boolean) => boolean)) => void;
+    saveSuccess: boolean;
 
     // Actions - ORIGINAL FUNCTION NAMES
     handleUpdateReviewConfig: () => Promise<void>; // ORIGINAL NAME
     handleSubmitDemo: () => void; // ORIGINAL NAME
     error: string | null;
-    handleFieldChange: (key: string, value: string, propName: keyof Omit<IReviewConfiguration, 'merchantId'>) => void;
+    handleFieldChange: (key: string, value: string | number | boolean, propName: string) => void;
 }
 
 export const useReviewConfigForm = (initialData: IReviewConfiguration): UseReviewConfigFormReturn => {
@@ -25,6 +26,7 @@ export const useReviewConfigForm = (initialData: IReviewConfiguration): UseRevie
     // UI state
     const [isSubmitting, setIsSubmitting] = useState<boolean | undefined>(undefined);
     const [error, setError] = useState<string | null>(null);
+    const [saveSuccess, setSaveSuccess] = useState(false);
     const { updateReviewConfigs } = useReviewConfigData(reviewConfigs ? reviewConfigs.merchantId : '');
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -38,9 +40,17 @@ export const useReviewConfigForm = (initialData: IReviewConfiguration): UseRevie
         if (!reviewConfigs) return;
         setIsSubmitting(true);
         setError(null);
+        setSaveSuccess(false);
 
         try {
-            updateReviewConfigs({ reviewConfigs: reviewConfigs, merchantId: reviewConfigs.merchantId });
+            const result = await updateReviewConfigs({ reviewConfigs: reviewConfigs, merchantId: reviewConfigs.merchantId });
+            if ('error' in result) {
+                setError('Failed to save configuration. Please try again.');
+            } else {
+                setIsEditing(false);
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 3000);
+            }
         } catch (error: any) {
             setError(error.message || 'Failed to submit review');
             console.error('Submit review error:', error);
@@ -50,17 +60,34 @@ export const useReviewConfigForm = (initialData: IReviewConfiguration): UseRevie
     }, [reviewConfigs, updateReviewConfigs, setIsSubmitting, setError]);
 
     const handleFieldChange = useCallback(
-        (key: string, value: string | number | boolean, propName: keyof Omit<IReviewConfiguration, 'merchantId'>) => {
+        (key: string, value: string | number | boolean, propName: string) => {
             setIsEditing(true);
             setReviewConfigs((prev: any) => {
-                if (!prev || !prev[propName]) return prev;
+                if (!prev) return prev;
 
+                // Support dot-notation paths e.g. "general.shopReviewQuestions"
+                const parts = propName.split('.');
+                if (parts.length === 2) {
+                    const [topProp, nestedProp] = parts;
+                    const arr = prev[topProp]?.[nestedProp];
+                    if (!Array.isArray(arr)) return prev;
+                    return {
+                        ...prev,
+                        [topProp]: {
+                            ...prev[topProp],
+                            [nestedProp]: arr.map((field: IConfigField) =>
+                                field.key === key ? { ...field, value: String(value) } : field
+                            ),
+                        },
+                    };
+                }
+
+                // Original flat-array path
+                if (!prev[propName] || !Array.isArray(prev[propName])) return prev;
                 return {
                     ...prev,
                     [propName]: prev[propName].map((field: IConfigField) =>
-                        field.key === key
-                            ? { ...field, value: String(value) } // Convert to string since your interface expects string
-                            : field
+                        field.key === key ? { ...field, value: String(value) } : field
                     ),
                 };
             });
@@ -78,6 +105,7 @@ export const useReviewConfigForm = (initialData: IReviewConfiguration): UseRevie
         isSubmitting,
         isEditing,
         setIsEditing,
+        saveSuccess,
 
         // Actions - KEEP ORIGINAL FUNCTION NAMES
         setIsSubmitting,

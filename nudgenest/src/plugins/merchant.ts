@@ -3,7 +3,7 @@ import Hapi from '@hapi/hapi';
 import crypto from 'crypto';
 
 import * as dotenv from 'dotenv';
-import { eventType, IMerchant, IRabbitDataObject, IReviewMessagePayloadContent } from '../types';
+import { eventType, IRabbitDataObject, IReviewMessagePayloadContent } from '../types';
 import { isRabbitReviewRequestMessageValid, sampleMessaging } from '../messagesSchema';
 
 dotenv.config();
@@ -28,9 +28,25 @@ const merchantsPlugin: Hapi.Plugin<null> = {
                 },
             },
             {
+                method: 'GET',
+                path: '/api/v1/merchants/{merchantId}',
+                handler: getMerchantHandler,
+                options: {
+                    auth: false,
+                },
+            },
+            {
                 method: 'POST',
                 path: '/api/v1/merchants',
                 handler: createMerchantHandler,
+                options: {
+                    auth: false,
+                },
+            },
+            {
+                method: 'POST',
+                path: '/api/v1/merchants/deactivate',
+                handler: deactivateMerchantHandler,
                 options: {
                     auth: false,
                 },
@@ -90,8 +106,8 @@ export const defaultConfigs = {
         },
         {
             key: 'remindersPeriod',
-            value: 'BIMONTHLY',
-            description: 'Frequency of reminder emails',
+            value: 'WEEKLY',
+            description: 'Frequency of reminder emails (WEEKLY, BIWEEKLY, MONTHLY, BIMONTHLY)',
             type: 'select',
         },
     ],
@@ -101,6 +117,14 @@ export const defaultConfigs = {
             value: 'THREESTARS',
             description: 'Minimum star rating for auto-publishing reviews',
             type: 'select',
+        },
+    ],
+    emailSchedule: [
+        {
+            key: 'initialEmailDelayDays',
+            value: '0',
+            description: 'Days to wait after order before sending the review request email (0 = send immediately)',
+            type: 'number',
         },
     ],
     qrCode: [
@@ -120,7 +144,7 @@ export const defaultConfigs = {
     general: {
         shopReviewQuestions: [
             {
-                key: 'default',
+                key: 'reviewQuestion',
                 value: 'how did we do?',
                 description: 'Shop review default question',
                 type: 'text',
@@ -129,15 +153,53 @@ export const defaultConfigs = {
     },
 };
 
+const getMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+    const { merchantId } = request.params as { merchantId: string };
+    const { prisma } = request.server.app;
+    try {
+        const merchant = await prisma.merchants.findUnique({
+            where: {
+                id: merchantId,
+            },
+            select: {
+                id: true,
+                shopId: true,
+                domains: true,
+                email: true,
+                name: true,
+                businessInfo: true,
+                apiKey: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+
+        if (!merchant) {
+            return h.response({
+                version: '1.0.0',
+                error: 'Merchant not found'
+            }).code(404);
+        }
+
+        return h.response({ version: '1.0.0', data: merchant }).code(200);
+    } catch (error: any) {
+        return h
+            .response({
+                version: '1.0.0',
+                error: error.message,
+            })
+            .code(500);
+    }
+};
+
 const verifyMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const { merchantPlatformId } = request.params as { merchantPlatformId: string };
     const { prisma } = request.server.app;
     try {
-        const merchant = await prisma.merchants.findMany({
+        const merchant = await prisma.merchants.findFirst({
             where: {
-                shopId: {
-                    contains: merchantPlatformId,
-                },
+                shopId: { contains: merchantPlatformId },
+                deleted: { not: true },
             },
             select: {
                 // Explicitly select fields (excludes otpSecret)
@@ -147,6 +209,7 @@ const verifyMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
                 email: true,
                 name: true,
                 businessInfo: true,
+                apiKey: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -182,6 +245,7 @@ export const createMerchantEmailMessagingTemplate = (
                 type: eventType,
                 email: merchant.email,
                 order_number: undefined,
+                merchantId: merchant.id,
             },
             context: { ...sampleMessaging.payload.context, receiver: ['reviewee'] },
         },
@@ -203,6 +267,7 @@ const createRegistrationEmailMessaging = (
                 type: 'merchant-welcome',
                 email: merchant.email,
                 order_number: undefined,
+                merchantId: merchant.id,
             },
             context: { ...sampleMessaging.payload.context, receiver: ['reviewee'] },
         },
@@ -224,10 +289,38 @@ const createVerificationEmailMessaging = (
                 type: 'merchant-verification',
                 email: merchant.email,
                 order_number: undefined,
+                merchantId: merchant.id,
             },
             context: { ...sampleMessaging.payload.context, receiver: ['reviewee'] },
         },
     } as IRabbitDataObject<IReviewMessagePayloadContent>;
+};
+
+const deactivateMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+    // Webhook sends shop domain (e.g. "store.myshopify.com") — look up by `domains`
+    // since `shopId` stores the Shopify GID which is a different format
+    const { shopId: shopDomain } = request.payload as { shopId: string };
+    const { prisma } = request.server.app;
+    try {
+        const merchant = await prisma.merchants.findFirst({ where: { domains: shopDomain } });
+        if (!merchant) {
+            return h.response({ ok: true, message: 'Merchant not found' }).code(200);
+        }
+        await prisma.merchants.update({
+            where: { id: merchant.id },
+            data: { deleted: true, deletedAt: new Date(), shopifyAccessToken: null },
+        });
+        // Downgrade any active paid subscription to cancelled
+        await prisma.subscriptions.updateMany({
+            where: { merchantId: merchant.id, status: 'ACTIVE' },
+            data: { status: 'CANCELED' },
+        });
+        request.logger.info({ shopDomain }, 'Merchant soft-deleted on app uninstall');
+        return h.response({ ok: true }).code(200);
+    } catch (error: any) {
+        request.logger.error({ err: error }, 'Failed to deactivate merchant');
+        return h.response({ error: error.message }).code(500);
+    }
 };
 
 const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
@@ -236,27 +329,75 @@ const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
     const { messagingTopic } = pubsub;
     try {
         const apiKey = crypto.randomBytes(32).toString('hex');
+
+        // Reinstall within 48h window — merchant exists but was soft-deleted
+        const existing = merchantData?.shopId
+            ? await prisma.merchants.findFirst({ where: { shopId: merchantData.shopId } })
+            : null;
+        if (existing?.deleted && !existing?.redactedAt) {
+            // Reinstall within 48h grace window — reactivate the soft-deleted merchant.
+            // Redacted merchants (GDPR-erased) are excluded: their PII is gone so they
+            // cannot be restored; a fresh registration creates a new record instead.
+            const merchant = await prisma.merchants.update({
+                where: { id: existing.id },
+                data: { ...merchantData, deleted: false, deletedAt: null, apiKey } as any,
+            });
+            // Restore FREE subscription
+            const freePlan = await prisma.plans.findUnique({ where: { name: 'free' } });
+            if (freePlan) {
+                const now = new Date();
+                await prisma.subscriptions.create({
+                    data: {
+                        merchantId: merchant.id,
+                        planId: freePlan.id,
+                        status: 'ACTIVE',
+                        currentPeriodStart: now,
+                        currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+                        trialStart: null,
+                        trialEnd: null,
+                    },
+                });
+            }
+            request.logger.info({ shopId: merchantData.shopId }, 'Merchant reactivated on reinstall');
+            return h.response({ version: '1.0.0', data: { merchant } }).code(200);
+        }
+
         const merchant = await prisma.merchants.create({
             data: { ...(merchantData || {}), apiKey } as any,
         });
+
+        // Generate store review QR code URL from env
+        const reviewUiBaseUrl = process.env.REVIEW_UI_BASE_URL;
+        if (!reviewUiBaseUrl) throw new Error('Missing required env var: REVIEW_UI_BASE_URL');
+        const storeReviewUrl = `${reviewUiBaseUrl}/store/review/${merchant.id}`;
+
+        // Update qrCode config with generated URL
+        const configsWithQrUrl = {
+            ...defaultConfigs,
+            qrCode: defaultConfigs.qrCode.map(field =>
+                field.key === 'qrCodeUrl' ? { ...field, value: storeReviewUrl } : field
+            ),
+            merchantId: merchant.id
+        };
+
         const reviewConfigs = await prisma.configurations.create({
-            data: { ...defaultConfigs, merchantId: merchant.id } as any,
+            data: configsWithQrUrl as any,
         });
 
-        // Auto-assign free plan with 14-day trial
+        // Auto-assign FREE plan (no trial - it's free forever)
         const freePlan = await prisma.plans.findUnique({ where: { name: 'free' } });
         if (freePlan) {
             const now = new Date();
-            const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+            const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
             await prisma.subscriptions.create({
                 data: {
                     merchantId: merchant.id,
                     planId: freePlan.id,
-                    status: 'TRIALING',
+                    status: 'ACTIVE',
                     currentPeriodStart: now,
-                    currentPeriodEnd: trialEnd,
-                    trialStart: now,
-                    trialEnd: trialEnd,
+                    currentPeriodEnd: periodEnd,
+                    trialStart: null,
+                    trialEnd: null,
                 },
             });
         }

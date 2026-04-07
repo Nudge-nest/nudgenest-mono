@@ -54,6 +54,14 @@
             "type": "select"
         }
     ],
+    "emailSchedule": [
+        {
+            "key": "initialEmailDelayDays",
+            "value": "0",
+            "description": "Days to wait after order before sending the review request email (0 = send immediately)",
+            "type": "number"
+        }
+    ],
     "publish": [
         {
             "key": "autoPublish",
@@ -76,5 +84,14 @@
             "type": "image"
         }
     ],
-    "general": []
+    "general": {
+        "shopReviewQuestions": [
+            {
+                "key": "reviewQuestion",
+                "value": "how did we do?",
+                "description": "Shop review default question",
+                "type": "text"
+            }
+        ]
+    }
 }

@@ -15,6 +15,15 @@ export interface EmailData {
     reviewId?: string;
     unsubscribeUrl?: string;
     currency?: string;
+    storeName?: string;
+    storeDomain?: string;
+    // Merchant-configurable overrides for review request / reminder emails
+    subjectOverride?: string;
+    bodyOverride?: string;
+    buttonTextOverride?: string;
+    reminderSubjectOverride?: string;
+    reminderBodyOverride?: string;
+    reminderButtonTextOverride?: string;
     [key: string]: any; // Allow additional properties
 }
 
@@ -60,14 +69,16 @@ class EmailService {
             console.warn('⚠️  RESEND_API_KEY not found. Email sending will fail.');
         }
         this.resend = new Resend(resendApiKey);
-        // Resend requires a verified domain or uses their onboarding domain
-        this.fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+        if (!process.env.RESEND_FROM_EMAIL) {
+            throw new Error('Missing required env var: RESEND_FROM_EMAIL');
+        }
+        this.fromEmail = process.env.RESEND_FROM_EMAIL;
     }
 
     // Load and cache template
     private async loadTemplate(templateName: string): Promise<string> {
         if (!this.templateCache.has(templateName)) {
-            const templatePath = path.join('src/email-service/templates/', `${templateName}.ejs`);
+            const templatePath = path.join(__dirname, 'templates', `${templateName}.ejs`);
             const template = await fs.readFile(templatePath, 'utf-8');
             this.templateCache.set(templateName, template);
         }
@@ -75,33 +86,34 @@ class EmailService {
     }
     // Get configuration based on email type
     private getEmailConfig(type: EmailType, data: EmailData): EmailConfig {
-        // Determine review UI base URL based on environment
-        const reviewBaseUrl = process.env.NODE_ENV === 'development'
-            ? 'http://localhost:3001'
-            : 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
+        const reviewBaseUrl = process.env.REVIEW_UI_BASE_URL;
 
         switch (type) {
             case EmailType.REVIEW_REQUEST:
                 return {
-                    subject: `${data.userName}, how was your recent purchase?`,
-                    mainMessage: `We would be grateful if you shared how things look and feel. Your review helps us and the community that supports us, and it only takes a few seconds.`,
+                    subject: data.subjectOverride || (data.storeName
+                        ? `${data.userName}, how was your recent order from ${data.storeName}?`
+                        : `${data.userName}, how was your recent purchase?`),
+                    mainMessage: data.bodyOverride || `We would be grateful if you shared how things look and feel. Your review helps us and the community that supports us, and it only takes a few seconds.`,
                     showRating: true,
                     showItems: true,
                     ctaButton: {
-                        text: 'Write a Review',
+                        text: data.buttonTextOverride || 'Write a Review',
                         link: `${reviewBaseUrl}/review/${data.reviewId}`,
                     },
                 };
 
             case EmailType.REVIEW_REMINDER:
                 return {
-                    subject: `Quick reminder: Share your thoughts on order #${data.order_number}`,
-                    mainMessage: `We noticed you haven't had a chance to review your recent purchase yet. We'd love to hear what you think!`,
+                    subject: data.reminderSubjectOverride || (data.storeName
+                        ? `Reminder from ${data.storeName}: share your thoughts on order #${data.order_number}`
+                        : `Quick reminder: Share your thoughts on order #${data.order_number}`),
+                    mainMessage: data.reminderBodyOverride || `We noticed you haven't had a chance to review your recent purchase yet. We'd love to hear what you think!`,
                     showRating: true,
                     showItems: true,
-                    additionalMessage: `<strong>⏰ Limited time:</strong> Leave a review in the next 48 hours and receive 10% off your next purchase!`,
+                    additionalMessage: `<strong>📦 Haven't received your items yet?</strong> No worries — just come back to this email once your order arrives and leave your review then.`,
                     ctaButton: {
-                        text: 'Review Now',
+                        text: data.reminderButtonTextOverride || 'Review Now',
                         link: `${reviewBaseUrl}/review/${data.reviewId}`,
                     },
                 };
@@ -160,10 +172,6 @@ class EmailService {
                               description: 'Use code THANKYOU10 for 10% off your next purchase',
                           }
                         : undefined,
-                    ctaButton: {
-                        text: 'Shop Again',
-                        link: data.storeUrl || '#',
-                    },
                 };
 
             case EmailType.NEW_REVIEW_MERCHANT:
@@ -172,10 +180,6 @@ class EmailService {
                     mainMessage: `Great news! we have just sent a new review request on your behalf. Check your dashboard to read the full review.`,
                     showRating: false,
                     showItems: true,
-                    ctaButton: {
-                        text: 'View Review',
-                        link: `${process.env.MERCHANT_DASHBOARD_URL}/reviews/${data.reviewId}`,
-                    },
                     additionalMessage: ``,
                 };
 
@@ -185,10 +189,6 @@ class EmailService {
                     mainMessage: `Great news! a client just left a review. Check your dashboard to read the full review.`,
                     showRating: false,
                     showItems: true,
-                    ctaButton: {
-                        text: 'View Review',
-                        link: `${process.env.MERCHANT_DASHBOARD_URL}/reviews/${data.reviewId}`,
-                    },
                     additionalMessage: ``,
                 };
 
@@ -219,16 +219,12 @@ class EmailService {
             const template = await this.loadTemplate('master');
 
             // Prepare template data
-            const reviewBaseUrl = process.env.NODE_ENV === 'development'
-                ? 'http://localhost:3001'
-                : 'https://nudgenest-review-ui-1094805904049.europe-west1.run.app';
-
             const templateData = {
                 ...data,
                 ...config,
                 formattedItems: this.formatItems(data.items),
                 currentYear: new Date().getFullYear(),
-                reviewBaseUrl: reviewBaseUrl,
+                reviewBaseUrl: process.env.REVIEW_UI_BASE_URL,
                 companyName: 'Nudge Nest',
                 supportEmail: process.env.SUPPORT_EMAIL || 'support@nudgenest.app',
             };
@@ -237,8 +233,11 @@ class EmailService {
             const html = ejs.render(template, templateData);
 
             // Send email via Resend
+            const fromDisplay = data.storeName
+                ? `${data.storeName} <${this.fromEmail}>`
+                : `NudgeNest Team <${this.fromEmail}>`;
             const result = await this.resend.emails.send({
-                from: this.fromEmail,
+                from: fromDisplay,
                 to: data.email,
                 subject: config.subject,
                 html: html,

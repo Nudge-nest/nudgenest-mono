@@ -144,20 +144,6 @@ describe('PreviewComponent', () => {
     });
 
     describe('Video Handling', () => {
-        test.skip('should have correct video attributes', () => {
-            const media = {
-                id: '1',
-                mediaURL: 'https://example.com/video.mp4'
-            };
-
-            render(<PreviewComponent media={media} index={0} />);
-            console.log('Video ', screen.getByTestId('video-preview-0'))
-            const video = screen.getByTestId('video-preview-0');
-            expect(video).toHaveAttribute('muted');
-            expect(video).toHaveAttribute('playsInline');
-            expect(video).not.toHaveAttribute('controls');
-        });
-
         test('should handle uppercase video extensions', () => {
             const media = {
                 id: '1',

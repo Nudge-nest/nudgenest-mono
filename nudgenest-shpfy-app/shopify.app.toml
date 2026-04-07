@@ -1,10 +1,10 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "17dd6639f0adf774c19762bfc1f17d24"
-application_url = "https://success-powerseller-jewel-cookbook.trycloudflare.com"
+application_url = "https://merchant-staging.nudgenest.io"
 embedded = true
-name = "nudgenest-shpfy-app"
-handle = "nudgenest-shpfy-app"
+name = "NudgeNest ‑ Product Reviews"
+handle = "nudgenest"
 
 [webhooks]
 api_version = "2024-10"
@@ -15,26 +15,33 @@ api_version = "2024-10"
 
   [[webhooks.subscriptions]]
   topics = [ "orders/create" ]
-  uri = "https://a40237346074.ngrok-free.app/api/v1/shopify-webhook"
+  uri = "https://api-staging.nudgenest.io/api/v1/shopify-webhook"
 
   [[webhooks.subscriptions]]
-  topics = [ "draft_orders/create" ]
-  uri = "https://a40237346074.ngrok-free.app/api/v1/shopify-webhook"
+  topics = [ "app_subscriptions/update" ]
+  uri = "/webhooks/app/subscriptions/update"
+
+  # GDPR mandatory compliance webhooks — required for Shopify App Store submission.
+  # Shopify publishes directly to this Pub/Sub topic; the backend complianceConsumer
+  # plugin pulls and processes from nudgenest-compliance-pull subscription.
+  [[webhooks.subscriptions]]
+  compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+  uri = "pubsub://nudgenest:nudgenest-compliance"
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes https://nudgenest-backend-1094805904049.europe-west1.run.app
-scopes = "write_products, read_orders, read_draft_orders"
+# learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_products, read_orders, read_customers"
 
 [auth]
 redirect_urls = [
-  "https://success-powerseller-jewel-cookbook.trycloudflare.com/auth/callback",
-  "https://success-powerseller-jewel-cookbook.trycloudflare.com/auth/shopify/callback",
-  "https://success-powerseller-jewel-cookbook.trycloudflare.com/api/auth/callback"
+  "https://merchant-staging.nudgenest.io/auth/callback",
+  "https://merchant-staging.nudgenest.io/auth/shopify/callback",
+  "https://merchant-staging.nudgenest.io/api/auth/callback"
 ]
 
 [pos]
 embedded = false
 
 [build]
-dev_store_url = "nudgenest.myshopify.com"
-automatically_update_urls_on_dev = true
+dev_store_url = "byteminds-test-nudge.myshopify.com"
+automatically_update_urls_on_dev = false

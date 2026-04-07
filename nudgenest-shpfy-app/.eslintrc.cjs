@@ -10,4 +10,7 @@ module.exports = {
   globals: {
     shopify: "readonly"
   },
+  rules: {
+    "no-unused-vars": ["warn", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
+  },
 };

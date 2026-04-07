@@ -36,12 +36,20 @@ const getShopReview = (merchantConfigs: IReviewConfiguration[], merchantId: stri
     if (!merchantConfigs) return;
     const { general } = merchantConfigs[0];
     const shopQuestions = general.shopReviewQuestions as IConfigField[];
-    const shopReviewItems = shopQuestions.map((shopQuestion): IReviewItem => {
-        return { id: '14767045378186', name: shopQuestion.value };
-    });
+
+    // Use only the first question for store review (simplified like Loox)
+    const firstQuestion = shopQuestions[0];
+    const questionText = firstQuestion?.value || 'How would you rate your experience?';
+
+    // Create single store review item with special ID to identify store reviews
+    const storeItem: IReviewItem = {
+        id: 'store-general', // Special identifier for store reviews
+        name: questionText
+    };
+
     return {
         merchantId: merchantId,
-        items: shopReviewItems,
+        items: [storeItem], // Single item array
         status: 'Pending',
         customerName: '',
         merchantBusinessId: '',
@@ -69,17 +77,19 @@ export const ReviewProvider: FC<{ children: ReactNode }> = ({ children }) => {
         isLoadingMerchantConfigs,
     } = useReviewData(reviewId, pathname);
     const sliderHook = useSlider(3);
-    const formHook = useReviewForm(review as IReview);
     const [shopReview, setShopReview] = useState<IReview | null>(null);
+
+    // Use shopReview for store review page, regular review for product review page
+    const reviewDataForForm = pathname.includes('store') ? shopReview : review;
+    const formHook = useReviewForm(reviewDataForForm as IReview);
 
     useEffect(() => {
         if (isLoading || isLoadingMerchantConfigs) return;
         if (merchantConfigs && !shopReview) setShopReview(getShopReview(merchantConfigs, merchantId) as IReview);
-    }, [merchantConfigs, shopReview, merchantId]);
+    }, [merchantConfigs, shopReview, merchantId, isLoading, isLoadingMerchantConfigs]);
 
     // Extract and store merchantApiKey from review data
     useEffect(() => {
-        console.log('Review', review)
         if (review?.merchantApiKey) {
             // Only store if it doesn't exist to avoid overwriting
             const existingKey = localStorage.getItem('nn-apiKey');
@@ -90,7 +100,7 @@ export const ReviewProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }, [review]);
 
     // Error state
-    if (isError) return <ErrorComponent message="Nothing to see here!" />;
+    if (isError) return <ErrorComponent message="This review link is invalid or has expired." />;
 
     return (
         <ReviewContext.Provider
@@ -114,6 +124,7 @@ export const ReviewProvider: FC<{ children: ReactNode }> = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useReview = () => {
     const context = useContext(ReviewContext);
     if (!context) throw new Error('useReview must be used within a ReviewProvider');

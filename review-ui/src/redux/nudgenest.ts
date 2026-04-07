@@ -6,7 +6,7 @@ export const nudgeNestApi = createApi({
     reducerPath: 'nudgeNestApi',
     tagTypes: ['review', 'media', 'config', 'billing'],
     baseQuery: fetchBaseQuery({
-        baseUrl: import.meta.env.VITE_APP_BACKEND_HOST_LOCAL,
+        baseUrl: import.meta.env.VITE_APP_BACKEND_HOST_LOCAL || import.meta.env.VITE_APP_BACKEND_HOST,
         prepareHeaders: (headers) => {
             const apiKey = localStorage.getItem('nn-apiKey');
             if (apiKey) {
@@ -26,18 +26,58 @@ export const nudgeNestApi = createApi({
                 providesTags: ['review'],
             }),
             listReviews: builder.query({
-                query: (shopId: string) => ({
-                    url: `reviews/list?shopid=${shopId}`,
-                    method: 'GET',
-                }),
+                query: (params: string | { shopId?: string; merchantId?: string; published?: boolean }) => {
+                    // String format = storefront/public widget — always published=true
+                    if (typeof params === 'string') {
+                        return {
+                            url: `reviews/list?shopid=${params}&published=true`,
+                            method: 'GET',
+                        };
+                    }
+                    const queryParams = new URLSearchParams();
+                    if (params.shopId) queryParams.append('shopid', params.shopId);
+                    if (params.merchantId) queryParams.append('merchantid', params.merchantId);
+                    // Only add published filter when explicitly set — omitting returns all reviews
+                    if (params.published !== undefined) queryParams.append('published', String(params.published));
+                    return {
+                        url: `reviews/list?${queryParams.toString()}`,
+                        method: 'GET',
+                    };
+                },
                 transformResponse: (response: { data: any }) => response.data,
                 providesTags: ['review'],
+            }),
+            createReview: builder.mutation({
+                query: (reviewData: Partial<IReview>) => ({
+                    url: `reviews`,
+                    method: 'POST',
+                    body: reviewData,
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                invalidatesTags: ['review'],
             }),
             updateReview: builder.mutation({
                 query: (review: IReview) => ({
                     url: `reviews/${review.id}`,
                     method: 'PUT',
                     body: { result: review.result, status: review.status },
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                invalidatesTags: ['review'],
+            }),
+            toggleReviewPublished: builder.mutation({
+                query: ({ id, published }: { id: string; published: boolean }) => ({
+                    url: `reviews/${id}`,
+                    method: 'PUT',
+                    body: { published },
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                invalidatesTags: ['review'],
+            }),
+            deleteReview: builder.mutation({
+                query: (id: string) => ({
+                    url: `reviews/${id}`,
+                    method: 'DELETE',
                 }),
                 transformResponse: (response: { data: any }) => response.data,
                 invalidatesTags: ['review'],
@@ -58,6 +98,14 @@ export const nudgeNestApi = createApi({
                 }),
                 transformResponse: (response: { data: any }) => response.data,
                 invalidatesTags: ['media'],
+            }),
+            getMerchant: builder.query({
+                query: (merchantId: string) => ({
+                    url: `merchants/${merchantId}`,
+                    method: 'GET',
+                }),
+                transformResponse: (response: { data: any }) => response.data,
+                providesTags: ['config'],
             }),
             getReviewConfigs: builder.query({
                 query: (merchantId: string) => ({
@@ -128,6 +176,28 @@ export const nudgeNestApi = createApi({
                 transformResponse: (response: { data: any }) => response.data,
                 providesTags: ['billing'],
             }),
+            // Import / Export endpoints
+            importReviewsPreview: builder.mutation<
+                { mapping: Record<string, string>; preview: Record<string, string>[]; allRows: Record<string, string>[] },
+                FormData
+            >({
+                query: (formData) => ({
+                    url: 'reviews/import/preview',
+                    method: 'POST',
+                    body: formData,
+                }),
+            }),
+            importReviewsConfirm: builder.mutation<
+                { imported: number; skipped: number },
+                { merchantId: string; mapping: Record<string, string>; rows: Record<string, string>[] }
+            >({
+                query: (payload) => ({
+                    url: 'reviews/import/confirm',
+                    method: 'POST',
+                    body: payload,
+                }),
+                invalidatesTags: ['review'],
+            }),
         };
     },
 });
@@ -135,9 +205,11 @@ export const nudgeNestApi = createApi({
 export const {
     useGetReviewQuery,
     useListReviewsQuery,
+    useCreateReviewMutation,
     useUpdateReviewMutation,
     useUploadReviewMediaMutation,
     useDeleteReviewMediaMutation,
+    useGetMerchantQuery,
     useGetReviewConfigsQuery,
     useUpdateReviewConfigsMutation,
     useGetPlansQuery,
@@ -146,6 +218,10 @@ export const {
     useChangeSubscriptionMutation,
     useCancelSubscriptionMutation,
     useGetUsageStatsQuery,
+    useImportReviewsPreviewMutation,
+    useImportReviewsConfirmMutation,
+    useToggleReviewPublishedMutation,
+    useDeleteReviewMutation,
 } = nudgeNestApi;
 
 export const { endpoints, reducerPath, reducer, middleware } = nudgeNestApi;

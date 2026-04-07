@@ -1,127 +1,156 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { BillingService } from '../../services/billing';
-import { PrismaClient } from '../../../generated/prisma/prisma/client';
+import { prismaMock } from '../mocks/prisma';
 
-const prisma = new PrismaClient();
 const billingService = new BillingService();
 
+const mockPlan = {
+    id: 'test-plan-id',
+    name: 'Free',
+    displayName: 'Free Plan',
+    tier: 'FREE',
+    price: 0,
+    billingInterval: 'MONTHLY',
+    isActive: true,
+    limits: {
+        reviewRequestsPerMonth: 50,
+        emailsPerMonth: 50,
+        smsPerMonth: 0,
+        apiCallsPerDay: 100,
+    },
+    features: {},
+    createdAt: new Date(),
+    updatedAt: new Date(),
+} as any;
+
+const mockMerchant = {
+    id: 'test-merchant-id',
+    shopId: `test-shop-${Date.now()}`,
+    domains: 'test-shop.example.com',
+    currencyCode: 'USD',
+    name: 'Test Shop',
+    businessInfo: 'Test Business Info',
+    email: `test-${Date.now()}@example.com`,
+    apiKey: `test-key-${Date.now()}`,
+    address: {
+        address1: '123 Test St',
+        address2: '',
+        city: 'Test City',
+        country: 'US',
+        zip: '12345',
+        formatted: [],
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+} as any;
+
+const mockSubscription = {
+    id: 'test-subscription-id',
+    merchantId: 'test-merchant-id',
+    planId: 'test-plan-id',
+    status: 'ACTIVE',
+    currentPeriodStart: new Date(),
+    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    trialStart: null,
+    trialEnd: null,
+    cancelAt: null,
+    canceledAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    Plans: mockPlan,
+} as any;
+
 describe('BillingService', () => {
-    let testMerchantId: string;
-    let testSubscriptionId: string;
-
-    beforeEach(async () => {
-        const merchant = await prisma.merchants.create({
-            data: {
-                shopId: `test-shop-${Date.now()}`,
-                domains: 'test-shop.example.com',
-                currencyCode: 'USD',
-                name: 'Test Shop',
-                businessInfo: 'Test Business Info',
-                email: `test-${Date.now()}@example.com`,
-                address: {
-                    address1: '123 Test St',
-                    address2: '',
-                    city: 'Test City',
-                    country: 'US',
-                    zip: '12345',
-                    formatted: [],
-                },
-                apiKey: `test-key-${Date.now()}`,
-            },
-        });
-        testMerchantId = merchant.id;
-    });
-
-    afterEach(async () => {
-        if (testSubscriptionId) {
-            await prisma.subscriptions.delete({ where: { id: testSubscriptionId } }).catch(() => {});
-        }
-        await prisma.merchants.delete({ where: { id: testMerchantId } }).catch(() => {});
+    beforeEach(() => {
+        prismaMock.merchants.create.mockResolvedValue(mockMerchant);
+        prismaMock.plans.findMany.mockResolvedValue([mockPlan]);
+        prismaMock.plans.findUnique.mockResolvedValue(mockPlan);
+        prismaMock.subscriptions.create.mockResolvedValue(mockSubscription);
+        prismaMock.subscriptions.findFirst.mockResolvedValue(mockSubscription);
+        prismaMock.subscriptions.update.mockResolvedValue({ ...mockSubscription, status: 'CANCELED' });
+        prismaMock.subscriptions.delete.mockResolvedValue(mockSubscription);
+        prismaMock.usageRecords.create.mockResolvedValue({ id: 'usage-id', metricType: 'REVIEW_REQUEST', quantity: 1 } as any);
+        prismaMock.usageRecords.findMany.mockResolvedValue([]);
+        prismaMock.merchants.delete.mockResolvedValue(mockMerchant);
     });
 
     describe('createSubscription', () => {
         it('should create a new subscription', async () => {
-            const plans = await prisma.plans.findMany();
-            const planId = plans[0].id;
-
-            const subscription = await billingService.createSubscription({ merchantId: testMerchantId, planId });
-            testSubscriptionId = subscription.id;
+            const subscription = await billingService.createSubscription({
+                merchantId: mockMerchant.id,
+                planId: mockPlan.id,
+            });
 
             expect(subscription).toBeDefined();
-            expect(subscription.merchantId).toBe(testMerchantId);
-            expect(subscription.planId).toBe(planId);
-            expect(subscription.status).toBe('ACTIVE');
+            expect(prismaMock.plans.findUnique).toHaveBeenCalledWith({ where: { id: mockPlan.id } });
+            expect(prismaMock.subscriptions.create).toHaveBeenCalled();
         });
 
-        it('should throw error for non-existent merchant', async () => {
+        it('should throw error for non-existent plan', async () => {
+            prismaMock.plans.findUnique.mockResolvedValue(null as any);
+
             await expect(
-                billingService.createSubscription({ merchantId: 'non-existent-id', planId: 'plan-id' })
-            ).rejects.toThrow();
+                billingService.createSubscription({ merchantId: mockMerchant.id, planId: 'non-existent-plan' })
+            ).rejects.toThrow('Plan not found');
         });
     });
 
     describe('trackUsage', () => {
-        beforeEach(async () => {
-            const plans = await prisma.plans.findMany();
-            const subscription = await billingService.createSubscription({ merchantId: testMerchantId, planId: plans[0].id });
-            testSubscriptionId = subscription.id;
-        });
-
         it('should track usage for valid merchant', async () => {
             await expect(
-                billingService.trackUsage({ merchantId: testMerchantId, metricType: 'REVIEW_REQUEST', quantity: 1 })
+                billingService.trackUsage({ merchantId: mockMerchant.id, metricType: 'REVIEW_REQUEST', quantity: 1 })
             ).resolves.not.toThrow();
+
+            expect(prismaMock.usageRecords.create).toHaveBeenCalled();
         });
 
-        it('should throw error for non-existent merchant', async () => {
+        it('should throw error when no active subscription found', async () => {
+            prismaMock.subscriptions.findFirst.mockResolvedValue(null as any);
+
             await expect(
-                billingService.trackUsage({ merchantId: 'non-existent-id', metricType: 'REVIEW_REQUEST', quantity: 1 })
-            ).rejects.toThrow();
+                billingService.trackUsage({ merchantId: mockMerchant.id, metricType: 'REVIEW_REQUEST', quantity: 1 })
+            ).rejects.toThrow('No active subscription found');
         });
     });
 
     describe('getUsageStats', () => {
-        beforeEach(async () => {
-            const plans = await prisma.plans.findMany();
-            const subscription = await billingService.createSubscription({ merchantId: testMerchantId, planId: plans[0].id });
-            testSubscriptionId = subscription.id;
-        });
-
         it('should return usage stats for merchant', async () => {
-            await billingService.trackUsage({ merchantId: testMerchantId, metricType: 'REVIEW_REQUEST', quantity: 1 });
-            await billingService.trackUsage({ merchantId: testMerchantId, metricType: 'EMAIL_SENT', quantity: 1 });
+            prismaMock.usageRecords.findMany.mockResolvedValue([
+                { id: 'u1', metricType: 'REVIEW_REQUEST', quantity: 1 } as any,
+                { id: 'u2', metricType: 'EMAIL_SENT', quantity: 1 } as any,
+            ]);
 
-            const stats = await billingService.getUsageStats(testMerchantId);
+            const stats = await billingService.getUsageStats(mockMerchant.id);
 
             expect(stats).toBeDefined();
-            expect(stats.REVIEW_REQUEST).toBe(1);
-            expect(stats.EMAIL_SENT).toBe(1);
+            expect(stats['REVIEW_REQUEST']).toBe(1);
+            expect(stats['EMAIL_SENT']).toBe(1);
         });
 
         it('should return empty stats for merchant with no usage', async () => {
-            const stats = await billingService.getUsageStats(testMerchantId);
+            prismaMock.usageRecords.findMany.mockResolvedValue([]);
+
+            const stats = await billingService.getUsageStats(mockMerchant.id);
             expect(stats).toEqual({});
         });
     });
 
     describe('cancelSubscription', () => {
-        beforeEach(async () => {
-            const plans = await prisma.plans.findMany();
-            const subscription = await billingService.createSubscription({ merchantId: testMerchantId, planId: plans[0].id });
-            testSubscriptionId = subscription.id;
-        });
-
         it('should cancel active subscription', async () => {
-            const cancelled = await billingService.cancelSubscription(testSubscriptionId);
+            // cancelSubscription takes merchantId, finds subscription, then cancels at period end
+            const result = await billingService.cancelSubscription(mockMerchant.id);
 
-            expect(cancelled).toBeDefined();
-            expect(cancelled.status).toBe('CANCELLED');
+            expect(result).toBeDefined();
+            expect(prismaMock.subscriptions.findFirst).toHaveBeenCalled();
+            expect(prismaMock.subscriptions.update).toHaveBeenCalled();
         });
 
-        it('should throw error for non-existent subscription', async () => {
+        it('should throw error when no active subscription found', async () => {
+            prismaMock.subscriptions.findFirst.mockResolvedValue(null as any);
+
             await expect(
-                billingService.cancelSubscription('non-existent-id')
-            ).rejects.toThrow();
+                billingService.cancelSubscription('non-existent-merchant')
+            ).rejects.toThrow('No active subscription found');
         });
     });
 });

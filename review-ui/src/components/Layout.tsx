@@ -9,7 +9,7 @@ export const Layout = () => {
         <ReviewProvider>
             <div
                 className={`${currentTheme} w-full max-w-[480px] mx-auto h-[100vh] relative bg-[color:var(--color-lighter)] 
-                text-[color:var(--color-text)] border-1 border-[color:var(--color-light)] rounded-2xl`}
+                text-[color:var(--color-text)] rounded-2xl`}
             >
                 <Outlet />
             </div>
@@ -22,7 +22,13 @@ export const ConfigsLayout = () => {
     return (
         <ReviewConfigProvider>
             <div
-                className={`${currentTheme} w-full mx-auto h-[100vh] px-8 relative bg-[color:var(--color-lighter)] text-[color:var(--color-text)]`}
+                className={`${currentTheme} w-full mx-auto min-h-screen relative bg-[color:var(--color-bg)] text-[color:var(--color-text)]`}
+                style={{
+                    paddingTop: 'max(2rem, env(safe-area-inset-top))',
+                    paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
+                    paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+                    paddingRight: 'max(1rem, env(safe-area-inset-right))'
+                }}
             >
                 <Outlet />
             </div>
@@ -34,7 +40,7 @@ export const ReviewsListLayout = () => {
     const { currentTheme } = useCurrentTheme();
     return (
         <div
-            className={`${currentTheme} w-full mx-auto h-[100vh] px-8 relative bg-[color:var(--color-lighter)] text-[color:var(--color-text)]`}
+            className={`${currentTheme} w-full mx-auto min-h-screen relative bg-[color:var(--color-bg)] text-[color:var(--color-text)]`}
         >
             <Outlet />
         </div>

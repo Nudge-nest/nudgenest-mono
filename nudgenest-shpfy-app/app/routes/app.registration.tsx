@@ -1,15 +1,28 @@
-import {useFetcher} from "@remix-run/react";
-import { TitleBar } from "@shopify/app-bridge-react";
+import {useFetcher, useRevalidator} from "@remix-run/react";
 import {Banner, BlockStack, Button, Card, FormLayout, InlineStack, Layout, Page, TextField, Text} from "@shopify/polaris";
 import {useCallback, useEffect, useState} from "react";
 import type {IShopifyBusinessEntityData, IShopifyShop} from "../utilities";
 
-function RegistrationPage({ shopInfo, businessInfo }: {
+function RegistrationPage({ shopInfo, businessInfo: _businessInfo, defaultPlan }: {
   shopInfo: IShopifyShop;
   businessInfo: IShopifyBusinessEntityData;
+  defaultPlan?: {
+    id: string;
+    name: string;
+    displayName: string;
+    tier: string;
+    price: number;
+    billingInterval: string;
+  } | null;
 }) {
   const fetcher = useFetcher();
+  const revalidator = useRevalidator();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Format plan display dynamically from database or fallback
+  const planDisplay = defaultPlan
+    ? `${defaultPlan.displayName} - $${defaultPlan.price.toFixed(2)}/month`
+    : "Free - $0.00/month";
 
   const handleRegister = useCallback(() => {
     setIsSubmitting(true);
@@ -19,16 +32,16 @@ function RegistrationPage({ shopInfo, businessInfo }: {
     if (fetcher.state === "idle" && fetcher.data) {
       setIsSubmitting(false);
       if (fetcher.data.success) {
-        // Registration successful - page will reload automatically
-        window.location.reload();
+        // Registration successful - give backend a moment then revalidate
+        setTimeout(() => {
+          revalidator.revalidate();
+        }, 500);
       }
     }
-  }, [fetcher]);
+  }, [fetcher, revalidator]);
 
   return (
     <Page>
-      <TitleBar title="Welcome to Nudge-nest Reviews" />
-
       <Layout>
         <Layout.Section>
           <BlockStack gap="500">
@@ -87,9 +100,10 @@ function RegistrationPage({ shopInfo, businessInfo }: {
 
                     <TextField
                       label="Plan"
-                      value="10.00 per month"
+                      value={planDisplay}
                       disabled
                       autoComplete="off"
+                      helpText="You can upgrade to a paid plan anytime from the dashboard"
                     />
 
                     {fetcher.data?.success === false && (

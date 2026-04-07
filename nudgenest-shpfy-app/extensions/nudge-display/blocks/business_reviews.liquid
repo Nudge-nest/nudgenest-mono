@@ -32,21 +32,22 @@
 
 
       async function loadReviews() {
-        console.log('Container dataset',container.dataset, merchantId);
         if (!gridEl) {
-          console.error('Media container not found for review form');
           return;
         }
 
         // Clear any existing content
         gridEl.innerHTML = '';
 
+        const iframeUrl = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/reviews/${merchantId}`;
+
         // Create iframe for the review form
         const iframe = document.createElement('iframe');
-        iframe.src = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/reviews/${merchantId}`;
+        iframe.src = iframeUrl;
         iframe.style.cssText = `
-          width: 1200px;
-          height: 600px;
+          display: block;
+          width: 100%;
+          min-height: 600px;
           border: none;
           border-radius: 8px;
           background: white;
@@ -56,12 +57,12 @@
 
         gridEl.appendChild(iframe);
 
-        function handleReviewFormMessage() {
-          console.log('Received review form message');
-        }
-
-        // Handle iframe communication (optional)
-        window.addEventListener('message', handleReviewFormMessage);
+        // Auto-resize iframe height based on content reported via postMessage
+        window.addEventListener('message', function(event) {
+          if (event.data && event.data.type === 'nudgenest_resize') {
+            iframe.style.height = event.data.height + 'px';
+          }
+        });
 
       }
       // Initialize on page load
@@ -74,15 +75,19 @@
   :root {
     --card-count: {{ reviews_limit }};
   }
+  .business-reviews-section {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
   .business-reviews-container {
-    max-width: 1200px;
+    width: 100%;
     height: fit-content;
     margin: 0 auto;
-    max-height: 1000px;
   }
 
   .business-reviews__grid {
-    padding: 0 1rem;
+    width: 100%;
     height: fit-content;
   }
 </style>

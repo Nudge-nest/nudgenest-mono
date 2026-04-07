@@ -84,7 +84,7 @@ const CommentWidget = memo(() => {
                         aria-label={isSubmitDisabled ? 'Submit button disabled' : 'Submit review'}
                         data-testid="submit-button"
                     >
-                        <span className="text-[color:var(--color-text)] text-lg font-semibold">
+                        <span className="text-white text-lg font-semibold">
                             Submit
                         </span>
                     </button>

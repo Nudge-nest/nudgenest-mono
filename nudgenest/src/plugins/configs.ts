@@ -2,7 +2,6 @@
 import Hapi from '@hapi/hapi';
 
 import * as dotenv from 'dotenv';
-import { IReviewConfiguration } from '../types/reviewConfigs';
 
 dotenv.config();
 
@@ -30,15 +29,15 @@ const reviewConfigsPlugin: Hapi.Plugin<null> = {
                 path: '/api/v1/config/{merchantId}',
                 handler: getReviewConfigsHandler,
                 options: {
-                    auth: 'apikey',
+                    auth: false, // Public endpoint - config data is not sensitive
                 },
             },
             {
-                method: 'PUT',
+                method: 'PATCH',
                 path: '/api/v1/config/{merchantId}',
                 handler: updateReviewConfigsHandler,
                 options: {
-                    auth: 'apikey',
+                    auth: 'apikey', // Requires auth to prevent unauthorized updates
                 },
             },
         ]);
@@ -88,11 +87,13 @@ const updateReviewConfigsHandler = async (request: Hapi.Request, h: Hapi.Respons
     const configs = request.payload as any;
     const { prisma } = request.server.app;
     try {
-        const result = await prisma.configurations.updateMany({
+        // Strip Prisma-managed fields that cannot appear in updateMany data
+        const { id: _id, merchantId: _merchantId, createdAt: _createdAt, updatedAt: _updatedAt, ...updateData } = (configs ?? {}) as any;
+        await prisma.configurations.updateMany({
             where: {
                 merchantId: merchantId as string,
             },
-            data: configs as any,
+            data: updateData,
         });
         // Fetch the updated configuration
         const updatedConfig = await prisma.configurations.findFirst({

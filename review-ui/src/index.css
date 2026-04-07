@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
 @import 'tailwindcss';
 
 @layer base {
@@ -48,7 +47,7 @@
     --color-gray: #999;
     --color-bg: #1f2124;
     --color-lighter: #292a2c;
-    --color-white: #2e3235;
+    --color-white: #fff;
     --color-border: #252629;
     --color-disabled: #acb4bd;
 }

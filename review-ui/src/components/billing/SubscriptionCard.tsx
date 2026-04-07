@@ -26,7 +26,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ details, onU
     const { subscription, usage, limits } = details;
     const plan = subscription.Plans;
 
-    const formatDate = (date: Date) => {
+    const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',

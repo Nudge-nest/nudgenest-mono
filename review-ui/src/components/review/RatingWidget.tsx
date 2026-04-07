@@ -20,7 +20,7 @@ export const RatingWithProduct: FC<{ itemName: string; image?: string; productId
             {image && (
                 <img
                     src={image}
-                    className="h-15 w-15 rounded mb-4 block mx-auto object-cover"
+                    className="h-24 w-24 rounded-lg mb-4 block mx-auto object-cover"
                     alt={`Product image for ${itemName}`}
                     loading="lazy"
                     data-testid={`image-${itemName}`}
@@ -43,16 +43,20 @@ RatingWithProduct.displayName = 'RatingWithProduct';
 
 const RatingWidget: FC<RatingWidgetProps> = memo(({ product, result, isCompleted }) => {
     const [selectedRating, setSelectedRating] = useState<number>(0);
-    const { name, image, id } = product;
+    const { name, image: rawImage, id } = product;
+    const image = typeof rawImage === 'object' && rawImage !== null
+        ? (rawImage as { src: string }).src
+        : rawImage as string | undefined;
     const { reviewFormHook } = useReview();
 
     useEffect(() => {
         if (isCompleted && result) {
-            const itemReview = result.find((res) => res.value);
+            const itemReview = result.find((res) => res.id === id);
             if (itemReview) {
                 setSelectedRating(Number(itemReview.value));
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [result, isCompleted]);
 
     const handleSetRating = useCallback(
@@ -95,10 +99,11 @@ const RatingWidget: FC<RatingWidgetProps> = memo(({ product, result, isCompleted
                             aria-checked={isSelected}
                             aria-label={`${ratingValue} star${ratingValue > 1 ? 's' : ''} - ${RATING_LABELS[idx]}`}
                             tabIndex={isCompleted ? -1 : 0}
+                            className="focus:outline-none"
                         >
                             <RatingStar
                                 fill="#fcc800"
-                                defaultFill="#f9f9f9"
+                                defaultFill="#e5e7eb"
                                 isFilled={ratingValue <= selectedRating}
                                 onClick={() => handleSetRating(ratingValue)}
                                 title={RATING_LABELS[idx]}

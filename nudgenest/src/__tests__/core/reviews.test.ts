@@ -22,7 +22,6 @@ export async function getReviewByReviewId(reviewId: string, ctx: Context): Promi
             replies: true,
             customerName: true,
             customerEmail: true,
-            customerPhone: true,
             items: true,
             status: true,
             result: true,
@@ -60,7 +59,6 @@ export async function listReviewsByMerchantId(query: { shopId: string }, ctx: Co
             replies: true,
             customerName: true,
             customerEmail: true,
-            customerPhone: true,
             items: true,
             status: true,
             result: true,
@@ -81,7 +79,6 @@ const createTestReviewData = (status: 'Pending' | 'Completed' | 'Failed'): IRevi
         shopId: 'TESTSH0P1D',
         customerName: 'test Customer',
         customerEmail: 'test@example.com',
-        customerPhone: '+1234567890',
         merchantBusinessId: 'test biz info',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -91,8 +88,8 @@ const createTestReviewData = (status: 'Pending' | 'Completed' | 'Failed'): IRevi
 describe('Reviews Unit Tests', () => {
     let mockCtx: MockContext;
     let ctx: Context;
-    let reviewData = createTestReviewData('Pending');
-    let expectedReviewData = { ...reviewData, id: '507f1f77bcf86cd799439011' } as any;
+    const reviewData = createTestReviewData('Pending');
+    const expectedReviewData = { ...reviewData, id: '507f1f77bcf86cd799439011' } as any;
     beforeEach(() => {
         mockCtx = createMockContext();
         ctx = mockCtx as unknown as Context;
@@ -126,7 +123,6 @@ describe('Reviews Unit Tests', () => {
                 replies: true,
                 customerName: true,
                 customerEmail: true,
-                customerPhone: true,
                 items: true,
                 status: true,
                 result: true,

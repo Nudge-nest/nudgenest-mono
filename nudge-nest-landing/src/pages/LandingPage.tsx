@@ -1,5 +1,12 @@
+import productScreenshotStars from '../assets/product-screenshot-stars.png';
+import productScreenshotUpload from '../assets/product-screenshot-upload.png';
+import productScreenshotComment from '../assets/product-screenshot-comment.png';
 import { Button, LinkButton } from '../components/Button';
+import FAQSection from '../components/FAQSection';
+import HowItWorksSection from '../components/HowItWorksSection';
 import PageSection from '../components/PageSection';
+import PricingSection from '../components/PricingSection';
+import SocialProofSection from '../components/SocialProofSection';
 import {
     LargeHeaderTextBold,
     LargerHeaderTextBoldItalic,
@@ -15,96 +22,110 @@ const featuresUrl = `${import.meta.env.VITE_APP_FEATURES_URL}`;
 const LandingPage = () => {
     return (
         <div className="grid grid-rows-4 md:grid-rows-[auto_auto_auto_auto]">
-            <PageSection height="large" name="hero">
-                <div className={`col-span-full w-full md:w-4/5 mx-auto flex flex-col gap-y-8 justify-center`}>
+            <PageSection name="hero">
+                <div className={`col-span-full w-full md:w-4/5 mx-auto flex flex-col gap-y-8 justify-center py-24 md:py-32`}>
                     <LargerHeaderTextBoldItalic>
-                        Boost Trust. Grow Your Brand. Simplify Reviews.
+                        Turn Every Order Into a 5-Star Review.
                     </LargerHeaderTextBoldItalic>
                     <MediumBodyText>
-                        Discover Nudge-Nest — the seamless solution for gathering, showcasing, and analyzing customer
-                        reviews. Empower your e-commerce store to build credibility, increase conversions, and connect
-                        authentically with your audience.
+                        NudgeNest automatically emails your customers after every fulfilled order, turning happy buyers
+                        into verified reviews. No code. No friction. Just social proof that sells.
                     </MediumBodyText>
                     <Button>
                         <a href={signupUrl} target="_blank" rel="noopener noreferrer">
                             <SmallBodyTextBold className={`!text-[color:var(--color-text)]`}>
-                                Sign Up for Early Access
+                                Get Started
                             </SmallBodyTextBold>
                         </a>
                     </Button>
                 </div>
             </PageSection>
-            <PageSection height="large" name="media-video">
-                <video
-                   className={'col-span-full md:w-4/5 h-full mx-auto flex flex-col items-center'}
-                   autoPlay
-                   muted
-                   playsInline
-                >
-                    <source type="video/webm"
-                            src="https://nudge-nest-media.s3.eu-north-1.amazonaws.com/nudge_nest_landing_01_HD.webm"/>
-                </video>
+            <PageSection name="product-preview">
+                <div className="col-span-full md:w-4/5 mx-auto flex flex-col md:flex-row gap-8 items-center py-16">
+                    <div className="flex-1 flex flex-col gap-y-4 text-left">
+                        <LargeHeaderTextBold>The review experience your customers will love</LargeHeaderTextBold>
+                        <MediumBodyText>
+                            A beautifully simple, mobile-first review form sent straight to your customer's inbox —
+                            no account, no login, no friction. Tap a star, leave a thought, done.
+                        </MediumBodyText>
+                    </div>
+                    <div className="flex-shrink-0 flex gap-3 items-start justify-center">
+                        <img
+                            src={productScreenshotStars}
+                            alt="Nudgenest review form on mobile — star rating step"
+                            className="w-28 md:w-36 rounded-3xl shadow-xl border border-[color:var(--color-icons-border)]"
+                        />
+                        <img
+                            src={productScreenshotUpload}
+                            alt="Nudgenest review form on mobile — photo upload step"
+                            className="w-28 md:w-36 rounded-3xl shadow-xl border border-[color:var(--color-icons-border)] mt-6 md:mt-8"
+                        />
+                        <img
+                            src={productScreenshotComment}
+                            alt="Nudgenest review form on mobile — comment and submit step"
+                            className="w-28 md:w-36 rounded-3xl shadow-xl border border-[color:var(--color-icons-border)] mt-12 md:mt-16"
+                        />
+                    </div>
+                </div>
             </PageSection>
-            <PageSection height="medium" name="features">
-                <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 justify-center items-center`}>
-                    <LargeHeaderTextBold>Why Choose Nudge-Nest?</LargeHeaderTextBold>
+            <PageSection name="features">
+                <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 justify-center items-center py-16`}>
+                    <LargeHeaderTextBold>Everything that runs on autopilot</LargeHeaderTextBold>
                     <ul className="flex flex-col gap-y-4 md:flex-row md:gap-x-4">
                         <li className="w-full md:text-left md:w-4/5">
-                            <SmallBodyTextBold>Seamless Integration:</SmallBodyTextBold>
+                            <SmallBodyTextBold>Automated from day one:</SmallBodyTextBold>
                             <SmallBodyText>
-                                Seamlessly connect with Shopify and other e-commerce platforms to simplify collecting
-                                and managing text, photo, and video reviews
+                                Review emails go out the moment an order is fulfilled. No manual work,
+                                no missed opportunities.
                             </SmallBodyText>
                         </li>
                         <li className="w-full md:text-left md:w-4/5">
-                            <SmallBodyTextBold className="font-bold">Automated Review Requests:</SmallBodyTextBold>
+                            <SmallBodyTextBold className="font-bold">Your brand, your message:</SmallBodyTextBold>
                             <SmallBodyText>
-                                Send perfectly timed review invites via email, SMS, or QR codes to boost response rates.
+                                Customise the subject line, body, and call-to-action button from your
+                                dashboard. Your voice, every time.
                             </SmallBodyText>
                         </li>
                         <li className="w-full md:text-left md:w-4/5">
-                            <SmallBodyTextBold className="font-bold">Customizable Widgets:</SmallBodyTextBold>
+                            <SmallBodyTextBold className="font-bold">Smart follow-up reminders:</SmallBodyTextBold>
                             <SmallBodyText>
-                                Showcase customer feedback, whether in text, photos, or videos, using beautifully
-                                designed widgets that align perfectly with your brand and look stunning on any website.
+                                Automated reminders nudge customers who haven't responded yet — at the
+                                cadence you choose.
                             </SmallBodyText>
                         </li>
                         <li className="w-full md:text-left md:w-4/5">
-                            <SmallBodyTextBold className="font-bold">Data-Driven Insights:</SmallBodyTextBold>
+                            <SmallBodyTextBold className="font-bold">QR codes & analytics:</SmallBodyTextBold>
                             <SmallBodyText>
-                                Unlock powerful analytics to measure the impact of customer feedback on your business.
+                                Generate a QR code for in-store review collection and track response
+                                rates from your analytics dashboard.
                             </SmallBodyText>
                         </li>
                     </ul>
                 </div>
             </PageSection>
-            <PageSection height="medium" name="advantage">
-                <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10  items-center`}>
-                    <LargeHeaderTextBold>Our Value Proposition</LargeHeaderTextBold>
+            <PageSection name="advantage">
+                <div className={`col-span-full md:w-4/5 mx-auto flex flex-col gap-y-10 items-center py-16 md:py-20`}>
+                    <LargeHeaderTextBold>Built for the way merchants actually work</LargeHeaderTextBold>
                     <div className="flex flex-col gap-y-4 md:flex-row md:gap-x-4">
                         <div className={`md:col-span-6`}>
                             <div className={'w-full md:w-4/5 text-left flex flex-col gap-y-1'}>
                                 <MediumHeaderTextBold>
-                                    Turn Customer Feedback into Your Competitive Advantage.
+                                    Real reviews from real customers — automatically.
                                 </MediumHeaderTextBold>
                                 <MediumBodyText>
-                                    At Nudge-Nest, we believe every great product deserves authentic recognition. Our
-                                    platform helps you capture the voice of your customers and transform it into
-                                    compelling stories that drive trust, loyalty, and sales.
+                                    Every review on NudgeNest is tied to an actual order. Only customers
+                                    who've genuinely purchased from your store can submit one — so you
+                                    get authentic feedback that shoppers trust.
                                 </MediumBodyText>
-                                {/*<LinkButton>
-                                    <SmallBodyText className={`!text-[color:var(--color-main)] !font-[500]`}>
-                                        Learn More
-                                    </SmallBodyText>
-                                </LinkButton>*/}
                             </div>
                         </div>
                         <div className={`md:col-span-6`}>
                             <div className={'w-full md:w-4/5 text-left flex flex-col gap-y-1'}>
-                                <MediumHeaderTextBold>Feature Request Section</MediumHeaderTextBold>
+                                <MediumHeaderTextBold>Switching is painless</MediumHeaderTextBold>
                                 <MediumBodyText>
-                                    Already using a competitor but considering switching? Tell us what features you need
-                                    to make Nudge-Nest perfect for you.
+                                    Already using a competitor? NudgeNest is quick to set up and your
+                                    reviews migrate with you. If there's a feature you need, tell us —
+                                    we ship fast.
                                 </MediumBodyText>
                                 <LinkButton>
                                     <a
@@ -123,6 +144,10 @@ const LandingPage = () => {
                     </div>
                 </div>
             </PageSection>
+            <div id="how-it-works"><HowItWorksSection /></div>
+            <div id="social-proof"><SocialProofSection /></div>
+            <div id="pricing"><PricingSection /></div>
+            <div id="faq"><FAQSection /></div>
         </div>
     );
 };

@@ -49,7 +49,7 @@ export interface IReviewMessagePayloadContent {
     userName: string;
     type: string;
     email: string;
-    line_items?: [];
+    line_items?: any[];
     order_number?: number;
     reviewId?: string;
     currency?: string;
@@ -63,7 +63,7 @@ export interface IDataFromShopifyPayload {
     order_status_url: string;
     customer_locale: string;
     order_number: number;
-    line_items: [];
+    line_items: any[];
     currency: string;
 }
 
@@ -86,19 +86,20 @@ export interface IReview {
     merchantId: string;
     shopId: string;
     customerEmail?: string;
-    customerPhone?: string;
     customerName?: string;
     verified: boolean;
     replies?: object;
     items: IReviewItem[];
     result: IReviewResult[];
     status: 'Pending' | 'Completed' | 'Failed';
+    published?: boolean;
+    merchantApiKey?: string;
     createdAt: string;
     updatedAt: string;
 }
 
 export interface IReviewItem {
-    [key: string]: any; // Or make a stricter type if known
+    [key: string]: any;
 }
 
 export interface IReviewResult {
