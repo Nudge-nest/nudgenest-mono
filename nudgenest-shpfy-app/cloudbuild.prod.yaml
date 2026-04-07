@@ -35,7 +35,6 @@ steps:
           - '--region=$_DEPLOY_REGION'
           - '--allow-unauthenticated'
           - '--port=3000'
-          - '--min-instances=1'
           - '--max-instances=5'
           - '--labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID'
           - '--set-secrets=DATABASE_URL=SHOPIFY_APP_DATABASE_URL_PROD:latest,SHOPIFY_API_KEY=SHOPIFY_APP_API_KEY_PROD:latest,SHOPIFY_API_SECRET=SHOPIFY_APP_API_SECRET_PROD:latest,SHOPIFY_APP_URL=SHOPIFY_APP_URL_PROD:latest,SCOPES=SHOPIFY_APP_SCOPES_PROD:latest,NUDGENEST_BACKEND_URL=NUDGENEST_BACKEND_URL_PROD:latest,REVIEW_UI_BASE_URL=REVIEW_UI_BASE_URL:latest,NODE_ENV=NODE_ENV:latest'

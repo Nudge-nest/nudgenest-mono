@@ -478,7 +478,7 @@ const backend_prod_connection_trigger = new gcp.cloudbuild.Trigger("backend_prod
     project: "nudgenest",
     repositoryEventConfig: {
         repository: monorepo_connection_repo.id,
-        push: { branch: "^main$" },
+        push: { branch: "^master$" },
     },
     includedFiles: ["nudgenest/**"],
     serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
@@ -493,7 +493,7 @@ const fe_prod_connection_trigger = new gcp.cloudbuild.Trigger("fe_prod_build_tri
     project: "nudgenest",
     repositoryEventConfig: {
         repository: monorepo_connection_repo.id,
-        push: { branch: "^main$" },
+        push: { branch: "^master$" },
     },
     includedFiles: ["review-ui/**"],
     serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
@@ -508,7 +508,7 @@ const landing_prod_connection_trigger = new gcp.cloudbuild.Trigger("landing_prod
     project: "nudgenest",
     repositoryEventConfig: {
         repository: monorepo_connection_repo.id,
-        push: { branch: "^main$" },
+        push: { branch: "^master$" },
     },
     includedFiles: ["nudge-nest-landing/**"],
     serviceAccount: "projects/nudgenest/serviceAccounts/pulumi-deploys@nudgenest.iam.gserviceaccount.com",
@@ -524,7 +524,7 @@ const shopify_prod_connection_trigger = new gcp.cloudbuild.Trigger("shopify_prod
     repositoryEventConfig: {
         repository: monorepo_connection_repo.id,
         push: {
-            branch: "^main$",
+            branch: "^master$",
         },
     },
     includedFiles: ["nudgenest-shpfy-app/**"],
