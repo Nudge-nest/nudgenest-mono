@@ -4,6 +4,8 @@
   "private": true,
   "description": "Nudgenest - User Review Platform for Shopify",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
+    "sync-env": "bash scripts/sync-env.sh",
     "dev": "pnpm --parallel --filter '!nudgenest-shpfy-app' run dev",
     "dev:all": "concurrently --names \"BACKEND,FRONTEND,LANDING,SHARED,SHOPIFY\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold,bgYellow.bold,bgCyan.bold\" \"cd nudgenest && pnpm dev\" \"cd review-ui && pnpm dev\" \"cd nudge-nest-landing && pnpm dev\" \"cd packages/shared && pnpm dev\" \"cd nudgenest-shpfy-app && pnpm dev\"",
     "build": "pnpm -r run build",
