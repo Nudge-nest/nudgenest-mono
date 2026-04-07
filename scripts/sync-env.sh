@@ -2,199 +2,72 @@
 # =============================================================================
 # sync-env.sh — Populate each service's .env based on the current git branch.
 #
-# Branch        Source
+# Branch        Source file per service
 # ──────────    ──────────────────────────────────────────────────────────────
-# test          GCP Secret Manager — staging secrets
-# master        GCP Secret Manager — production secrets (*_PROD)
-# anything else Local .env.develop per service (your personal local dev values)
+# test          .env.staging
+# master        .env.production
+# anything else .env.develop
+#
+# Each file is gitignored and maintained locally. Set them up once:
+#   cp <service>/.env.example <service>/.env.develop    # fill in local values
+#   cp <service>/.env.example <service>/.env.staging    # fill in staging values
+#   cp <service>/.env.example <service>/.env.production # fill in prod values
 #
 # Usage:
-#   bash scripts/sync-env.sh          # run manually
-#   pnpm sync-env                     # npm script alias
+#   bash scripts/sync-env.sh   # run manually
+#   pnpm sync-env              # npm script alias
 #   (runs automatically on git checkout via .githooks/post-checkout)
 # =============================================================================
 
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-GCP_PROJECT="nudgenest"
 
-# ── Colours ──────────────────────────────────────────────────────────────────
+# ── Colours ───────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
-RED='\033[0;31m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-info()    { echo -e "${CYAN}[sync-env]${RESET} $*"; }
 success() { echo -e "${GREEN}[sync-env] ✓${RESET} $*"; }
 warn()    { echo -e "${YELLOW}[sync-env] ⚠${RESET} $*"; }
-error()   { echo -e "${RED}[sync-env] ✗${RESET} $*"; }
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ── Branch → env file suffix ──────────────────────────────────────────────────
 BRANCH=$(git -C "$ROOT_DIR" branch --show-current 2>/dev/null || echo "unknown")
 
-secret() {
-  # Fetch a secret from GCP Secret Manager; returns empty string on failure.
-  local name="$1"
-  gcloud secrets versions access latest \
-    --secret="$name" \
-    --project="$GCP_PROJECT" \
-    --quiet 2>/dev/null || true
-}
-
-copy_develop() {
-  # Copy .env.develop → .env for a service. Warns if .env.develop is missing.
-  local service="$1"
-  local dir="$ROOT_DIR/$service"
-  if [[ -f "$dir/.env.develop" ]]; then
-    cp "$dir/.env.develop" "$dir/.env"
-    success "$service → copied .env.develop"
-  else
-    warn "$service → .env.develop not found."
-    warn "  Create it: cp $service/.env.example $service/.env.develop"
-    warn "  Then fill in your local values."
-  fi
-}
-
-# ── Branch detection ──────────────────────────────────────────────────────────
-echo ""
-echo -e "${BOLD}[sync-env] Branch: ${CYAN}${BRANCH}${RESET}"
-
 if [[ "$BRANCH" == "test" ]]; then
-  ENV_MODE="staging"
+  ENV_SUFFIX="staging"
 elif [[ "$BRANCH" == "master" ]]; then
-  ENV_MODE="production"
+  ENV_SUFFIX="production"
 else
-  ENV_MODE="develop"
+  ENV_SUFFIX="develop"
 fi
 
-echo -e "${BOLD}[sync-env] Mode:   ${CYAN}${ENV_MODE}${RESET}"
+echo ""
+echo -e "${BOLD}[sync-env] Branch: ${CYAN}${BRANCH}${RESET}  →  ${CYAN}.env.${ENV_SUFFIX}${RESET}"
 echo ""
 
-# ── develop / feature / fix ───────────────────────────────────────────────────
-if [[ "$ENV_MODE" == "develop" ]]; then
-  info "Using local .env.develop files for all services."
-  copy_develop "nudgenest"
-  copy_develop "review-ui"
-  copy_develop "nudge-nest-landing"
-  copy_develop "nudgenest-shpfy-app"
-  echo ""
-  success "Done. Local dev environment active."
-  exit 0
-fi
+# ── Copy per service ──────────────────────────────────────────────────────────
+copy_env() {
+  local service="$1"
+  local src="$ROOT_DIR/$service/.env.${ENV_SUFFIX}"
+  local dst="$ROOT_DIR/$service/.env"
 
-# ── staging / production — fetch from Secret Manager ─────────────────────────
-if ! command -v gcloud &>/dev/null; then
-  error "gcloud CLI not found."
-  error "Install it: https://cloud.google.com/sdk/docs/install"
-  error "Then authenticate: gcloud auth application-default login"
-  exit 1
-fi
-
-info "Fetching secrets from GCP Secret Manager (project: ${GCP_PROJECT})…"
-echo ""
-
-# Helper: suffix for prod secrets
-sfx() {
-  # Usage: sfx BASE_SECRET_NAME
-  # Returns BASE_SECRET_NAME for staging, BASE_SECRET_NAME_PROD for production.
-  if [[ "$ENV_MODE" == "production" ]]; then
-    echo "${1}_PROD"
+  if [[ -f "$src" ]]; then
+    cp "$src" "$dst"
+    success "$service → .env.${ENV_SUFFIX}"
   else
-    echo "$1"
+    warn "$service → .env.${ENV_SUFFIX} not found."
+    warn "  Create it: cp $service/.env.example $service/.env.${ENV_SUFFIX}"
   fi
 }
 
-# ── nudgenest (backend) ───────────────────────────────────────────────────────
-info "nudgenest (backend)…"
-cat > "$ROOT_DIR/nudgenest/.env" <<EOF
-# Auto-generated by scripts/sync-env.sh — branch: ${BRANCH} (${ENV_MODE})
-# Do NOT edit manually — run: pnpm sync-env
-
-PORT=50001
-NODE_ENV=development
-
-# Database
-DATABASE_URL=$(secret "$(sfx DATABASE_URL)")
-
-# Resend Email
-RESEND_API_KEY=$(secret RESEND_API_KEY)
-RESEND_FROM_EMAIL=$(secret RESEND_FROM_EMAIL)
-
-# Shopify
-SHOPIFY_API_SECRET=$(secret "$(sfx SHOPIFY_API_SECRET)")
-
-# Review UI
-REVIEW_UI_BASE_URL=$(secret "$(sfx REVIEW_UI_BASE_URL)")
-
-# Google Cloud
-GOOGLE_CLOUD_PROJECT_ID=$(secret GOOGLE_CLOUD_PROJECT_ID)
-GCS_BUCKET_NAME=$(secret GCS_BUCKET_NAME)
-GOOGLE_APPLICATION_CREDENTIALS=nudgenest-service-account.json
-
-# Pub/Sub
-PUBSUB_SUBSCRIPTION_NAME=nudgenest-messaging-pull
-
-# Monitoring
-SENTRY_BACKEND_DSN=$(secret SENTRY_BACKEND_DSN)
-
-# AI
-ANTHROPIC_API_KEY=$(secret ANTHROPIC_API_KEY)
-EOF
-success "nudgenest/.env written"
-
-# ── review-ui ─────────────────────────────────────────────────────────────────
-info "review-ui…"
-cat > "$ROOT_DIR/review-ui/.env" <<EOF
-# Auto-generated by scripts/sync-env.sh — branch: ${BRANCH} (${ENV_MODE})
-# Do NOT edit manually — run: pnpm sync-env
-
-VITE_APP_BACKEND_HOST=$(secret "$(sfx VITE_APP_BACKEND_HOST)")
-VITE_APP_REVIEW_UI_URL=$(secret "$(sfx VITE_APP_REVIEW_UI_URL)")
-VITE_APP_DEMO_MERCHANT_ID=$(secret VITE_APP_DEMO_MERCHANT_ID)
-VITE_APP_SENTRY_FE_DSN=$(secret VITE_APP_SENTRY_FE_DSN)
-EOF
-success "review-ui/.env written"
-
-# ── nudge-nest-landing ────────────────────────────────────────────────────────
-info "nudge-nest-landing…"
-cat > "$ROOT_DIR/nudge-nest-landing/.env" <<EOF
-# Auto-generated by scripts/sync-env.sh — branch: ${BRANCH} (${ENV_MODE})
-# Do NOT edit manually — run: pnpm sync-env
-
-VITE_APP_BACKEND_HOST=$(secret "$(sfx VITE_APP_BACKEND_HOST)")
-VITE_APP_REVIEW_UI_URL=$(secret "$(sfx VITE_APP_REVIEW_UI_URL)")
-VITE_APP_DEMO_MERCHANT_ID=$(secret VITE_APP_DEMO_MERCHANT_ID)
-EOF
-success "nudge-nest-landing/.env written"
-
-# ── nudgenest-shpfy-app ───────────────────────────────────────────────────────
-info "nudgenest-shpfy-app…"
-
-SHOPIFY_API_KEY_SECRET="$(sfx SHOPIFY_APP_API_KEY)"
-SHOPIFY_API_SECRET_SECRET="$(sfx SHOPIFY_APP_API_SECRET)"
-SHOPIFY_DB_SECRET="$(sfx SHOPIFY_APP_DATABASE_URL)"
-SHOPIFY_URL_SECRET="$(sfx SHOPIFY_APP_URL)"
-SHOPIFY_SCOPES_SECRET="$(sfx SHOPIFY_APP_SCOPES)"
-NUDGENEST_URL_SECRET="$(sfx NUDGENEST_BACKEND_URL)"
-
-cat > "$ROOT_DIR/nudgenest-shpfy-app/.env" <<EOF
-# Auto-generated by scripts/sync-env.sh — branch: ${BRANCH} (${ENV_MODE})
-# Do NOT edit manually — run: pnpm sync-env
-
-SHOPIFY_API_KEY=$(secret "$SHOPIFY_API_KEY_SECRET")
-SHOPIFY_API_SECRET=$(secret "$SHOPIFY_API_SECRET_SECRET")
-DATABASE_URL=$(secret "$SHOPIFY_DB_SECRET")
-SHOPIFY_APP_URL=$(secret "$SHOPIFY_URL_SECRET")
-SCOPES=$(secret "$SHOPIFY_SCOPES_SECRET")
-NUDGENEST_BACKEND_URL=$(secret "$NUDGENEST_URL_SECRET")
-REVIEW_UI_BASE_URL=$(secret "$(sfx REVIEW_UI_BASE_URL)")
-NODE_ENV=development
-EOF
-success "nudgenest-shpfy-app/.env written"
+copy_env "nudgenest"
+copy_env "review-ui"
+copy_env "nudge-nest-landing"
+copy_env "nudgenest-shpfy-app"
 
 echo ""
-success "All .env files updated for ${BOLD}${ENV_MODE}${RESET} environment."
+success "Done."
 echo ""
