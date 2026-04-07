@@ -63,6 +63,11 @@ const nudgenestSecretsArray = Object.keys(secrets).map((secret) => {
         role: "roles/secretmanager.secretAccessor",
         member: "serviceAccount:service-1094805904049@gcp-sa-cloudbuild.iam.gserviceaccount.com",
     }, {dependsOn: [_secretVersion]});
+    new gcp.secretmanager.SecretIamMember(`${secret}-compute-access`, {
+        secretId: secret,
+        role: "roles/secretmanager.secretAccessor",
+        member: "serviceAccount:1094805904049-compute@developer.gserviceaccount.com",
+    }, {dependsOn: [_secretVersion]});
     return _secret;
 })
 
@@ -387,6 +392,11 @@ const shopifyAppSecretsArray = Object.keys(shopifyAppSecrets).map((key) => {
         role: "roles/secretmanager.secretAccessor",
         member: "serviceAccount:service-1094805904049@gcp-sa-cloudbuild.iam.gserviceaccount.com",
     }, { dependsOn: [_secretVersion] });
+    new gcp.secretmanager.SecretIamMember(`${key}-compute-access`, {
+        secretId: key,
+        role: "roles/secretmanager.secretAccessor",
+        member: "serviceAccount:1094805904049-compute@developer.gserviceaccount.com",
+    }, { dependsOn: [_secretVersion] });
     return _secret;
 });
 
@@ -416,6 +426,11 @@ const remainingProdSecretsArray = Object.keys(remainingProdSecrets).map((key) =>
         secretId: key,
         role: "roles/secretmanager.secretAccessor",
         member: "serviceAccount:service-1094805904049@gcp-sa-cloudbuild.iam.gserviceaccount.com",
+    }, { dependsOn: [_secretVersion] });
+    new gcp.secretmanager.SecretIamMember(`${key}-compute-access`, {
+        secretId: key,
+        role: "roles/secretmanager.secretAccessor",
+        member: "serviceAccount:1094805904049-compute@developer.gserviceaccount.com",
     }, { dependsOn: [_secretVersion] });
     return _secret;
 });
@@ -448,6 +463,11 @@ const shopifyAppProdSecretsArray = Object.keys(shopifyAppProdSecrets).map((key) 
         secretId: key,
         role: "roles/secretmanager.secretAccessor",
         member: "serviceAccount:service-1094805904049@gcp-sa-cloudbuild.iam.gserviceaccount.com",
+    }, { dependsOn: [_secretVersion] });
+    new gcp.secretmanager.SecretIamMember(`${key}-compute-access`, {
+        secretId: key,
+        role: "roles/secretmanager.secretAccessor",
+        member: "serviceAccount:1094805904049-compute@developer.gserviceaccount.com",
     }, { dependsOn: [_secretVersion] });
     return _secret;
 });
