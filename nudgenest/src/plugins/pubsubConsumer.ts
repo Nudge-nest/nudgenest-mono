@@ -120,7 +120,7 @@ const sendEmailMessageToReviewer = async (
 };
 
 const sendEmailMessageToMerchant = async (messageContent: any, templateId: eventType) => {
-    const { userName, email, reviewId, line_items, order_number, currency } = messageContent;
+    const { userName, email, reviewId, line_items, order_number, currency, shopId, verificationLink } = messageContent;
     if (templateId === 'merchant-welcome')
         return EmailService.sendMerchantWelcome({
             userName,
@@ -129,6 +129,7 @@ const sendEmailMessageToMerchant = async (messageContent: any, templateId: event
             items: extractParamsFromLineItems(line_items),
             order_number: order_number != null ? `${order_number}` : undefined,
             currency,
+            shopId,
         });
     if (templateId === 'merchant-verification')
         return EmailService.sendMerchantVerification({
@@ -138,6 +139,7 @@ const sendEmailMessageToMerchant = async (messageContent: any, templateId: event
             items: extractParamsFromLineItems(line_items),
             order_number: order_number != null ? `${order_number}` : undefined,
             currency,
+            verificationLink,
         });
     if (templateId === 'merchant-deletion')
         return EmailService.sendEmail({
