@@ -51,6 +51,14 @@ const merchantsPlugin: Hapi.Plugin<null> = {
                     auth: false,
                 },
             },
+            {
+                method: 'GET',
+                path: '/api/v1/merchants/email-verify/{token}',
+                handler: emailVerifyHandler,
+                options: {
+                    auth: false,
+                },
+            },
         ]);
     },
 };
@@ -60,13 +68,13 @@ export const defaultConfigs = {
     emailContent: [
         {
             key: 'subject',
-            value: 'how did it go?',
+            value: 'How was your order?',
             description: 'The Subject of the review email to send to customer',
             type: 'text',
         },
         {
             key: 'body',
-            value: 'We would be grateful if you shared how things look and feel.',
+            value: 'Your experience matters. A quick review helps other shoppers and takes less than a minute.',
             description: 'The Body of the review email to send to customer',
             type: 'text',
         },
@@ -80,13 +88,13 @@ export const defaultConfigs = {
     reminderEmailContent: [
         {
             key: 'reminderSubject',
-            value: 'how did it go? [REMINDER]',
+            value: 'Still time to share your thoughts',
             description: 'The Subject of the reminder email',
             type: 'text',
         },
         {
             key: 'reminderBody',
-            value: 'We would be grateful if you shared how things look and feel.',
+            value: "We noticed you haven't had a chance to leave a review yet — no pressure, it only takes a minute.",
             description: 'The Body of the reminder email',
             type: 'text',
         },
@@ -145,7 +153,7 @@ export const defaultConfigs = {
         shopReviewQuestions: [
             {
                 key: 'reviewQuestion',
-                value: 'how did we do?',
+                value: 'How would you rate your overall experience?',
                 description: 'Shop review default question',
                 type: 'text',
             },
@@ -268,6 +276,7 @@ const createRegistrationEmailMessaging = (
                 email: merchant.email,
                 order_number: undefined,
                 merchantId: merchant.id,
+                shopId: merchant.shopId,
             },
             context: { ...sampleMessaging.payload.context, receiver: ['reviewee'] },
         },
@@ -290,10 +299,43 @@ const createVerificationEmailMessaging = (
                 email: merchant.email,
                 order_number: undefined,
                 merchantId: merchant.id,
+                verificationLink: `${process.env.NUDGENEST_BACKEND_URL}/api/v1/merchants/email-verify/${merchant.verificationToken}`,
             },
             context: { ...sampleMessaging.payload.context, receiver: ['reviewee'] },
         },
     } as IRabbitDataObject<IReviewMessagePayloadContent>;
+};
+
+const emailVerifyHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+    const { token } = request.params as { token: string };
+    const { prisma } = request.server.app;
+    try {
+        const merchant = await prisma.merchants.findFirst({
+            where: { verificationToken: token },
+        });
+
+        if (!merchant) {
+            return h.response({ error: 'Invalid or expired verification link.' }).code(400);
+        }
+
+        if (!merchant.verificationTokenExpiresAt || merchant.verificationTokenExpiresAt < new Date()) {
+            return h.response({ error: 'This verification link has expired. Please contact support.' }).code(400);
+        }
+
+        await prisma.merchants.update({
+            where: { id: merchant.id },
+            data: {
+                emailVerified: true,
+                verificationToken: null,
+                verificationTokenExpiresAt: null,
+            },
+        });
+
+        const shopifyAppUrl = process.env.SHOPIFY_APP_URL || '';
+        return h.redirect(`${shopifyAppUrl}?verified=true`);
+    } catch (error: any) {
+        return h.response({ error: error.message }).code(500);
+    }
 };
 
 const deactivateMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
@@ -362,8 +404,11 @@ const createMerchantHandler = async (request: Hapi.Request, h: Hapi.ResponseTool
             return h.response({ version: '1.0.0', data: { merchant } }).code(200);
         }
 
+        const verificationToken = crypto.randomUUID();
+        const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
         const merchant = await prisma.merchants.create({
-            data: { ...(merchantData || {}), apiKey } as any,
+            data: { ...(merchantData || {}), apiKey, verificationToken, verificationTokenExpiresAt } as any,
         });
 
         // Generate store review QR code URL from env

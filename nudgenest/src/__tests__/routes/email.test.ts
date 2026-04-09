@@ -253,7 +253,7 @@ describe('EmailService', () => {
 
             expect(mockResendSend).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    subject: 'Quick reminder: Share your thoughts on order #12345',
+                    subject: 'A quick reminder — how was your recent order?',
                 })
             );
         });
@@ -269,7 +269,7 @@ describe('EmailService', () => {
 
             expect(mockResendSend).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    subject: 'Welcome to Nudge Nest, Merchant Name!',
+                    subject: 'Welcome to NudgeNest, Merchant Name',
                 })
             );
         });

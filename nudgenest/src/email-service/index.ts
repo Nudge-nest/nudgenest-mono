@@ -94,7 +94,7 @@ class EmailService {
                     subject: data.subjectOverride || (data.storeName
                         ? `${data.userName}, how was your recent order from ${data.storeName}?`
                         : `${data.userName}, how was your recent purchase?`),
-                    mainMessage: data.bodyOverride || `We would be grateful if you shared how things look and feel. Your review helps us and the community that supports us, and it only takes a few seconds.`,
+                    mainMessage: data.bodyOverride || `Your feedback helps other shoppers make confident decisions — and it only takes a moment. We'd love to hear what you think.`,
                     showRating: true,
                     showItems: true,
                     ctaButton: {
@@ -106,12 +106,12 @@ class EmailService {
             case EmailType.REVIEW_REMINDER:
                 return {
                     subject: data.reminderSubjectOverride || (data.storeName
-                        ? `Reminder from ${data.storeName}: share your thoughts on order #${data.order_number}`
-                        : `Quick reminder: Share your thoughts on order #${data.order_number}`),
+                        ? `A quick reminder — how was your order from ${data.storeName}?`
+                        : `A quick reminder — how was your recent order?`),
                     mainMessage: data.reminderBodyOverride || `We noticed you haven't had a chance to review your recent purchase yet. We'd love to hear what you think!`,
                     showRating: true,
                     showItems: true,
-                    additionalMessage: `<strong>📦 Haven't received your items yet?</strong> No worries — just come back to this email once your order arrives and leave your review then.`,
+                    additionalMessage: `Haven't received your order yet? No worries — come back to this email once it arrives.`,
                     ctaButton: {
                         text: data.reminderButtonTextOverride || 'Review Now',
                         link: `${reviewBaseUrl}/review/${data.reviewId}`,
@@ -120,23 +120,22 @@ class EmailService {
 
             case EmailType.MERCHANT_WELCOME:
                 return {
-                    subject: `Welcome to Nudge Nest, ${data.userName}!`,
-                    mainMessage: `Congratulations on joining Nudge Nest! We're excited to help you collect and showcase customer reviews.`,
+                    subject: `Welcome to NudgeNest, ${data.userName}`,
+                    mainMessage: `You're all set. NudgeNest will start helping you collect and showcase customer reviews as soon as your first order comes in.`,
                     showRating: false,
                     showItems: false,
                     ctaButton: {
                         text: 'Go to Dashboard',
-                        link: process.env.MERCHANT_DASHBOARD_URL || '#',
+                        link: data.shopId ? `https://${data.shopId}/admin/apps` : (process.env.SHOPIFY_APP_URL || '#'),
                     },
                     secondaryButtons: [
-                        { text: 'View Documentation', link: process.env.DOCS_URL || '#' },
-                        { text: 'Contact Support', link: process.env.SUPPORT_URL || '#' },
+                        { text: 'Contact Support', link: 'mailto:hello@nudgenest.io' },
                     ],
                 };
 
             case EmailType.MERCHANT_VERIFICATION:
                 return {
-                    subject: `Verify your Nudge Nest merchant account`,
+                    subject: `Verify your NudgeNest account`,
                     mainMessage: `Thank you for signing up! Please verify your email address to activate your merchant account.`,
                     showRating: false,
                     showItems: false,
@@ -149,8 +148,8 @@ class EmailService {
 
             case EmailType.MERCHANT_DELETION:
                 return {
-                    subject: `Your Nudge Nest account has been scheduled for deletion`,
-                    mainMessage: `Your account has been scheduled for deletion and will be permanently deleted in 30 days.`,
+                    subject: `Your NudgeNest account is scheduled for deletion`,
+                    mainMessage: `Your account has been scheduled for deletion. You have 30 days to cancel before all data is permanently removed.`,
                     showRating: false,
                     showItems: false,
                     additionalMessage: `If this was a mistake, you can cancel the deletion within the next 30 days.`,
@@ -163,7 +162,7 @@ class EmailService {
             case EmailType.COMPLETED_REVIEW:
                 return {
                     subject: `Thank you for your review, ${data.userName}!`,
-                    mainMessage: `We truly appreciate you taking the time to share your feedback.`,
+                    mainMessage: `Your review makes a real difference. Thank you for taking the time — it means a lot to the team.`,
                     showRating: false,
                     showItems: true,
                     incentive: data.hasIncentive
@@ -176,8 +175,8 @@ class EmailService {
 
             case EmailType.NEW_REVIEW_MERCHANT:
                 return {
-                    subject: `New review request have been sent!`,
-                    mainMessage: `Great news! we have just sent a new review request on your behalf. Check your dashboard to read the full review.`,
+                    subject: `Review request sent`,
+                    mainMessage: `A review request has been sent to your customer on your behalf. Head to your dashboard to track responses.`,
                     showRating: false,
                     showItems: true,
                     additionalMessage: ``,
@@ -185,8 +184,8 @@ class EmailService {
 
             case EmailType.COMPLETED_REVIEW_MERCHANT:
                 return {
-                    subject: `New review received!`,
-                    mainMessage: `Great news! a client just left a review. Check your dashboard to read the full review.`,
+                    subject: `You have a new review`,
+                    mainMessage: `A customer just left a review. Visit your dashboard to read it and decide whether to publish it.`,
                     showRating: false,
                     showItems: true,
                     additionalMessage: ``,
@@ -225,7 +224,7 @@ class EmailService {
                 formattedItems: this.formatItems(data.items),
                 currentYear: new Date().getFullYear(),
                 reviewBaseUrl: process.env.REVIEW_UI_BASE_URL,
-                companyName: 'Nudge Nest',
+                companyName: 'NudgeNest',
                 supportEmail: process.env.SUPPORT_EMAIL || 'support@nudgenest.app',
             };
 
