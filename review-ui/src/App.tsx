@@ -33,7 +33,7 @@ const App = () => {
                     <Route path="store/review/:merchantId" element={<StoreReviewPage />} />
                 </Route>
                 <Route element={<ConfigsLayout />}>
-                    <Route path="configs/:merchantId" element={<ReviewConfigsPage />} />
+                    <Route path="config/:merchantId" element={<ReviewConfigsPage />} />
                 </Route>
                 <Route element={<ReviewsListLayout />}>
                     <Route path="reviews/:shopId" element={<ReviewsListPage />} />

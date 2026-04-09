@@ -107,7 +107,7 @@ const ConfigsPreviewPage = () => {
     if (!import.meta.env.DEV) return null;
 
     const configUrl = merchantId
-        ? `/configs/${merchantId}${apiKey ? `?apiKey=${apiKey}` : ''}`
+        ? `/config/${merchantId}${apiKey ? `?apiKey=${apiKey}` : ''}`
         : '';
 
     const load = () => {
