@@ -2,22 +2,6 @@
 # Triggers on push to main branch when review-ui/** changes.
 # Injects production env vars at build time, builds Docker image, deploys to Cloud Run.
 steps:
-    # -------------------- Inject env vars --------------------
-    - name: 'ubuntu'
-      id: 'create-env'
-      entrypoint: 'bash'
-      args:
-        - '-c'
-        - |
-          cat <<EOF > /workspace/review-ui/.env
-          VITE_APP_BACKEND_HOST=$$VITE_APP_BACKEND_HOST_PROD
-          VITE_APP_SENTRY_FE_DSN=$$VITE_APP_SENTRY_FE_DSN
-          VITE_COMMIT_SHA=$COMMIT_SHA
-          EOF
-      secretEnv:
-        - 'VITE_APP_BACKEND_HOST_PROD'
-        - 'VITE_APP_SENTRY_FE_DSN'
-
     # -------------------- Build --------------------
     - name: 'gcr.io/cloud-builders/docker'
       args:
@@ -25,6 +9,10 @@ steps:
           - '--no-cache'
           - '--build-arg'
           - 'COMMIT_SHA=$COMMIT_SHA'
+          - '--build-arg'
+          - 'VITE_APP_BACKEND_HOST=$$VITE_APP_BACKEND_HOST_PROD'
+          - '--build-arg'
+          - 'VITE_APP_SENTRY_FE_DSN=$$VITE_APP_SENTRY_FE_DSN'
           - '-t'
           - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-fe-service/nudgenest-review-ui-prod:$COMMIT_SHA'
           - .
@@ -34,7 +22,6 @@ steps:
         - 'VITE_APP_BACKEND_HOST_PROD'
         - 'VITE_APP_SENTRY_FE_DSN'
       id: build
-      waitFor: ['create-env']
 
     # -------------------- Push --------------------
     - name: 'gcr.io/cloud-builders/docker'
