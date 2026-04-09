@@ -3,21 +3,21 @@
 # Injects production env vars at build time, builds Docker image, deploys to Cloud Run.
 steps:
     # -------------------- Build --------------------
+    # entrypoint: bash so the shell expands $$SECRET_NAME into the actual secret value
+    # before passing to docker build (docker args are not shell-expanded otherwise)
     - name: 'gcr.io/cloud-builders/docker'
+      entrypoint: bash
       args:
-          - build
-          - '--no-cache'
-          - '--build-arg'
-          - 'COMMIT_SHA=$COMMIT_SHA'
-          - '--build-arg'
-          - 'VITE_APP_BACKEND_HOST=$$VITE_APP_BACKEND_HOST_PROD'
-          - '--build-arg'
-          - 'VITE_APP_SENTRY_FE_DSN=$$VITE_APP_SENTRY_FE_DSN'
-          - '-t'
-          - '$LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-fe-service/nudgenest-review-ui-prod:$COMMIT_SHA'
-          - .
-          - '-f'
-          - review-ui/Dockerfile
+          - '-c'
+          - |
+            docker build \
+              --no-cache \
+              --build-arg COMMIT_SHA=$COMMIT_SHA \
+              --build-arg VITE_APP_BACKEND_HOST=$$VITE_APP_BACKEND_HOST_PROD \
+              --build-arg VITE_APP_SENTRY_FE_DSN=$$VITE_APP_SENTRY_FE_DSN \
+              -t $LOCATION-docker.pkg.dev/$PROJECT_ID/nudgenest-fe-service/nudgenest-review-ui-prod:$COMMIT_SHA \
+              -f review-ui/Dockerfile \
+              .
       secretEnv:
         - 'VITE_APP_BACKEND_HOST_PROD'
         - 'VITE_APP_SENTRY_FE_DSN'
