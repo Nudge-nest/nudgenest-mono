@@ -4,6 +4,8 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 ARG COMMIT_SHA=unknown
+ARG VITE_APP_BACKEND_HOST
+ARG VITE_APP_SENTRY_FE_DSN
 ENV COMMIT_SHA=$COMMIT_SHA
 
 # Enable Corepack and prepare pnpm
@@ -20,6 +22,11 @@ RUN pnpm install --frozen-lockfile
 
 # Copy service source (node_modules and dist excluded via root .dockerignore)
 COPY review-ui/ .
+
+# Write env vars from build args — overrides any local .env committed in source
+RUN echo "VITE_APP_BACKEND_HOST=${VITE_APP_BACKEND_HOST}" > .env && \
+    echo "VITE_APP_SENTRY_FE_DSN=${VITE_APP_SENTRY_FE_DSN}" >> .env && \
+    echo "VITE_COMMIT_SHA=${COMMIT_SHA}" >> .env
 
 RUN pnpm build
 
