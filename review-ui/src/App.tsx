@@ -1,9 +1,15 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes, useParams } from 'react-router';
 
 import NotFound from './components/NotFound.tsx';
 import { ConfigsLayout, Layout, ReviewsListLayout } from './components/Layout.tsx';
 import Loading from './components/Loading.tsx';
+
+// Redirect /configs/:merchantId → /config/:merchantId (legacy URL support)
+const ConfigsRedirect = () => {
+    const { merchantId } = useParams<{ merchantId: string }>();
+    return <Navigate to={`/config/${merchantId}${window.location.search}`} replace />;
+};
 
 // Code-split route components
 const LandingPage = lazy(() => import('./pages/LandingPage.tsx'));
@@ -32,9 +38,10 @@ const App = () => {
                     <Route path="review/:id" element={<ReviewPage />} />
                     <Route path="store/review/:merchantId" element={<StoreReviewPage />} />
                 </Route>
-                <Route element={<ConfigsLayout />}>
-                    <Route path="config/:merchantId" element={<ReviewConfigsPage />} />
+                <Route path="config/:merchantId" element={<ConfigsLayout />}>
+                    <Route index element={<ReviewConfigsPage />} />
                 </Route>
+                <Route path="configs/:merchantId" element={<ConfigsRedirect />} />
                 <Route element={<ReviewsListLayout />}>
                     <Route path="reviews/:shopId" element={<ReviewsListPage />} />
                 </Route>
