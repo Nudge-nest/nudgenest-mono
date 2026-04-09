@@ -7,7 +7,9 @@
 
 <div class="business-reviews-container"
      data-reviews-limit="{{ reviews_limit }}"
-     data-merchant-id="{{ shop.id }}">
+     data-merchant-id="{{ shop.id }}"
+     data-api-base-url="https://api.nudgenest.io/api/v1/"
+     data-review-ui-url="https://reviews.nudgenest.io">
   <!-- Reviews Container -->
   <div class="business-reviews__grid" id="reviewsGrid" >
     <!-- Reviews will be populated here via JavaScript -->
@@ -27,8 +29,7 @@
       const reviewsLimit = container.dataset.reviewsLimit || 10;
       const merchantId = container.dataset.merchantId;
 
-      // API Configuration - Update with your actual endpoint
-      const API_BASE_URL = 'https://nudgenest-backend-1094805904049.europe-west1.run.app/api/v1/';
+      const API_BASE_URL = container.dataset.apiBaseUrl;
 
 
       async function loadReviews() {
@@ -39,7 +40,7 @@
         // Clear any existing content
         gridEl.innerHTML = '';
 
-        const iframeUrl = `https://nudgenest-review-ui-1094805904049.europe-west1.run.app/reviews/${merchantId}`;
+        const iframeUrl = `${container.dataset.reviewUiUrl}/reviews/${merchantId}`;
 
         // Create iframe for the review form
         const iframe = document.createElement('iframe');
