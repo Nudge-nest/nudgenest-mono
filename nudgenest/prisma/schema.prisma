@@ -22,9 +22,12 @@ model Merchants {
   email          String           @unique
   name           String           @unique
   businessInfo   String           @unique
-  apiKey             String?          @unique
-  shopifyAccessToken String?
-  deleted            Boolean          @default(false)
+  apiKey                     String?   @unique
+  shopifyAccessToken         String?
+  emailVerified              Boolean   @default(false)
+  verificationToken          String?
+  verificationTokenExpiresAt DateTime?
+  deleted                    Boolean   @default(false)
   deletedAt          DateTime?
   redactedAt         DateTime?
   createdAt          DateTime         @default(now())

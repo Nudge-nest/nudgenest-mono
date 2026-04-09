@@ -14,8 +14,7 @@
   const reviewsLimit = container.dataset.reviewsLimit || 10;
   const merchantId = container.dataset.merchantId;
 
-  // API Configuration - Update with your actual endpoint
-  const API_BASE_URL = 'https://nudgenest-backend-1094805904049.europe-west1.run.app/api/v1/';
+  const API_BASE_URL = container.dataset.apiBaseUrl;
 
   async function loadReviews() {
     console.log('Container dataset',container.dataset);
