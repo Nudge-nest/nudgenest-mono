@@ -127,6 +127,7 @@ function CustomerDashboard({ merchantData, shopInfo, reviewStats, subscriptionDe
             <iframe
               id="config-iframe"
               src="${configUrl}"
+              allow="clipboard-read; clipboard-write"
               style="width: 100%; height: 100%; border: none; display: block;"
               title="Nudge-nest Configuration">
             </iframe>

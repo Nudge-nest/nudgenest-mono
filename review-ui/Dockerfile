@@ -23,10 +23,11 @@ RUN pnpm install --frozen-lockfile
 # Copy service source (node_modules and dist excluded via root .dockerignore)
 COPY review-ui/ .
 
-# Write env vars from build args — overrides any local .env committed in source
-RUN echo "VITE_APP_BACKEND_HOST=${VITE_APP_BACKEND_HOST}" > .env && \
-    echo "VITE_APP_SENTRY_FE_DSN=${VITE_APP_SENTRY_FE_DSN}" >> .env && \
-    echo "VITE_COMMIT_SHA=${COMMIT_SHA}" >> .env
+# Write env vars from build args into .env.production — Vite gives .env.production
+# higher priority than .env, so this ensures build-arg values always win.
+RUN echo "VITE_APP_BACKEND_HOST=${VITE_APP_BACKEND_HOST}" > .env.production && \
+    echo "VITE_APP_SENTRY_FE_DSN=${VITE_APP_SENTRY_FE_DSN}" >> .env.production && \
+    echo "VITE_COMMIT_SHA=${COMMIT_SHA}" >> .env.production
 
 RUN pnpm build
 
