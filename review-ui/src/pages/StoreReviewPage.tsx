@@ -8,8 +8,8 @@ import { useSlider } from '../hooks/useSlider.ts';
 
 const StoreReviewPage = () => {
     const { merchantId } = useParams<{ merchantId: string }>();
-    const { data: merchantConfigs, isLoading: configsLoading } = useGetReviewConfigsQuery(merchantId as string);
-    const { data: merchantData, isLoading: merchantLoading, isError: merchantError } = useGetMerchantQuery(merchantId as string);
+    const { data: merchantConfigs, isLoading: configsLoading } = useGetReviewConfigsQuery(merchantId as string, { skip: !merchantId });
+    const { data: merchantData, isLoading: merchantLoading, isError: merchantError } = useGetMerchantQuery(merchantId as string, { skip: !merchantId });
     const [createReview] = useCreateReviewMutation();
 
     const isLoading = configsLoading || merchantLoading;
