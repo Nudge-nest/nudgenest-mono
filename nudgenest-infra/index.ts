@@ -287,7 +287,7 @@ const monorepo_connection = new gcp.cloudbuildv2.Connection('monorepo-connection
     githubConfig: {
         appInstallationId: Number(config.get("GITHUB_APP_INSTALLER_ID")),
         authorizerCredential: {
-            oauthTokenSecretVersion: "projects/1094805904049/secrets/GITHUB_TOKEN/versions/1"
+            oauthTokenSecretVersion: "projects/1094805904049/secrets/GITHUB_TOKEN/versions/latest"
         },
     }
 }, {dependsOn: nudgenestSecretsArray})
