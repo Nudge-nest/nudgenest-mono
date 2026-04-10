@@ -3,20 +3,21 @@
 # Injects production env vars at build time, builds Docker image, deploys to Cloud Run.
 steps:
     # -------------------- Inject env vars --------------------
+    # entrypoint:bash so $$SECRET vars expand; printf avoids heredoc indentation issues
     - name: 'ubuntu'
       id: 'create-env'
       entrypoint: 'bash'
       args:
         - '-c'
         - |
-          cat <<EOF > /workspace/nudge-nest-landing/.env
-          VITE_APP_BACKEND_URL=$$VITE_APP_BACKEND_HOST_PROD
-          VITE_APP_CONTACT_URL=${_CONTACT_URL}
-          VITE_APP_SIGNUP_URL=${_SIGNUP_URL}
-          VITE_APP_FEATURES_URL=${_FEATURES_URL}
-          VITE_APP_REVIEW_UI_URL=$$VITE_APP_REVIEW_UI_URL_PROD
-          VITE_APP_DEMO_MERCHANT_ID=$$VITE_APP_DEMO_MERCHANT_ID
-          EOF
+          printf 'VITE_APP_BACKEND_URL=%s\nVITE_APP_CONTACT_URL=%s\nVITE_APP_SIGNUP_URL=%s\nVITE_APP_FEATURES_URL=%s\nVITE_APP_REVIEW_UI_URL=%s\nVITE_APP_DEMO_MERCHANT_ID=%s\n' \
+            "$$VITE_APP_BACKEND_HOST_PROD" \
+            "${_CONTACT_URL}" \
+            "${_SIGNUP_URL}" \
+            "${_FEATURES_URL}" \
+            "$$VITE_APP_REVIEW_UI_URL_PROD" \
+            "$$VITE_APP_DEMO_MERCHANT_ID" \
+            > /workspace/nudge-nest-landing/.env
       secretEnv:
         - 'VITE_APP_BACKEND_HOST_PROD'
         - 'VITE_APP_REVIEW_UI_URL_PROD'
@@ -71,7 +72,7 @@ substitutions:
     _DEPLOY_REGION: europe-west1
     _PLATFORM: managed
     _CONTACT_URL: 'https://www.google.com/search?q=Nudge-nest'
-    _SIGNUP_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSdT-tPUX4C8AzsClyNjZtwbTlrvRM8ByYYdbHWTi7gEyiwLrg/viewform?usp=header'
+    _SIGNUP_URL: 'https://apps.shopify.com/nudgenest'
     _FEATURES_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSfAxwijQju0JaZNFU7OAobMZqERVIi_oGD03ZhyWhTkEPVyMg/viewform?usp=dialog'
 
 tags:
