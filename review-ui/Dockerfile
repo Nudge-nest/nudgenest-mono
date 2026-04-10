@@ -25,9 +25,11 @@ COPY review-ui/ .
 
 # Write env vars from build args into .env.production — Vite gives .env.production
 # higher priority than .env, so this ensures build-arg values always win.
-RUN echo "VITE_APP_BACKEND_HOST=${VITE_APP_BACKEND_HOST}" > .env.production && \
-    echo "VITE_APP_SENTRY_FE_DSN=${VITE_APP_SENTRY_FE_DSN}" >> .env.production && \
-    echo "VITE_COMMIT_SHA=${COMMIT_SHA}" >> .env.production
+RUN printf 'VITE_APP_BACKEND_HOST=%s\nVITE_APP_SENTRY_FE_DSN=%s\nVITE_COMMIT_SHA=%s\n' \
+    "${VITE_APP_BACKEND_HOST}" \
+    "${VITE_APP_SENTRY_FE_DSN}" \
+    "${COMMIT_SHA}" \
+    > .env.production && cp .env.production .env
 
 RUN pnpm build
 
@@ -37,7 +39,7 @@ FROM nginx:stable-alpine AS production
 # Copy built static files
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Optional: Copy runtime .env (if needed for SSR or dynamic config)
+# Copy runtime .env for debugging (both files exist since we cp above)
 COPY --from=builder /app/.env /usr/share/nginx/html/.env
 
 # Replace the default nginx config (helps with SPA routing)
