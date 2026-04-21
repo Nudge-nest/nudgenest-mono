@@ -22,7 +22,6 @@ jest.mock('@prisma/client', () => ({
 }));
 
 // Mock external services by default
-jest.mock('@sendgrid/mail');
 jest.mock('@aws-sdk/client-s3');
 jest.mock('twilio');
 
