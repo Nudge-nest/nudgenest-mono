@@ -2,8 +2,6 @@ config:
   gcp:project: nudgenest
   nudgenest-infra:region: europe-west1
   nudgenest-infra:BACKEND_PORT: "50001"
-  nudgenest-infra:BACKEND_SENDGRID_API_KEY:
-    secure: AAABAAKafnYJgGZRLoBSE+jqDAmF0tUizdrIyzKS8n2DK60O3IVZhiJFLM2q7NPjb+yrB7fObeoPIONYYDogiFO25Qj74hQpw4uTE0XYRBmb5iHmQba4hGLR9wNrvmO4EcfN+H4=
   nudgenest-infra:BACKEND_DATABASE_URL:
     secure: AAABABpQdbdx3EZv4JKi2UoyTHFORLwHovKLEmWraGnHdKyIptP680u8B3FCPxXFP+8GoLNVhUATSkwhwr5yK9JelWBVFRIFziIt8iPp7kXlti7O7B6FaCnUwGB3rg57ebNkbC6PnAOcLFWsrPNIDbNOY/G+a/PpE1+FL8Ew13vpiX+y+4Ya5Sb8qgKX7QYbxGdADLmwCKrgDVf/dvxPT0OpaG8QxFUZmSI=
   nudgenest-infra:BACKEND_GOOGLE_APP_PASSWORD:
