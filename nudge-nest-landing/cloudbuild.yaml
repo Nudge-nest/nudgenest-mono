@@ -13,12 +13,16 @@ steps:
         VITE_APP_SIGNUP_URL=${_SIGNUP_URL}
         VITE_APP_FEATURES_URL=${_FEATURES_URL}
         VITE_APP_REVIEW_UI_URL=$$VITE_APP_REVIEW_UI_URL
-        VITE_APP_DEMO_MERCHANT_ID=$$VITE_APP_DEMO_MERCHANT_ID
+        VITE_APP_DEMO_MERCHANT_ID=$$VITE_APP_DEMO_MERCHANT_ID_STAGING
         EOF
+    # VITE_APP_DEMO_MERCHANT_ID_STAGING is the staging-specific secret; it is
+    # intentionally written to the .env key VITE_APP_DEMO_MERCHANT_ID (no suffix)
+    # because that is what the Vite app reads. cloudbuild.prod.yaml uses the
+    # VITE_APP_DEMO_MERCHANT_ID secret directly for the same reason.
     secretEnv:
       - 'VITE_APP_BACKEND_HOST'
       - 'VITE_APP_REVIEW_UI_URL'
-      - 'VITE_APP_DEMO_MERCHANT_ID'
+      - 'VITE_APP_DEMO_MERCHANT_ID_STAGING'
 
   # Step 2: Build Docker image
   - name: 'gcr.io/cloud-builders/docker'
@@ -82,6 +86,6 @@ availableSecrets:
       env: 'VITE_APP_BACKEND_HOST'
     - versionName: 'projects/$PROJECT_ID/secrets/VITE_APP_REVIEW_UI_URL/versions/latest'
       env: 'VITE_APP_REVIEW_UI_URL'
-    - versionName: 'projects/$PROJECT_ID/secrets/VITE_APP_DEMO_MERCHANT_ID/versions/latest'
-      env: 'VITE_APP_DEMO_MERCHANT_ID'
+    - versionName: 'projects/$PROJECT_ID/secrets/VITE_APP_DEMO_MERCHANT_ID_STAGING/versions/latest'
+      env: 'VITE_APP_DEMO_MERCHANT_ID_STAGING'
 # [END cloudbuild_landing_build]
