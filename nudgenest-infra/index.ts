@@ -290,7 +290,17 @@ const monorepo_connection = new gcp.cloudbuildv2.Connection('monorepo-connection
             oauthTokenSecretVersion: "projects/1094805904049/secrets/GITHUB_TOKEN/versions/latest"
         },
     }
-}, {dependsOn: nudgenestSecretsArray})
+}, {
+    dependsOn: nudgenestSecretsArray,
+    // ignoreChanges: Cloud Build v2 GitHub connections require a GitHub OAuth App token
+    // (not a PAT) for authorizerCredential. Our GITHUB_TOKEN is a PAT, which is
+    // sufficient for build triggers but cannot authorize GitHub App installations
+    // (returns "user token does not have access to installations").
+    // The connection itself is healthy and builds fire correctly via the GitHub App
+    // installation — we just prevent Pulumi from attempting to re-apply githubConfig
+    // on every `pulumi up`, which would fail with 401.
+    ignoreChanges: ["githubConfig"],
+})
 
 // Link Cloud Build connection to monorepo
 const monorepo_connection_repo = new gcp.cloudbuildv2.Repository('monorepo-connection-repo',{
