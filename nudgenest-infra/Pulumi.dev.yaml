@@ -47,7 +47,8 @@ config:
     secure: AAABAKEzrUNACFw//Pzh8nvTSP47NspjqCtyRfU2AOAI0MUE2gzbNDjnR7Lrn1JK4elKHummbLJMGvv+1g8CKm3CS12wG4vf
   nudgenest-infra:SHOPIFY_APP_URL: https://nudgenest-shopify-1094805904049.europe-west1.run.app
   nudgenest-infra:VITE_APP_REVIEW_UI_URL: https://nudgenest-review-ui-1094805904049.europe-west1.run.app
-  nudgenest-infra:VITE_APP_DEMO_MERCHANT_ID: 69d616ece92015f00767f50e
+  nudgenest-infra:VITE_APP_DEMO_MERCHANT_ID:
+    secure: AAABADghTi9mFP4xHO47HjW/0J92brhQQfNliVFPt4UkZiXW8/ZTkqnLJivaDO7mVerOP3ltF1k=
   nudgenest-infra:SHOPIFY_APP_API_KEY_PROD:
     secure: AAABAEO1eD2FKumDR/IWoabDu1p7dgksKm1b2wmCa5K13IWF2xlw6AEfvJiG+eUN+df8fZR5zpMH/KkAqVfw1Q==
   nudgenest-infra:SHOPIFY_APP_API_SECRET_PROD:

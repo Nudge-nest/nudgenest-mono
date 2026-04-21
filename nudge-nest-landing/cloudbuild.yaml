@@ -15,6 +15,10 @@ steps:
         VITE_APP_REVIEW_UI_URL=$$VITE_APP_REVIEW_UI_URL
         VITE_APP_DEMO_MERCHANT_ID=$$VITE_APP_DEMO_MERCHANT_ID_STAGING
         EOF
+    # VITE_APP_DEMO_MERCHANT_ID_STAGING is the staging-specific secret; it is
+    # intentionally written to the .env key VITE_APP_DEMO_MERCHANT_ID (no suffix)
+    # because that is what the Vite app reads. cloudbuild.prod.yaml uses the
+    # VITE_APP_DEMO_MERCHANT_ID secret directly for the same reason.
     secretEnv:
       - 'VITE_APP_BACKEND_HOST'
       - 'VITE_APP_REVIEW_UI_URL'
