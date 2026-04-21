@@ -20,6 +20,7 @@ const secrets = {
     REVIEW_UI_BASE_URL: config.get("REVIEW_UI_BASE_URL"),
     VITE_APP_REVIEW_UI_URL: config.get("VITE_APP_REVIEW_UI_URL"),
     VITE_APP_DEMO_MERCHANT_ID: config.get("VITE_APP_DEMO_MERCHANT_ID"),
+    VITE_APP_DEMO_MERCHANT_ID_STAGING: config.get("VITE_APP_DEMO_MERCHANT_ID_STAGING"),
 
     // CI/CD Secrets
     GITHUB_TOKEN: config.get("GITHUB_TOKEN"),
