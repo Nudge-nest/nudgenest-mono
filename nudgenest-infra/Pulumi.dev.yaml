@@ -47,18 +47,17 @@ config:
     secure: AAABAKEzrUNACFw//Pzh8nvTSP47NspjqCtyRfU2AOAI0MUE2gzbNDjnR7Lrn1JK4elKHummbLJMGvv+1g8CKm3CS12wG4vf
   nudgenest-infra:SHOPIFY_APP_URL: https://nudgenest-shopify-1094805904049.europe-west1.run.app
   nudgenest-infra:VITE_APP_REVIEW_UI_URL: https://nudgenest-review-ui-1094805904049.europe-west1.run.app
-  nudgenest-infra:VITE_APP_DEMO_MERCHANT_ID: 69c536e3c2f816233e4e2d96
-  nudgenest-infra:SHOPIFY_APP_API_KEY_PROD:
-    secure: AAABADQBDGuLvK1RP4qQM6Px/h/S84YBNfOBmKYlqLxsfHR6H7d7hSYR9PinexZv5MvnfWvWC5b17jusbrmF8g==
+  nudgenest-infra:VITE_APP_DEMO_MERCHANT_ID: 69d616ece92015f00767f50e
+  nudgenest-infra:SHOPIFY_APP_API_KEY_PROD: 17dd6639f0adf774c19762bfc1f17d24
   nudgenest-infra:SHOPIFY_APP_API_SECRET_PROD:
-    secure: AAABAOQ4RT4XxlqsyKFWTtelvrheGQ87SI6ddvYCZ3IWu9lf7h81TwWIZXzPl98kVNF2Aq6uAWsljtSoXf4gu7zrVkyrOw==
+    secure: AAABAAVo5dy2AM+EeGyBw9u+11yS/fdBcGi/EdZV/ohQjSJ3r34Cvx1YYMxSx6o/2lmgEYYe9essAdpAyjcrkQ==
   nudgenest-infra:SHOPIFY_APP_URL_PROD: https://merchant.nudgenest.io
   nudgenest-infra:SHOPIFY_APP_DATABASE_URL_PROD:
     secure: AAABAD5yl9h7idkUF44QfPok9hJSbJu5m/6WfPC/004v9y3sqLMLoJ4JjgV8ggXUsfng7OWCeLRqaFWne+uSmjEmhWaZLoRLAa8GhETlmgnT7DZm+6vj9bbUcOgUHmxKgiC3uiKeydRYft6UOpR0FMq9IJLyqeymp5REoSw/NFYxVUGpdJO3bIBHGTFa3MjL0IwjJ69tR+Q10Fy6LAR2OwVo/bpmuMKMMLLbQbupcHqz
   nudgenest-infra:SHOPIFY_APP_SCOPES_PROD: read_products,read_orders,read_customers
-  nudgenest-infra:NUDGENEST_BACKEND_URL_PROD: https://api.nudgenest.io
+  nudgenest-infra:NUDGENEST_BACKEND_URL_PROD: https://api.nudgenest.io/api/v1
   nudgenest-infra:DATABASE_URL_PROD:
-    secure: AAABALKC2GdUxqBT+letAfRiCjRyFvI19aFmktpc6rbO2G9u7sYlhxKmKHGyAtecVtakn7tdL9V9l/34oXzsXguJVnvbikwGP9u73iod0IbpUm3Yq4aHum+in8d1e0hJ9zfZDhvV/I4QWTBitWXfamunUPeEZNPZv0RkS9m8vJYJ
+    secure: AAABAMq3sJwjeo1nBNsxraBd86hZqflf/HhCmZMKXzaaIwgt1WOhvqhrtT1+b3L/rlrLZvdHdOQV3yTK9MscYR5VDfazjYUWgyavakyHkz+N46KnCqicHe4bMropVh9kSY0bQK/aaxsBPPlTuskjvVWqZRfTO5oiqjSd9Y9eZewwLokCg81kh6Z4W0o=
   nudgenest-infra:REVIEW_UI_BASE_URL_PROD: https://reviews.nudgenest.io
   nudgenest-infra:VITE_APP_BACKEND_HOST_PROD: https://api.nudgenest.io/api/v1/
   nudgenest-infra:VITE_APP_REVIEW_UI_URL_PROD: https://reviews.nudgenest.io
