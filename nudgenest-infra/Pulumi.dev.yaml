@@ -62,3 +62,4 @@ config:
   nudgenest-infra:REVIEW_UI_BASE_URL_PROD: https://reviews.nudgenest.io
   nudgenest-infra:VITE_APP_BACKEND_HOST_PROD: https://api.nudgenest.io/api/v1/
   nudgenest-infra:VITE_APP_REVIEW_UI_URL_PROD: https://reviews.nudgenest.io
+  nudgenest-infra:VITE_APP_DEMO_MERCHANT_ID_STAGING: 6895ded5ffb0f5b388440609
