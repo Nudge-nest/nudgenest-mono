@@ -21,9 +21,9 @@ const Header = () => {
 
                 {/* Nav links — hidden on mobile */}
                 <nav className="hidden md:flex items-center gap-x-8 ml-auto">
-                    <a href="#how-it-works" className={navLinkStyle}>How It Works</a>
-                    <a href="#pricing" className={navLinkStyle}>Pricing</a>
-                    <a href="#faq" className={navLinkStyle}>FAQ</a>
+                    <a href="/#how-it-works" className={navLinkStyle}>How It Works</a>
+                    <a href="/#pricing" className={navLinkStyle}>Pricing</a>
+                    <a href="/#faq" className={navLinkStyle}>FAQ</a>
                     <Link to="/contact" className={navLinkStyle}>Contact</Link>
                 </nav>
 
