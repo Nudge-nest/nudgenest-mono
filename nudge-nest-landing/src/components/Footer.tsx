@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { Link } from 'react-router';
 import logo from '../assets/nudgenest_logo.svg?url';
 import { SmallBodyText } from './Typography';
 
 const Footer = () => {
-    const [year] = useState<string>(`${new Date().getFullYear()}`);
+    const year = new Date().getFullYear();
 
     return (
         <footer

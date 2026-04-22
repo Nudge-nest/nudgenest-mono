@@ -1,3 +1,5 @@
+import { Link } from 'react-router';
+
 const TermsAndConditions = () => {
     const lastUpdated = 'April 2026';
     const contactEmail = 'hello@nudgenest.io';
@@ -77,9 +79,9 @@ const TermsAndConditions = () => {
                 </ul>
                 <p className="text-base leading-relaxed opacity-80 mt-4">
                     We handle customer data in accordance with our{' '}
-                    <a href="/privacy" className="text-[color:var(--color-main)] hover:opacity-80 transition-opacity">
+                    <Link to="/privacy" className="text-[color:var(--color-main)] hover:opacity-80 transition-opacity">
                         Privacy Policy
-                    </a>.
+                    </Link>.
                 </p>
             </section>
 
