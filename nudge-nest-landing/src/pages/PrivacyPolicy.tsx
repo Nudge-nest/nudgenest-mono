@@ -1,6 +1,6 @@
 const PrivacyPolicy = () => {
     const lastUpdated = 'February 2026';
-    const contactEmail = 'support@nudgenest.com';
+    const contactEmail = 'hello@nudgenest.io';
 
     return (
         <div className="max-w-4xl mx-auto px-6 py-16 text-[color:var(--color-dark)]">

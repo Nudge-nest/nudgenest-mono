@@ -1,14 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import logo from '../assets/nudgenest_logo.svg?url';
-import { FooterButton } from './Button';
-import { SmallBodyText, SmallBodyTextBold } from './Typography';
-
-const NEWSLETTER_EMAIL = 'bytemindsfi@gmail.com';
+import { SmallBodyText } from './Typography';
 
 const Footer = () => {
     const [year] = useState<string>(`${new Date().getFullYear()}`);
-    const [email, setEmail] = useState('');
 
     return (
         <footer
@@ -27,29 +23,6 @@ const Footer = () => {
                     </SmallBodyText>
                 </div>
 
-                {/* Newsletter */}
-                <div className="flex flex-col items-center gap-y-3 w-full max-w-md">
-                    <SmallBodyTextBold className="text-[color:var(--color-dark)]">
-                        Subscribe to our newsletter
-                    </SmallBodyTextBold>
-                    <div className="flex w-full">
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="flex-1 bg-[color:var(--color-bg)] px-4 py-3 rounded-s-3xl outline-none text-sm text-[color:var(--color-dark)] placeholder:text-[color:var(--color-icons)]"
-                            placeholder="Enter your email"
-                        />
-                        <FooterButton onClick={() => {
-                            const body = `Please add me to the Nudgenest newsletter: ${email}`;
-                            window.open(`mailto:${NEWSLETTER_EMAIL}?subject=Newsletter+Subscription&body=${encodeURIComponent(body)}`);
-                            setEmail('');
-                        }}>
-                            <SmallBodyText className="!text-[color:var(--color-text)]">Subscribe</SmallBodyText>
-                        </FooterButton>
-                    </div>
-                </div>
-
             </div>
 
             {/* Bottom bar */}
@@ -66,7 +39,12 @@ const Footer = () => {
                             Privacy Policy
                         </Link>
                         <span aria-hidden="true">·</span>
-                        <span className="cursor-default opacity-50">Terms (coming soon)</span>
+                        <Link
+                            to="/terms"
+                            className="hover:text-[color:var(--color-dark)] transition-colors"
+                        >
+                            Terms of Service
+                        </Link>
                     </div>
                 </div>
             </div>
