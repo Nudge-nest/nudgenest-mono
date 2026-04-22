@@ -38,6 +38,9 @@ const PageSectionDefault: React.FC<IPageSection> = ({ children, name }) => {
     );
 };
 
+// NOTE: if wrapping a section that already has a manual <div id="..."> in
+// LandingPage.tsx (how-it-works, pricing, faq), do NOT pass the same name here —
+// duplicate IDs break getElementById and are an HTML validity violation.
 const PageSection: React.FC<IPageSection> = ({ children, height = 'default', name }) => {
     if (height === 'full') {
         return <PageSectionFull name={name}>{children}</PageSectionFull>;

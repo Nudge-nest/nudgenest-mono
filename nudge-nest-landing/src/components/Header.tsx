@@ -12,12 +12,9 @@ const Header = () => {
         >
             <div className="w-full px-6 h-16 flex items-center justify-between gap-x-4">
                 {/* Logo + brand name */}
-                <a
-                    href="/"
-                    className="flex items-center"
-                >
+                <Link to="/" className="flex items-center">
                     <img src={logo} alt="Nudgenest logo" className="h-16 w-auto dark:[filter:saturate(1.8)_brightness(1.1)_contrast(1.15)]" />
-                </a>
+                </Link>
 
                 {/* Nav links — hidden on mobile */}
                 <nav className="hidden md:flex items-center gap-x-8 ml-auto">

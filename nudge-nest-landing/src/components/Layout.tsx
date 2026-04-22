@@ -4,14 +4,14 @@ import Footer from './Footer';
 import Header from './Header';
 
 // Scrolls to the hash element after every route change.
-// Needed because React renders asynchronously — the browser's native
-// scroll-to-hash fires before the DOM is ready in a SPA context.
+// useEffect fires after React has painted, so the target element is in the DOM
+// by the time getElementById runs. Falls back to scroll-to-top on non-hash routes
+// to prevent stale scroll position leaking between pages.
 const ScrollToHash = () => {
     const { hash, pathname } = useLocation();
 
     useEffect(() => {
         if (hash) {
-            // Small delay to let the page finish rendering before scrolling
             const id = hash.replace('#', '');
             const el = document.getElementById(id);
             if (el) {
