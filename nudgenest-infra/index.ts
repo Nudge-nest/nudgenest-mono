@@ -16,7 +16,7 @@ const secrets = {
     GCS_BUCKET_NAME: config.get("GCS_BUCKET_NAME") || "nudgenest-media",
 
     // Frontend Configuration
-    VITE_APP_BACKEND_HOST: config.get("VITE_APP_BACKEND_HOST"),
+    VITE_APP_BACKEND_HOST_STAGING: config.get("VITE_APP_BACKEND_HOST_STAGING"),
     REVIEW_UI_BASE_URL: config.get("REVIEW_UI_BASE_URL"),
     VITE_APP_REVIEW_UI_URL: config.get("VITE_APP_REVIEW_UI_URL"),
     VITE_APP_DEMO_MERCHANT_ID: config.get("VITE_APP_DEMO_MERCHANT_ID"),
