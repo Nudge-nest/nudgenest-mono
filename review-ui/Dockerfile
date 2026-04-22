@@ -4,6 +4,11 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 ARG COMMIT_SHA=unknown
+# VITE_APP_BACKEND_HOST is the name the Vite app reads at runtime via import.meta.env.
+# Cloud Build passes it as --build-arg VITE_APP_BACKEND_HOST=$$VITE_APP_BACKEND_HOST_STAGING
+# (staging) or $$VITE_APP_BACKEND_HOST_PROD (production) from Secret Manager.
+# The _STAGING/_PROD suffix lives only in the CI/CD layer; the app layer always uses the
+# unprefixed name so Vite env types and Redux API code stay environment-agnostic.
 ARG VITE_APP_BACKEND_HOST
 ARG VITE_APP_SENTRY_FE_DSN
 ENV COMMIT_SHA=$COMMIT_SHA
