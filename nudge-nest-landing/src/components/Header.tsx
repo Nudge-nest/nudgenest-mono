@@ -1,6 +1,5 @@
+import { Link } from 'react-router';
 import logo from '../assets/nudgenest_logo.svg?url';
-
-const contactUrl = `${import.meta.env.VITE_APP_CONTACT_URL}`;
 
 const navLinkStyle =
     'text-sm text-[color:var(--color-dark)] hover:text-[color:var(--color-main)] transition-colors duration-150 cursor-pointer';
@@ -25,9 +24,7 @@ const Header = () => {
                     <a href="#how-it-works" className={navLinkStyle}>How It Works</a>
                     <a href="#pricing" className={navLinkStyle}>Pricing</a>
                     <a href="#faq" className={navLinkStyle}>FAQ</a>
-                    <a href={contactUrl} className={navLinkStyle} target="_blank" rel="noopener noreferrer">
-                        Contact
-                    </a>
+                    <Link to="/contact" className={navLinkStyle}>Contact</Link>
                 </nav>
 
             </div>
