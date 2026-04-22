@@ -6,7 +6,7 @@ config:
     secure: AAABABpQdbdx3EZv4JKi2UoyTHFORLwHovKLEmWraGnHdKyIptP680u8B3FCPxXFP+8GoLNVhUATSkwhwr5yK9JelWBVFRIFziIt8iPp7kXlti7O7B6FaCnUwGB3rg57ebNkbC6PnAOcLFWsrPNIDbNOY/G+a/PpE1+FL8Ew13vpiX+y+4Ya5Sb8qgKX7QYbxGdADLmwCKrgDVf/dvxPT0OpaG8QxFUZmSI=
   nudgenest-infra:BACKEND_GOOGLE_APP_PASSWORD:
     secure: AAABAHc9PCp1iTdj6ISvzGGQboNWMvE2A/clzh28/3PU7xoA1DH5i/Xn2C9uVOjY
-  nudgenest-infra:VITE_APP_BACKEND_HOST_STAGING: "https://api.nudgenest.io/api/v1/"
+  nudgenest-infra:VITE_APP_BACKEND_HOST_STAGING: "https://api-staging.nudgenest.io/api/v1/"
   nudgenest-infra:VITE_APP_AWS_ACCESS_KEY:
     secure: AAABAGtq60Vlv9aRuncqUWKcTHTPg6Q8tCc0gLThvWqt9D2C+/0Vr9TlkF4XA5YcSjqDgQ==
   nudgenest-infra:VITE_APP_AWS_SECRET_KEY:
