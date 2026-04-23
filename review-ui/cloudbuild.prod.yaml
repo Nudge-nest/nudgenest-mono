@@ -44,6 +44,10 @@ steps:
           - '--region=$_DEPLOY_REGION'
           - '--allow-unauthenticated'
           - '--max-instances=5'
+          # Remove stale VITE_APP_BACKEND_HOST runtime secret binding left from a
+          # previous deployment. The env var is baked into the image at build time
+          # and does not need a Cloud Run secret binding.
+          - '--remove-secrets=VITE_APP_BACKEND_HOST'
           - '--quiet'
       id: deploy
       entrypoint: gcloud
