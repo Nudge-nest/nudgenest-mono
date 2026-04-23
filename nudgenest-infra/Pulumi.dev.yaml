@@ -64,4 +64,4 @@ config:
   nudgenest-infra:VITE_APP_BACKEND_HOST_PROD: https://api.nudgenest.io/api/v1/
   nudgenest-infra:VITE_APP_REVIEW_UI_URL_PROD: https://reviews.nudgenest.io
   nudgenest-infra:VITE_APP_DEMO_MERCHANT_ID_STAGING:
-    secure: AAABAKwVz7tLFHTTWau/Vk/JCr8IcsQk7/P7qzIT4hIUht7ebrwrfR+yNstRBOEgPugi646ISk4=
+    secure: AAABAJAxGqOxLzBf0nsdEBKJkKUQZRorEdaxlsPZ5Ui7OqAc0bcUH0eK2NYCdD3GBDV5pDXwXLE=
